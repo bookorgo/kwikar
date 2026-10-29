@@ -28,4 +28,5 @@ jobs:
         if: steps.seo.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh issue create --title "Weekly SEO check: problems found ($(date -u +%F))" --body-file seo-report.md
+        run: |
+          gh issue create --title "Weekly SEO check - problems found $(date -u +%F)" --body-file seo-report.md
