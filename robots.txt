@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /search
+
+Sitemap: https://kwikar.com/sitemap.xml
+Sitemap: https://kwikar.com/api/sitemap-tours.php
