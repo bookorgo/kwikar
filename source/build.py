@@ -163,7 +163,9 @@ def crumbs_ld(crumbs):
 
 ORG = {'@type': 'TravelAgency', '@id': SITE + '/#organization', 'name': 'KWIKAR', 'legalName': 'Kwikar LLC-FZ', 'url': SITE + '/',
        'logo': SITE + '/assets/img/logo.webp', 'image': SITE + '/assets/img/kwikar-share.webp', 'telephone': '+' + PHONE,
-       'email': EMAIL, 'address': {'@type': 'PostalAddress', 'addressCountry': 'AE'}, 'areaServed': 'United Arab Emirates'}
+       'email': EMAIL, 'address': {'@type': 'PostalAddress', 'addressCountry': 'AE'}, 'areaServed': {'@type': 'Country', 'name': 'United Arab Emirates'},
+       'description': 'UAE travel company for tours and activities, holiday packages, private chauffeur transfers and UAE tourist visa assistance.',
+       'contactPoint': {'@type': 'ContactPoint', 'telephone': '+' + PHONE, 'contactType': 'customer service', 'availableLanguage': 'English'}}
 if SOCIAL:
     ORG['sameAs'] = SOCIAL
 ORG_LD = {'@context': 'https://schema.org', '@graph': [ORG, {'@type': 'WebSite', '@id': SITE + '/#website', 'url': SITE + '/', 'name': 'KWIKAR',
@@ -427,6 +429,128 @@ SLIDES = [
     {'eyebrow': 'DESERT', 'title': 'Desert Adventures', 'description': 'Dunes, thrills and unforgettable moments', 'href': '/activities/desert-adventures', 'image': '/assets/img/hero-desert.webp'},
 ]
 
+# ---------------- homepage SEO content (from the "Kwikar Website Content – Homepage" doc).
+# Tour names and prices are looked up in the live feed at build time; a tour that disappears is left out.
+HOME_PICKS = [('Burj Khalifa - At The Top', 'Observation deck'), ('Dubai Frame', 'Observation deck'), ('Global Village', 'Theme park'),
+              ('Dubai Miracle Garden', 'Theme park'), ('Aquarium and Underwater Zoo at the Dubai Mall', 'Family friendly'),
+              ('Aquaventure World Waterpark', 'Water park'), ('Ski Dubai', 'Snow park'), ('Ferrari World Abu Dhabi Theme Park', 'Theme park'),
+              ('Louvre Abu Dhabi', 'Museum')]
+HOME_CRUISES = ['Alexandra Dhow Cruise in Dubai Marina', 'Lotus Royale Dinner Cruise', 'Dubai Water Canal Dhow Cruise']
+
+
+def find_tour(name):
+    n = name.lower()
+    return next((t for t in TOURS if t['name'].lower() == n), None) or next((t for t in TOURS if n in t['name'].lower()), None)
+
+
+def tlink(t, text=None):
+    return f'<a href="{tour_href(t)}">{e(text or t["name"])}</a>'
+
+
+def home_intro():
+    picks = [t for t in (find_tour(n) for n, _ in HOME_PICKS) if t and t.get('price')]
+    low = min((t['price'] for t in picks), default=None)
+    wa_ = wa('Hi KWIKAR, I would like help planning my UAE trip.')
+    return (f'<section class="kw-market-section kw-home-intro"><div class="kw-market-wrap"><h1>UAE Tours and Activities, Holidays, Transfers &amp; Visas</h1>'
+            f'<p>KWIKAR is a UAE travel company where you can plan UAE tours and activities, holiday packages, private chauffeur transfers and tourist visa assistance in one place.'
+            + (f' Attraction tickets start from {money(low)} per person.' if low else '')
+            + ' Send your date and group size, and our team confirms availability and the final price before you pay.</p>'
+            f'<div class="kw-home-intro-ctas"><a class="kw-button" href="{e(wa_)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a>'
+            f'<a class="kw-button kw-button-ghost" href="tel:+{PHONE}">Call {PHONE_FMT}</a><a class="kw-button kw-button-ghost" href="/activities">Explore activities</a></div></div></section>')
+
+
+def home_faqs():
+    et = next((c for c in CARS if c['name'] == 'Mercedes E-Class'), None)
+    uae_v = [v for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price')]
+    uae_cities = [l['name'] for l in REAL_LOCATIONS if l['group'] == 'uae']
+    fam = [h['name'] for h in HOLIDAYS if re.search(r'Family|Honeymoon', h['name'])]
+    return [
+        ('How do I book a tour or activity with KWIKAR?', f'Choose an experience on our website and send a request with your preferred date and number of guests. You can also message us on WhatsApp or call {PHONE_FMT}. Our team checks availability with the supplier, confirms the final price and booking terms, and only then asks for payment.'),
+        ('Are the prices on KWIKAR final?', 'Prices shown are starting prices, and tour prices come from live supplier rates. The final amount depends on your date, group size, ticket type and any extras. We send you a confirmed quote before you pay, so you know the full cost in advance.'),
+        ('Does KWIKAR offer airport transfers from Dubai Airport?', 'Yes. We arrange private transfers from Dubai International Airport (DXB) to hotels in Downtown, DIFC, Dubai Marina, JBR, Palm Jumeirah and other areas.'
+         + (f' A Mercedes E-Class to Downtown or DIFC starts from {money(EST["airport"][0]["rates"]["Mercedes E-Class"])}.' if et else '') + ' Share your flight number so we can plan the pickup.'),
+        ('Can KWIKAR help me get a UAE tourist visa?', 'Yes. We assist with 14, 30 and 60-day UAE tourist visas, single and multiple entry'
+         + (f', from {money(min(v["price"] for v in uae_v))}' if uae_v else '') + '. Processing usually takes three to four working days. You typically need a passport valid for six months and a recent colour photo. The issuing authority makes the final decision.'),
+        ('Which UAE cities does KWIKAR cover?', f'Our UAE destinations are {", ".join(uae_cities[:-1])} and {uae_cities[-1]}. Private chauffeur transfers also run between emirates, for example from Dubai to Abu Dhabi. For travel outside the UAE, we arrange holiday packages to several countries in Asia and Europe.'),
+        ('Do you offer holiday packages for families and couples?', 'Yes. Options include multi-night Dubai and Abu Dhabi packages'
+         + (f', and Singapore trips such as {" and ".join(fam[:2])}' if fam else '') + '. Each package is priced for your travel dates and preferred hotel. Send us your plans and we will share a tailored quote.'),
+    ]
+
+
+def home_guide():
+    picks = [(t, c) for t, c in ((find_tour(n), c) for n, c in HOME_PICKS) if t and t.get('price')]
+    cities = [l['name'] for l in REAL_LOCATIONS if l['group'] == 'uae' and l['id'] in LIVE_LOCS]
+    n_exp = len(TOURS)
+    rows = ''.join(f'<tr><th scope="row">{tlink(t)}</th><td>{e(loc_name(t["loc"]))}</td><td>{e(c)}</td><td>{money(t["price"])}</td></tr>' for t, c in picks)
+    cats = [c for c in LIVE_CATS if c['slug'] not in ('events',)]
+    cat_links = ', '.join(f'<a href="/activities/{c["slug"]}">{e(c["name"].lower())}</a>' for c in cats)
+    g = find_tour('Vintage G-Class Evening Heritage Safari')
+    cruises = [t for t in (find_tour(n) for n in HOME_CRUISES) if t]
+    yacht = find_tour('Shared Luxury Yacht Tour')
+    speed = find_tour('Speed Boat Tour Dubai')
+    by_type = {}
+    for c in CARS:
+        by_type.setdefault(c['type'], []).append(c)
+    car_rows = ''.join(f'<tr><th scope="row">{e(t_)}</th><td>{e(", ".join(c["name"] for c in cs))}</td><td>Up to {max(c["pax"] for c in cs)}</td></tr>' for t_, cs in by_type.items())
+    visa_rows = ''.join(f'<tr><th scope="row">{e(re.sub(r"UAE Tourist Visa ", "", v["name"]))}</th><td>{money(v["price"])}</td><td>{e(v["processing"])}</td></tr>'
+                        for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price'))
+    other_v = [v['name'] for v in VISAS if 'UAE Tourist' not in v['name']]
+    hol_countries = [c for c in dict.fromkeys(h['country'] for h in HOLIDAYS) if c != 'UAE']
+    nights = [h['nights'] for h in HOLIDAYS if h['country'] == 'UAE']
+    intl = [l['name'] for l in REAL_LOCATIONS if l['group'] != 'uae']
+    steps = ['Browse experiences, transfers or packages and note the indicative price.',
+             'Send a request with your preferred date and number of guests by form, WhatsApp or phone.',
+             'Confirm once our team replies with availability, the final price and booking terms. You only pay after that.']
+    faqs = ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in home_faqs())
+    wa_ = wa('Hi KWIKAR, I would like help planning my UAE trip.')
+    return f"""
+<section class="kw-market-section kw-home-guide"><div class="kw-market-wrap kw-home-guide-body">
+<h2>Top UAE Tours and Activities to Book</h2>
+<p>Choose from {n_exp} experiences across {", ".join(cities[:-1])} and {cities[-1]}. Below are popular picks with the starting prices currently listed on KWIKAR.</p>
+<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">Experience</th><th scope="col">City</th><th scope="col">Category</th><th scope="col">From (per person)</th></tr></thead><tbody>{rows}</tbody></table></div>
+<p>Prices come from live supplier rates, last checked {CHECKED}. The final amount is confirmed when you enquire. See every option on our <a href="/activities">activities and attractions page</a>.</p>
+<h3>Browse by Travel Style</h3>
+<p>Pick a category that suits your trip: {cat_links}. Theme parks and the aquarium suit families, while dinner cruises and yachts make a relaxed evening out. For a Dubai-only shortlist, open <a href="/destinations/dubai">things to do in Dubai</a>.</p>
+{f'<h3>Desert and Heritage Experiences</h3><p>Beyond the city, the {tlink(g)} offers a desert outing in a classic Mercedes 4x4, from {money(g["price"])} per person. More options are listed under <a href="/activities/desert-adventures">desert adventures</a>.</p>' if g and g.get('price') else ''}
+{f'<h2>Dhow and Dinner Cruises in Dubai</h2><p>An evening on the water is one of the easiest ways to see the Dubai skyline. Popular Dubai cruises on KWIKAR:</p><ul>' + ''.join(f'<li>{tlink(t)}' + (f' – from {money(t["price"])} per person' if t.get('price') else '') + '</li>' for t in cruises) + '</ul><p>See every option on the <a href="/activities/cruises">Dubai cruises page</a>.' + (f' Shared yacht tours start from {money(yacht["price"])}' if yacht and yacht.get('price') else '') + (f', and speed boat tours from {money(speed["price"])}' if speed and speed.get('price') else '') + '.</p>' if cruises else ''}
+<h2>Private Airport Transfers and Chauffeur Service</h2>
+<p>Travel between Dubai International Airport (DXB), your hotel and other emirates in a private car with a professional chauffeur. Our <a href="/transfers">private transfer service</a> covers airport pickups and drop-offs, point-to-point rides, hourly chauffeur hire and inter-emirate trips.</p>
+<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">Vehicle type</th><th scope="col">Models</th><th scope="col">Guests</th></tr></thead><tbody>{car_rows}</tbody></table></div>
+<p>A Mercedes E-Class from DXB to Downtown Dubai or DIFC starts from {money(EST["airport"][0]["rates"]["Mercedes E-Class"])}. Popular routes also include DXB to Dubai Marina, JBR and Palm Jumeirah. Share your flight number, and we confirm pickup arrangements and any waiting charges before you book.</p>
+<p><a class="kw-text-link" href="/transfers#transfer-enquiry">Get a transfer quote <span aria-hidden="true">↗</span></a></p>
+<h2>UAE Tourist Visa Assistance</h2>
+<p>Planning a trip but still need a visa? KWIKAR helps you apply for a UAE tourist visa and explains the documents your nationality needs.</p>
+<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">UAE tourist visa</th><th scope="col">From</th><th scope="col">Typical processing</th></tr></thead><tbody>{visa_rows}</tbody></table></div>
+<p>{e(", ".join(other_v[:-1]))} and {e(other_v[-1])} are also available on request. Approval is always decided by the issuing authority. Check details on the <a href="/visa">UAE visa page</a>.</p>
+<h2>Dubai and Abu Dhabi Holiday Packages</h2>
+<p>Prefer a ready-made itinerary? Our UAE packages run from {min(nights)} to {max(nights)} nights, from a short Abu Dhabi break to Dubai itineraries including a New Year celebration with gala dinner. Combined trips cover both Dubai and Abu Dhabi.</p>
+<p>Every package is quoted for your dates and preferred hotel. KWIKAR also arranges holidays to {", ".join(hol_countries[:-1])} and {hol_countries[-1]}. Request a tailored plan on the <a href="/holidays">holiday packages page</a>.</p>
+<h2>Destinations Across the UAE and Beyond</h2>
+<p>Inside the UAE, we cover {", ".join([l["name"] for l in REAL_LOCATIONS if l["group"] == "uae"][:-1])} and {[l["name"] for l in REAL_LOCATIONS if l["group"] == "uae"][-1]}. Abroad, choices include {", ".join(intl[:8])} and more. View the full list of <a href="/destinations">destinations</a>.</p>
+<h2>How Booking with KWIKAR Works</h2>
+<ol>{"".join(f"<li>{e(x)}</li>" for x in steps)}</ol>
+<h2>Why Travellers Choose KWIKAR</h2>
+<ul>
+<li><strong>One team for the whole trip:</strong> activities, cruises, transfers, visas and holidays in one conversation.</li>
+<li><strong>Clear quotes first:</strong> for transfers, fuel, tolls, waiting time and other charges are listed in the confirmed quote.</li>
+<li><strong>WhatsApp support:</strong> message the team directly about your travel plans.</li>
+<li><strong>Local UAE company:</strong> KWIKAR is operated by Kwikar LLC-FZ in the United Arab Emirates.</li>
+<li><strong>Modern fleet:</strong> from electric cars to seven-seat vans for families and groups.</li>
+</ul>
+<h2>Tips for Visiting Dubai and Abu Dhabi</h2>
+<ul>
+<li><strong>Plan around the heat.</strong> Summer days are very hot, so book desert and outdoor activities for early morning or evening. Indoor options such as Ski Dubai and the aquarium suit midday.</li>
+<li><strong>Dress modestly at religious and cultural sites.</strong> Shoulders and knees should be covered at mosques, and women need a headscarf at the Sheikh Zayed Grand Mosque.</li>
+<li><strong>Check seasonal openings.</strong> Outdoor attractions such as Global Village and Dubai Miracle Garden open for a season, not all year.</li>
+<li><strong>Respect Ramadan customs.</strong> During the holy month, avoid eating or drinking in public during daylight hours.</li>
+</ul>
+<h2>Frequently Asked Questions</h2>
+{faqs}
+<div class="kw-final-cta"><div><h2>Plan Your UAE Trip Today</h2><p>Tell us where you want to go and when. Our team will reply with options and a clear quote.</p></div><div><a class="kw-button" href="{e(wa_)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a><a class="kw-final-wa" href="tel:+{PHONE}">Call {PHONE_FMT}</a><a class="kw-final-wa" href="/contact">Send an enquiry</a></div></div>
+<p class="kw-checked">Last updated {CHECKED} · Reviewed by the KWIKAR team. Prices and availability are confirmed at the time of booking.</p>
+</div></section>"""
+
+
 
 def build_home():
     seen, best = set(), []
@@ -452,18 +576,25 @@ def build_home():
                     for v in [v for v in VISAS if re.search(r'30 Days|60 Days', v['name'])][:4])
     main = f'''<section class="kw-slider" aria-label="Explore destinations" data-slider='{e(json.dumps(SLIDES))}'><div class="kw-slider-track">
 {peek(prev_, "left")}
-<div class="kw-slider-main first-slide" style="background-image:url('{cur["image"]}')"><div class="kw-slider-copy"><span class="kw-slide-eyebrow">{e(cur["eyebrow"])}</span><h1>{e(cur["title"])}</h1><p>{e(cur["description"])}</p><a href="{cur["href"]}">Explore &nbsp; →</a></div><div class="kw-slider-dots">{dots}</div></div>
+<div class="kw-slider-main first-slide" style="background-image:url('{cur["image"]}')"><div class="kw-slider-copy"><span class="kw-slide-eyebrow">{e(cur["eyebrow"])}</span><h2>{e(cur["title"])}</h2><p>{e(cur["description"])}</p><a href="{cur["href"]}">Explore &nbsp; →</a></div><div class="kw-slider-dots">{dots}</div></div>
 {peek(nxt, "right")}
 </div></section>
+{home_intro()}
 <section class="kw-market-section kw-market-cities"><div class="kw-market-wrap">{section_head("Best cities to visit", action=("View all", "/destinations"), carousel_id="kw-home-cities" if len(cities) > 3 else None)}<div class="kw-city-grid" id="kw-home-cities">{city_html}</div></div></section>
 <section class="kw-market-section kw-market-alt kw-popular"><div class="kw-market-wrap">{section_head("Best-selling experiences", action=("View all", "/activities"), carousel_id="kw-home-best")}<div class="kw-home-row" id="kw-home-best">{"".join(market_card(t) for t in best)}</div></div></section>
 <section class="kw-market-section"><div class="kw-market-wrap">{section_head("Holiday packages", action=("View all", "/holidays"), carousel_id="kw-home-holidays")}<div class="kw-home-row" id="kw-home-holidays">{hol}</div></div></section>
 <section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Private transfers", action=("View all", "/transfers"), carousel_id="kw-home-transfers")}<div class="kw-home-row" id="kw-home-transfers">{cars}</div></div></section>
 <section class="kw-market-section"><div class="kw-market-wrap">{section_head("Visa assistance", action=("View all", "/visa"))}<div class="kw-home-visa">{visas}</div></div></section>
 <section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Why KWIKAR")}<div class="kw-market-benefits"><div><h3>Clear choices</h3><p>Explore experiences and current supplier prices.</p></div><div><h3>WhatsApp booking</h3><p>Send your request in a minute. No account or online payment needed.</p></div><div><h3>WhatsApp support</h3><p>Ask our team about your travel plans.</p></div><div><h3>Local help</h3><p>Plan experiences and transfers across the UAE.</p></div></div></div></section>'''
-    page('/', 'UAE Attractions, Tours & Holidays | KWIKAR', 'Explore UAE attractions, holiday packages, private transfers and visa assistance with KWIKAR.',
+    main += home_guide()
+    faq_ld = ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+        {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': _plain(a)}} for q, a in home_faqs()]})
+    page('/', 'UAE Tours and Activities, Transfers & Visas | KWIKAR',
+         'Book UAE tours and activities, Dubai cruises, private airport transfers and tourist visas with KWIKAR. Get a clear quote on WhatsApp before you pay.',
          main, active='Destinations', full_title=True, main_class='kw-market-home',
-         head_extra='<link rel="preload" as="image" href="/assets/img/hero-dubai.webp" media="(min-width: 561px)"><link rel="preload" as="image" href="/assets/img/hero-dubai-mobile.webp" media="(max-width: 560px)">')
+         og_title='UAE Tours, Activities, Transfers & Visas – KWIKAR',
+         og_desc='Plan attractions, dhow cruises, chauffeur transfers, holidays and UAE visas with one team. Clear quotes before you pay.',
+         head_extra=faq_ld + '<link rel="preload" as="image" href="/assets/img/hero-dubai.webp" media="(min-width: 561px)"><link rel="preload" as="image" href="/assets/img/hero-dubai-mobile.webp" media="(max-width: 560px)">')
 
 
 # ================================================================= listings (same markup as ExperienceList)
@@ -1010,7 +1141,7 @@ def write_data_files():
 
 def write_css():
     parts = [open(os.path.join(ROOT, 'styles', f), encoding='utf-8').read() for f in ('preflight.css', 'old-site.css', 'additions.css')]
-    css = parts[1]
+    css = parts[1].replace('.kw-slider-copy h1', '.kw-slider-copy h2')   # the page H1 now sits below the slider
     imp = re.match(r"@import url\([^)]*\);\s*", css)
     if imp:  # fonts are linked in <head>; an @import must not follow other rules
         css = css[imp.end():]
@@ -1033,7 +1164,7 @@ def build_seo_files():
     rules = 'Disallow: /search\nDisallow: /api/\n'
     open(os.path.join(OUT, 'robots.txt'), 'w').write(
         f'# Search engines and AI search (ChatGPT search = OAI-SearchBot) may crawl the site.\nUser-agent: *\nAllow: /\n{rules}\n'
-        f'User-agent: OAI-SearchBot\nAllow: /\n{rules}\nSitemap: {SITE}/sitemap.xml\n')
+        f'User-agent: OAI-SearchBot\nAllow: /\n{rules}\nUser-agent: GPTBot\nAllow: /\n{rules}\nSitemap: {SITE}/sitemap.xml\n')
 
     lines = []
     for tid, p_ in sorted(SLUGS.items(), key=lambda kv: int(kv[0])):

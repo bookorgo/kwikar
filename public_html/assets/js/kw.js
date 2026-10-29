@@ -107,7 +107,7 @@
       mainEl.style.backgroundImage = "url('" + s.image + "')";
       mainEl.classList.toggle('first-slide', cur === 0);
       mainEl.querySelector('.kw-slide-eyebrow').textContent = s.eyebrow;
-      mainEl.querySelector('h1').textContent = s.title;
+      mainEl.querySelector('h2').textContent = s.title;
       mainEl.querySelector('.kw-slider-copy p').textContent = s.description;
       mainEl.querySelector('.kw-slider-copy a').setAttribute('href', s.href);
       peek(left, slides[(cur + slides.length - 1) % slides.length]);
