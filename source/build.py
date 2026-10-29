@@ -259,7 +259,7 @@ def header(active):
         for label, icon, color, href in NAV)
     panels = ''.join(mega_panel(label) for label, _, _, _ in NAV)
     return f'''<header class="kw-header kw-header-vb">
-<div class="kw-header-toprow"><div class="kw-header-shell"><a href="/" class="kw-brand-logo" aria-label="KWIKAR homepage"><img src="/assets/img/logo.webp" alt="KWIKAR — Fast service that matters" width="1087" height="370"></a><div class="kw-header-contact"><a href="tel:+{PHONE}">{svg("phone", 21)}<span><small>Call us</small><strong>{PHONE_FMT}</strong></span></a><a href="{e(wa("Hi KWIKAR, I have an enquiry."))}" target="_blank" rel="noopener noreferrer">{svg("message", 23)}<span><small>WhatsApp</small><strong>Chat with our team</strong></span></a></div><button class="kw-mobile-menu" type="button" aria-label="Open menu" aria-expanded="false"><span class="kw-ico-open">{svg("menu", 25)}</span><span class="kw-ico-close" hidden>{svg("x", 25)}</span></button></div></div>
+<div class="kw-header-toprow"><div class="kw-header-shell"><a href="/" class="kw-brand-logo" aria-label="KWIKAR homepage"><img src="/assets/img/logo.webp" alt="KWIKAR — Fast service that matters" width="1087" height="370"></a><div class="kw-header-contact"><a href="tel:+{PHONE}" aria-label="Call KWIKAR on {PHONE_FMT}">{svg("phone", 21)}<span><small>Call us</small><strong>{PHONE_FMT}</strong></span></a><a href="{e(wa("Hi KWIKAR, I have an enquiry."))}" target="_blank" rel="noopener noreferrer" aria-label="Chat with KWIKAR on WhatsApp">{svg("message", 23)}<span><small>WhatsApp</small><strong>Chat with our team</strong></span></a></div><button class="kw-mobile-menu" type="button" aria-label="Open menu" aria-expanded="false"><span class="kw-ico-open">{svg("menu", 25)}</span><span class="kw-ico-close" hidden>{svg("x", 25)}</span></button></div></div>
 <div class="kw-header-navrow"><div class="kw-header-shell kw-navigation"><nav class="kw-main-nav" aria-label="Main navigation"><form class="kw-mobile-nav-search" action="/search" method="get" role="search"><label for="kw-mobile-query">Search experiences</label><div><input id="kw-mobile-query" type="search" name="q" placeholder="Tour, city or activity"><button type="submit" aria-label="Search experiences">{svg("search", 19)}</button></div></form>{groups}</nav><form class="kw-header-search-vb" role="search" action="/search" method="get">{svg("search", 19)}<input name="q" aria-label="Search destinations or activities" placeholder="Search destinations, attractions, experiences..."><button type="submit" aria-label="Search">{svg("search", 18)}</button></form></div></div>
 <div id="kw-navigation-menu">{panels}</div>
 </header>'''
@@ -343,7 +343,8 @@ def page(path, title, desc, main, active=None, scripts=('kw',), noindex=False, o
 <link rel="icon" href="/assets/img/favicon-blue.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/css/site.css?v={VERSION}">
 {extra}
 </head>
@@ -396,7 +397,7 @@ def market_card(t):
     """Home page tour card (kw-market-card). No supplier ratings (SEO strategy rule 9)."""
     href = tour_href(t)
     img = t.get('img') or '/assets/img/hero-dubai-mobile.webp'
-    return (f'<article class="kw-market-card"><a href="{href}" class="kw-market-image" aria-label="View {e(t["name"])}"><img src="{e(img)}" alt="{e(t["name"])}" loading="lazy"></a>'
+    return (f'<article class="kw-market-card"><a href="{href}" class="kw-market-image" aria-label="View {e(t["name"])}"><img src="{e(img)}" alt="{e(t["name"])}" loading="lazy" width="640" height="480"></a>'
             f'<div class="kw-market-info"><span>{e(loc_name(t["loc"]))}</span><h3><a href="{href}">{e(t["name"])}</a></h3><p>{price_line(t)}</p>'
             f'<a class="kw-card-view" href="{href}">View experience →</a></div></article>')
 
@@ -409,7 +410,7 @@ def list_card(t):
     if cats:
         cat_ = ' · ' + (next((c for c in cats if re.search('desert', t['name'], re.I) and re.search('desert', c, re.I)), None) or cats[0])
     img = t.get('img') or '/assets/img/hero-dubai.webp'
-    return (f'<article class="kw-list-card"><a href="{href}"><img src="{e(img)}" loading="lazy" alt="{e(t["name"])}"></a><div><span>{e(loc_name(t["loc"]))}{e(cat_)}</span>'
+    return (f'<article class="kw-list-card"><a href="{href}"><img src="{e(img)}" loading="lazy" alt="{e(t["name"])}" width="640" height="480"></a><div><span>{e(loc_name(t["loc"]))}{e(cat_)}</span>'
             f'<h3><a href="{href}">{e(t["name"])}</a></h3><p>{price_line(t)}</p><a class="kw-card-view" href="{href}">View experience →</a></div></article>')
 
 
@@ -1276,7 +1277,11 @@ def write_css():
     if imp:  # fonts are linked in <head>; an @import must not follow other rules
         css = css[imp.end():]
     os.makedirs(os.path.join(OUT, 'assets', 'css'), exist_ok=True)
-    open(os.path.join(OUT, 'assets', 'css', 'site.css'), 'w', encoding='utf-8').write(parts[0] + '\n' + css + '\n' + parts[2])
+    out = parts[0] + '\n' + css + '\n' + parts[2]
+    out = re.sub(r'/\*.*?\*/', '', out, flags=re.S)
+    out = re.sub(r'\s*([{};,>])\s*', r'\1', out)
+    out = re.sub(r'\s+', ' ', out).replace(';}', '}')
+    open(os.path.join(OUT, 'assets', 'css', 'site.css'), 'w', encoding='utf-8').write(out)
 
 
 def build_seo_files():

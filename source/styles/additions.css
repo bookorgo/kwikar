@@ -119,3 +119,8 @@
 .kw-blog-body .kw-table-wrap{margin:16px 0}
 .kw-blog-list{padding-top:34px;padding-bottom:60px}
 .kw-sources{list-style:disc;padding-left:22px}
+/* accessibility: contrast and touch targets (PageSpeed) */
+.kw-app-bottom-nav a{color:#5f6874}
+.kw-city-card small{color:#5f6874!important}
+.kw-slider-dots button{position:relative}
+.kw-slider-dots button::before{content:"";position:absolute;inset:-12px -6px}
