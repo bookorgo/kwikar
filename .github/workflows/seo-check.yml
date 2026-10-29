@@ -1,0 +1,31 @@
+name: Weekly SEO check
+
+on:
+  schedule:
+    - cron: '23 5 * * 1'   # Mondays 05:23 UTC (09:23 UAE)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check sitemap pages, robots and redirects
+        id: seo
+        run: python3 source/seo_check.py
+        continue-on-error: true
+      - name: Add report to the run summary
+        if: always()
+        run: cat seo-report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Open an issue when something is wrong
+        if: steps.seo.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue create --title "Weekly SEO check: problems found ($(date -u +%F))" --body-file seo-report.md
