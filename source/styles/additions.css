@@ -124,3 +124,102 @@
 .kw-city-card small{color:#5f6874!important}
 .kw-slider-dots button{position:relative}
 .kw-slider-dots button::before{content:"";position:absolute;inset:-12px -6px}
+
+/* ===== SEO sections in the site's own style (pattern from chauffeurr.ae) ===== */
+.kw-seo-section{padding:76px 0;border-top:1px solid #edf0f4}
+.kw-seo-section.kw-market-alt{background:#f7f9fc}
+.kw-seo-head{margin-bottom:26px;max-width:720px}
+.kw-seo-head.kw-center{text-align:center;margin-left:auto;margin-right:auto}
+.kw-seo-head .kw-eyebrow{color:#1265e8;margin-bottom:10px;letter-spacing:.2em;font-size:11px}
+.kw-seo-head h2{font:800 clamp(26px,2.7vw,38px)/1.15 'Manrope',sans-serif;letter-spacing:-.04em;color:#0b1018}
+.kw-seo-head p{color:#5e6672;font-size:15.5px;line-height:1.7;margin-top:12px}
+.kw-seo-head i{display:block;width:44px;height:2px;background:#1265e8;border-radius:2px;margin-top:18px}
+.kw-seo-head.kw-center i{margin-left:auto;margin-right:auto}
+.kw-seo-lead{font-size:16.5px!important;color:#283444!important;line-height:1.7}
+.kw-seo-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:start}
+.kw-seo-split p{color:#4b5664;font-size:15.5px;line-height:1.75;margin:0 0 14px}
+.kw-seo-split p a,.kw-seo-note a,.kw-seo-prose a{color:#1265e8;font-weight:700}
+.kw-seo-split .kw-text-link{display:inline-block;margin-top:6px}
+.kw-seo-split-tight{margin-top:36px;gap:40px;align-items:center}
+.kw-seo-split h3{font:800 18px 'Manrope',sans-serif;margin-bottom:8px}
+.kw-seo-note{margin-top:22px;color:#5e6672;font-size:15px}
+.kw-seo-narrow{max-width:860px}
+.kw-seo-prose p{color:#4b5664;font-size:16px;line-height:1.8;margin:0 0 14px}
+.kw-center-text{text-align:center}
+/* label / value rows */
+.kw-facts{margin:0;border-top:1px solid #e4e9ef}
+.kw-facts>div{display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:18px;padding:14px 0;border-bottom:1px solid #e4e9ef}
+.kw-facts dt{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1265e8;line-height:1.5;padding-top:2px}
+.kw-facts dd{margin:0;color:#283444;font-size:14.5px;line-height:1.6}
+.kw-facts dd a{color:#0b1018;font-weight:700}
+.kw-facts-2{display:grid;grid-template-columns:1fr 1fr;column-gap:36px;border-top:0}
+.kw-facts-2>div{grid-template-columns:110px 1fr}
+.kw-quick .kw-facts{margin-top:4px}
+/* price list */
+.kw-price-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.kw-price-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 18px;border:1px solid #e4e9ef;border-radius:12px;background:#fff;transition:border-color .2s,box-shadow .2s}
+.kw-price-row:hover{border-color:#1265e8;box-shadow:0 10px 26px rgba(18,49,83,.08)}
+.kw-price-row strong{display:block;font:700 15px/1.35 'Manrope',sans-serif;color:#0b1018}
+.kw-price-row small{display:block;font-size:12px;color:#6b7786;margin-top:3px}
+.kw-price-row em{font-style:normal;font-weight:800;color:#1265e8;white-space:nowrap;font-size:14px}
+/* chips */
+.kw-chip-links{display:flex;flex-wrap:wrap;gap:9px}
+.kw-chip-links a{border:1px solid #dfe6ee;border-radius:999px;padding:9px 15px;font-size:13.5px;font-weight:700;color:#18324f;background:#fff}
+.kw-chip-links a span{margin-left:6px;color:#1265e8}
+.kw-chip-links a:hover{border-color:#1265e8;color:#1265e8}
+/* info cards */
+.kw-info-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.kw-info-card{background:#fff;border:1px solid #e9edf3;border-radius:14px;padding:26px 24px}
+.kw-info-card>span{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#eef4ff;color:#1265e8;font-weight:800;font-size:15px}
+.kw-info-card h3{font:800 17px/1.3 'Manrope',sans-serif;margin:16px 0 8px;color:#0b1018}
+.kw-info-card p{font-size:14px;color:#5e6672;line-height:1.65}
+.kw-market-alt .kw-info-card{background:#fff}
+/* guides */
+.kw-guide-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.kw-guide-link{display:block;background:#fff;border:1px solid #e9edf3;border-radius:14px;padding:24px}
+.kw-guide-link .kw-eyebrow{font-size:10.5px;color:#1265e8;margin-bottom:8px}
+.kw-guide-link strong{display:block;font:800 18px/1.3 'Manrope',sans-serif;color:#0b1018}
+.kw-guide-link small{display:block;color:#5e6672;font-size:14px;line-height:1.6;margin:10px 0 14px}
+.kw-guide-link em{font-style:normal;color:#1265e8;font-weight:800;font-size:13.5px}
+/* FAQ cards */
+.kw-faq-cards{display:grid;gap:12px}
+.kw-faq-card{background:#fff;border:1px solid #e4e9ef;border-radius:14px;padding:20px 22px}
+.kw-faq-card h3,.kw-faq-card summary{font:800 16px/1.4 'Manrope',sans-serif;color:#0b1018;letter-spacing:-.01em}
+.kw-faq-card summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.kw-faq-card summary::-webkit-details-marker{display:none}
+.kw-faq-card summary::after{content:"+";color:#1265e8;font-size:22px;line-height:1;font-weight:500}
+.kw-faq-card[open] summary::after{content:"−"}
+.kw-faq-card p{color:#4b5664;font-size:15px;line-height:1.7;margin-top:10px!important}
+.kw-faq-group{margin:22px 0 10px!important}
+.kw-seo-narrow .kw-final-cta{margin-top:48px}
+/* option detail rows on tour pages */
+.kw-offer-rows{display:grid;gap:10px;margin-top:6px}
+.kw-offer-row{border:1px solid #e4e9ef;border-radius:12px;background:#fff}
+.kw-offer-row summary{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 18px;cursor:pointer;list-style:none}
+.kw-offer-row summary::-webkit-details-marker{display:none}
+.kw-offer-row summary strong{display:block;font-size:15px;color:#0b1018}
+.kw-offer-row summary small{display:block;color:#6b7786;font-size:12.5px;margin-top:2px}
+.kw-offer-row summary em{font-style:normal;font-weight:800;color:#0b1018;white-space:nowrap;font-size:14px}
+.kw-offer-row summary::after{content:"+";color:#1265e8;font-size:20px;margin-left:6px}
+.kw-offer-row[open] summary::after{content:"−"}
+.kw-offer-row>div{padding:0 18px 16px;color:#4b5664;font-size:14px}
+.kw-offer-row>div h2{font-size:14px!important;margin:10px 0 4px!important;font-weight:800}
+.kw-offer-row>div ul{padding-left:20px;list-style:disc}
+/* homepage H1 block */
+.kw-home-intro .kw-eyebrow{color:#1265e8;font-size:11px;letter-spacing:.2em;margin-bottom:10px}
+.kw-benefits-5{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.kw-benefits-5>div{min-height:0!important}
+.kw-hub-about{padding:64px 0}
+@media(max-width:1100px){.kw-price-list{grid-template-columns:1fr 1fr}.kw-benefits-5{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:800px){.kw-seo-section{padding:54px 0}.kw-seo-split{grid-template-columns:1fr;gap:28px}.kw-facts-2{grid-template-columns:1fr}.kw-benefits-5{grid-template-columns:1fr 1fr!important}}
+@media(max-width:560px){.kw-price-list{grid-template-columns:1fr}.kw-facts>div{grid-template-columns:1fr;gap:4px}.kw-benefits-5{grid-template-columns:1fr!important}.kw-seo-head h2{font-size:26px}}
+.kw-offer-row summary>span{flex:1;min-width:0}
+.kw-offer-intro{margin:0 0 12px!important;color:#5e6672}
+.kw-offer-rows+.kw-choose{margin-top:18px}
+.kw-steps{list-style:none!important;padding:0!important;counter-reset:kwstep;display:grid;gap:0}
+.kw-steps li{position:relative;padding:0 0 22px 52px;counter-increment:kwstep}
+.kw-steps li::before{content:counter(kwstep);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:#eef4ff;color:#1265e8;font-weight:800;display:grid;place-items:center;font-size:14px}
+.kw-steps li::after{content:"";position:absolute;left:16px;top:38px;bottom:4px;width:2px;background:#e4ecf8}
+.kw-steps li:last-child::after{display:none}
+.kw-steps li strong{display:block;font:800 16px 'Manrope',sans-serif;color:#0b1018;padding-top:6px}
+.kw-steps li p{margin:4px 0 0!important}

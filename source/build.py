@@ -452,7 +452,7 @@ def home_intro():
     picks = [t for t in (find_tour(n) for n, _ in HOME_PICKS) if t and t.get('price')]
     low = min((t['price'] for t in picks), default=None)
     wa_ = wa('Hi KWIKAR, I would like help planning my UAE trip.')
-    return (f'<section class="kw-market-section kw-home-intro"><div class="kw-market-wrap"><h1>UAE Tours and Activities, Holidays, Transfers &amp; Visas</h1>'
+    return (f'<section class="kw-market-section kw-home-intro"><div class="kw-market-wrap"><span class="kw-eyebrow">UAE TRAVEL · ONE TEAM</span><h1>UAE Tours and Activities, Holidays, Transfers &amp; Visas</h1>'
             f'<p>KWIKAR is a UAE travel company where you can plan UAE tours and activities, holiday packages, private chauffeur transfers and tourist visa assistance in one place.'
             + (f' Attraction tickets start from {money(low)} per person.' if low else '')
             + ' Send your date and group size, and our team confirms availability and the final price before you pay.</p>'
@@ -478,13 +478,36 @@ def home_faqs():
     ]
 
 
+def seo_head(eyebrow, title, sub=None, center=False):
+    """Section heading in the site's own style: eyebrow, heading, optional subtitle and a short rule."""
+    return (f'<div class="kw-seo-head{" kw-center" if center else ""}"><span class="kw-eyebrow">{e(eyebrow)}</span><h2>{title}</h2>'
+            + (f'<p>{sub}</p>' if sub else '') + '<i aria-hidden="true"></i></div>')
+
+
+def facts(rows):
+    """Label / value rows (used instead of plain tables)."""
+    return '<dl class="kw-facts">' + ''.join(f'<div><dt>{k}</dt><dd>{v}</dd></div>' for k, v in rows) + '</dl>'
+
+
+def info_cards(items, numbered=False):
+    return '<div class="kw-info-cards">' + ''.join(
+        f'<div class="kw-info-card"><span>{f"{i + 1:02d}" if numbered else icon}</span><h3>{e(t)}</h3><p>{d}</p></div>'
+        for i, (icon, t, d) in enumerate(items)) + '</div>'
+
+
+def faq_cards(items, open_all=True):
+    if open_all:
+        return '<div class="kw-faq-cards">' + ''.join(f'<div class="kw-faq-card"><h3>{e(q)}</h3><p>{e(a)}</p></div>' for q, a in items) + '</div>'
+    return '<div class="kw-faq-cards">' + ''.join(f'<details class="kw-faq-card"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in items) + '</div>'
+
+
 def home_guide():
     picks = [(t, c) for t, c in ((find_tour(n), c) for n, c in HOME_PICKS) if t and t.get('price')]
     cities = [l['name'] for l in REAL_LOCATIONS if l['group'] == 'uae' and l['id'] in LIVE_LOCS]
     n_exp = len(TOURS)
-    rows = ''.join(f'<tr><th scope="row">{tlink(t)}</th><td>{e(loc_name(t["loc"]))}</td><td>{e(c)}</td><td>{money(t["price"])}</td></tr>' for t, c in picks)
+    price_rows = ''.join(f'<a class="kw-price-row" href="{tour_href(t)}"><span><strong>{e(t["name"])}</strong><small>{e(loc_name(t["loc"]))} · {e(c)}</small></span><em>From {money(t["price"])}</em></a>' for t, c in picks)
     cats = [c for c in LIVE_CATS if c['slug'] not in ('events',)]
-    cat_links = ', '.join(f'<a href="/activities/{c["slug"]}">{e(c["name"].lower())}</a>' for c in cats)
+    chips = ''.join(f'<a href="/activities/{c["slug"]}">{e(c["name"])}<span>↗</span></a>' for c in cats)
     g = find_tour('Vintage G-Class Evening Heritage Safari')
     cruises = [t for t in (find_tour(n) for n in HOME_CRUISES) if t]
     yacht = find_tour('Shared Luxury Yacht Tour')
@@ -492,66 +515,92 @@ def home_guide():
     by_type = {}
     for c in CARS:
         by_type.setdefault(c['type'], []).append(c)
-    car_rows = ''.join(f'<tr><th scope="row">{e(t_)}</th><td>{e(", ".join(c["name"] for c in cs))}</td><td>Up to {max(c["pax"] for c in cs)}</td></tr>' for t_, cs in by_type.items())
-    visa_rows = ''.join(f'<tr><th scope="row">{e(re.sub(r"UAE Tourist Visa ", "", v["name"]))}</th><td>{money(v["price"])}</td><td>{e(v["processing"])}</td></tr>'
-                        for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price'))
+    uae_v = [v for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price')]
     other_v = [v['name'] for v in VISAS if 'UAE Tourist' not in v['name']]
     hol_countries = [c for c in dict.fromkeys(h['country'] for h in HOLIDAYS) if c != 'UAE']
     nights = [h['nights'] for h in HOLIDAYS if h['country'] == 'UAE']
-    intl = [l['name'] for l in REAL_LOCATIONS if l['group'] != 'uae']
-    steps = ['Browse experiences, transfers or packages and note the indicative price.',
-             'Send a request with your preferred date and number of guests by form, WhatsApp or phone.',
-             'Confirm once our team replies with availability, the final price and booking terms. You only pay after that.']
-    faqs = ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in home_faqs())
+    intl = [l for l in REAL_LOCATIONS if l['group'] != 'uae']
+    uae_locs = [l for l in REAL_LOCATIONS if l['group'] == 'uae']
     wa_ = wa('Hi KWIKAR, I would like help planning my UAE trip.')
-    return f"""
-<section class="kw-market-section kw-home-guide"><div class="kw-market-wrap kw-home-guide-body">
-<h2>Top UAE Tours and Activities to Book</h2>
-<p>Choose from {n_exp} experiences across {", ".join(cities[:-1])} and {cities[-1]}. Below are popular picks with the starting prices currently listed on KWIKAR.</p>
-<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">Experience</th><th scope="col">City</th><th scope="col">Category</th><th scope="col">From (per person)</th></tr></thead><tbody>{rows}</tbody></table></div>
-<p>Prices come from live supplier rates, last checked {CHECKED}. The final amount is confirmed when you enquire. See every option on our <a href="/activities">activities and attractions page</a>.</p>
-<h3>Browse by Travel Style</h3>
-<p>Pick a category that suits your trip: {cat_links}. Theme parks and the aquarium suit families, while dinner cruises and yachts make a relaxed evening out. For a Dubai-only shortlist, open <a href="/destinations/dubai">things to do in Dubai</a>.</p>
-{f'<h3>Desert and Heritage Experiences</h3><p>Beyond the city, the {tlink(g)} offers a desert outing in a classic Mercedes 4x4, from {money(g["price"])} per person. More options are listed under <a href="/activities/desert-adventures">desert adventures</a>.</p>' if g and g.get('price') else ''}
-{f'<h2>Dhow and Dinner Cruises in Dubai</h2><p>An evening on the water is one of the easiest ways to see the Dubai skyline. Popular Dubai cruises on KWIKAR:</p><ul>' + ''.join(f'<li>{tlink(t)}' + (f' – from {money(t["price"])} per person' if t.get('price') else '') + '</li>' for t in cruises) + '</ul><p>See every option on the <a href="/activities/cruises">Dubai cruises page</a>.' + (f' Shared yacht tours start from {money(yacht["price"])}' if yacht and yacht.get('price') else '') + (f', and speed boat tours from {money(speed["price"])}' if speed and speed.get('price') else '') + '.</p>' if cruises else ''}
-<h2>Private Airport Transfers and Chauffeur Service</h2>
-<p>Travel between Dubai International Airport (DXB), your hotel and other emirates in a private car with a professional chauffeur. Our <a href="/transfers">private transfer service</a> covers airport pickups and drop-offs, point-to-point rides, hourly chauffeur hire and inter-emirate trips.</p>
-<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">Vehicle type</th><th scope="col">Models</th><th scope="col">Guests</th></tr></thead><tbody>{car_rows}</tbody></table></div>
-<p>A Mercedes E-Class from DXB to Downtown Dubai or DIFC starts from {money(EST["airport"][0]["rates"]["Mercedes E-Class"])}. Popular routes also include DXB to Dubai Marina, JBR and Palm Jumeirah. Share your flight number, and we confirm pickup arrangements and any waiting charges before you book.</p>
-<p><a class="kw-text-link" href="/transfers#transfer-enquiry">Get a transfer quote <span aria-hidden="true">↗</span></a></p>
-<h2>UAE Tourist Visa Assistance</h2>
-<p>Planning a trip but still need a visa? KWIKAR helps you apply for a UAE tourist visa and explains the documents your nationality needs.</p>
-<div class="kw-table-wrap"><table class="kw-opt-table"><thead><tr><th scope="col">UAE tourist visa</th><th scope="col">From</th><th scope="col">Typical processing</th></tr></thead><tbody>{visa_rows}</tbody></table></div>
-<p>{e(", ".join(other_v[:-1]))} and {e(other_v[-1])} are also available on request. Approval is always decided by the issuing authority. Check details on the <a href="/visa">UAE visa page</a>.</p>
-<h2>Dubai and Abu Dhabi Holiday Packages</h2>
-<p>Prefer a ready-made itinerary? Our UAE packages run from {min(nights)} to {max(nights)} nights, from a short Abu Dhabi break to Dubai itineraries including a New Year celebration with gala dinner. Combined trips cover both Dubai and Abu Dhabi.</p>
-<p>Every package is quoted for your dates and preferred hotel. KWIKAR also arranges holidays to {", ".join(hol_countries[:-1])} and {hol_countries[-1]}. Request a tailored plan on the <a href="/holidays">holiday packages page</a>.</p>
-<h2>Destinations Across the UAE and Beyond</h2>
-<p>Inside the UAE, we cover {", ".join([l["name"] for l in REAL_LOCATIONS if l["group"] == "uae"][:-1])} and {[l["name"] for l in REAL_LOCATIONS if l["group"] == "uae"][-1]}. Abroad, choices include {", ".join(intl[:8])} and more. View the full list of <a href="/destinations">destinations</a>.</p>
-<h2>How Booking with KWIKAR Works</h2>
-<ol>{"".join(f"<li>{e(x)}</li>" for x in steps)}</ol>
-<h2>Why Travellers Choose KWIKAR</h2>
-<ul>
-<li><strong>One team for the whole trip:</strong> activities, cruises, transfers, visas and holidays in one conversation.</li>
-<li><strong>Clear quotes first:</strong> for transfers, fuel, tolls, waiting time and other charges are listed in the confirmed quote.</li>
-<li><strong>WhatsApp support:</strong> message the team directly about your travel plans.</li>
-<li><strong>Local UAE company:</strong> KWIKAR is operated by Kwikar LLC-FZ in the United Arab Emirates.</li>
-<li><strong>Modern fleet:</strong> from electric cars to seven-seat vans for families and groups.</li>
-</ul>
-<h2>Tips for Visiting Dubai and Abu Dhabi</h2>
-<ul>
-<li><strong>Plan around the heat.</strong> Summer days are very hot, so book desert and outdoor activities for early morning or evening. Indoor options such as Ski Dubai and the aquarium suit midday.</li>
-<li><strong>Dress modestly at religious and cultural sites.</strong> Shoulders and knees should be covered at mosques, and women need a headscarf at the Sheikh Zayed Grand Mosque.</li>
-<li><strong>Check seasonal openings.</strong> Outdoor attractions such as Global Village and Dubai Miracle Garden open for a season, not all year.</li>
-<li><strong>Respect Ramadan customs.</strong> During the holy month, avoid eating or drinking in public during daylight hours.</li>
-</ul>
-{('<h2>Travel Guides</h2><p>Planning tips from our team: ' + ', '.join(f'<a href="{post_href(b)}">{e(b["h1"])}</a>' for b in POSTS[:4]) + '. See all <a href="/blog">travel guides</a>.</p>') if POSTS else ''}
-<h2>Frequently Asked Questions</h2>
-{faqs}
-<div class="kw-final-cta"><div><h2>Plan Your UAE Trip Today</h2><p>Tell us where you want to go and when. Our team will reply with options and a clear quote.</p></div><div><a class="kw-button" href="{e(wa_)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a><a class="kw-final-wa" href="tel:+{PHONE}">Call {PHONE_FMT}</a><a class="kw-final-wa" href="/contact">Send an enquiry</a></div></div>
-<p class="kw-checked">Last updated {CHECKED} · Reviewed by the KWIKAR team. Prices and availability are confirmed at the time of booking.</p>
-</div></section>"""
+    e150 = money(EST["airport"][0]["rates"]["Mercedes E-Class"])
 
+    s1 = (f'<section class="kw-seo-section"><div class="kw-market-wrap">'
+          + seo_head('POPULAR PICKS', 'Top UAE tours and activities to book',
+                     f'Choose from {n_exp} experiences across {", ".join(cities[:-1])} and {cities[-1]}. These are popular picks with the starting prices currently listed on KWIKAR, from live supplier rates last checked {CHECKED}.')
+          + f'<div class="kw-price-list">{price_rows}</div>'
+          + f'<div class="kw-seo-split kw-seo-split-tight"><div><h3>Browse by travel style</h3><p>Theme parks and the aquarium suit families, while dinner cruises and yachts make a relaxed evening out. For a Dubai-only shortlist, see <a href="/destinations/dubai">things to do in Dubai</a>.</p></div>'
+          + f'<div class="kw-chip-links">{chips}</div></div>'
+          + (f'<p class="kw-seo-note">Beyond the city, the <a href="{tour_href(g)}">{e(g["name"])}</a> is a desert outing in a classic Mercedes 4x4, from {money(g["price"])} per person. More options are in <a href="/activities/desert-adventures">desert adventures</a>.</p>' if g and g.get('price') else '')
+          + '</div></section>')
+
+    s2 = ''
+    if cruises:
+        rows = [(f'<a href="{tour_href(t)}">{e(t["name"])}</a>', f'From {money(t["price"])} per person' if t.get('price') else 'Price on request') for t in cruises]
+        if yacht and yacht.get('price'):
+            rows.append((f'<a href="{tour_href(yacht)}">Shared yacht tour</a>', f'From {money(yacht["price"])} per person'))
+        if speed and speed.get('price'):
+            rows.append((f'<a href="{tour_href(speed)}">Speed boat tour</a>', f'From {money(speed["price"])} per person'))
+        s2 = (f'<section class="kw-seo-section kw-market-alt"><div class="kw-market-wrap kw-seo-split"><div>'
+              + seo_head('ON THE WATER', 'Dhow and dinner cruises in Dubai')
+              + '<p class="kw-seo-lead">An evening on the water is one of the easiest ways to see the Dubai skyline. Choose a traditional wooden dhow with a buffet dinner, a dinner cruise with live entertainment, or a shared yacht at sunset.</p>'
+              + '<a class="kw-text-link" href="/activities/cruises">See all Dubai cruises <span aria-hidden="true">↗</span></a></div>'
+              + f'<div>{facts(rows)}</div></div></section>')
+
+    car_rows = [(e(t_), f'{e(", ".join(c["name"] for c in cs))} · up to {max(c["pax"] for c in cs)} guests') for t_, cs in by_type.items()]
+    s3 = (f'<section class="kw-seo-section"><div class="kw-market-wrap kw-seo-split"><div>'
+          + seo_head('PRIVATE TRANSFERS', 'Airport transfers and chauffeur service')
+          + f'<p class="kw-seo-lead">Travel between Dubai International Airport (DXB), your hotel and other emirates in a private car with a professional chauffeur. A Mercedes E-Class from DXB to Downtown Dubai or DIFC starts from {e150}; popular routes also include Dubai Marina, JBR and Palm Jumeirah.</p>'
+          + '<p>Share your flight number and we confirm pickup arrangements and any waiting charges before you book.</p>'
+          + '<a class="kw-text-link" href="/transfers#transfer-enquiry">Get a transfer quote <span aria-hidden="true">↗</span></a></div>'
+          + f'<div>{facts(car_rows)}</div></div></section>')
+
+    visa_rows = [(e(re.sub(r"UAE Tourist Visa ", "", v["name"])), f'From {money(v["price"])} · {e(v["processing"])}') for v in uae_v]
+    s4 = (f'<section class="kw-seo-section kw-market-alt"><div class="kw-market-wrap kw-seo-split"><div>'
+          + seo_head('TRAVEL DOCUMENTS', 'UAE tourist visa assistance')
+          + '<p class="kw-seo-lead">Planning a trip but still need a visa? KWIKAR helps you apply for a UAE tourist visa and explains the documents your nationality needs.</p>'
+          + f'<p>{e(", ".join(other_v[:-1]))} and {e(other_v[-1])} are also available on request. Approval is always decided by the issuing authority.</p>'
+          + '<a class="kw-text-link" href="/visa">UAE visa options <span aria-hidden="true">↗</span></a></div>'
+          + f'<div>{facts(visa_rows)}</div></div></section>')
+
+    city_chips = ''.join(f'<a href="{dest_href(l["id"])}">{e(l["name"])}<span>↗</span></a>' for l in uae_locs if l['id'] in LIVE_LOCS)
+    s5 = (f'<section class="kw-seo-section"><div class="kw-market-wrap kw-seo-split"><div>'
+          + seo_head('HOLIDAYS', 'Dubai and Abu Dhabi holiday packages')
+          + f'<p class="kw-seo-lead">Prefer a ready-made itinerary? Our UAE packages run from {min(nights)} to {max(nights)} nights, from a short Abu Dhabi break to Dubai itineraries including a New Year celebration with gala dinner.</p>'
+          + f'<p>Every package is quoted for your dates and preferred hotel. We also arrange holidays to {", ".join(hol_countries[:-1])} and {hol_countries[-1]}.</p>'
+          + '<a class="kw-text-link" href="/holidays">Holiday packages <span aria-hidden="true">↗</span></a></div><div>'
+          + seo_head('DESTINATIONS', 'Across the UAE and beyond')
+          + f'<p>Inside the UAE we cover {", ".join(l["name"] for l in uae_locs[:-1])} and {uae_locs[-1]["name"]}. Abroad, choices include {", ".join(l["name"] for l in intl[:6])} and more.</p>'
+          + f'<div class="kw-chip-links">{city_chips}<a href="/destinations">All destinations<span>↗</span></a></div></div></div></section>')
+
+    s6 = (f'<section class="kw-seo-section kw-market-alt"><div class="kw-market-wrap">'
+          + seo_head('HOW IT WORKS', 'Booking with KWIKAR in three steps', 'No account and no online payment. You only pay once our team has confirmed everything.', center=True)
+          + info_cards([('', 'Choose', 'Browse experiences, transfers or packages and note the indicative price.'),
+                        ('', 'Send a request', 'Send your preferred date and number of guests by form, WhatsApp or phone.'),
+                        ('', 'Confirm and pay', 'Our team replies with availability, the final price and booking terms. You pay only after that.')], numbered=True)
+          + '</div></section>')
+
+    s7 = (f'<section class="kw-seo-section"><div class="kw-market-wrap">'
+          + seo_head('LOCAL TIPS', 'Tips for visiting Dubai and Abu Dhabi')
+          + info_cards([('☀', 'Plan around the heat', 'Summer days are very hot. Book desert and outdoor activities for early morning or evening; Ski Dubai and the aquarium suit midday.'),
+                        ('✦', 'Dress modestly at cultural sites', 'Cover shoulders and knees at mosques. Women need a headscarf at the Sheikh Zayed Grand Mosque.'),
+                        ('◷', 'Check seasonal openings', 'Outdoor attractions such as Global Village and Dubai Miracle Garden open for a season, roughly October to May.'),
+                        ('☾', 'Respect Ramadan customs', 'During the holy month, avoid eating or drinking in public during daylight hours.')])
+          + '</div></section>')
+
+    s8 = ''
+    if POSTS:
+        guide_cards = ''.join(f'<a class="kw-guide-link" href="{post_href(b)}"><span class="kw-eyebrow">TRAVEL GUIDE</span><strong>{e(b["h1"])}</strong><small>{e(b["summary"][:120].rsplit(" ", 1)[0])}…</small><em>Read the guide →</em></a>' for b in POSTS[:3])
+        s8 = (f'<section class="kw-seo-section kw-market-alt"><div class="kw-market-wrap">'
+              + seo_head('TRAVEL GUIDES', 'Plan with our guides', None)
+              + f'<div class="kw-guide-links">{guide_cards}</div><p class="kw-seo-note"><a href="/blog">All travel guides ↗</a></p></div></section>')
+
+    s9 = (f'<section class="kw-seo-section"><div class="kw-market-wrap kw-seo-narrow">'
+          + seo_head('FAQ', 'Questions, answered', None, center=True)
+          + faq_cards(home_faqs())
+          + f'<div class="kw-final-cta"><div><h2>Plan your UAE trip today</h2><p>Tell us where you want to go and when. Our team will reply with options and a clear quote.</p></div><div><a class="kw-button" href="{e(wa_)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a><a class="kw-final-wa" href="tel:+{PHONE}">Call {PHONE_FMT}</a></div></div>'
+          + f'<p class="kw-checked kw-center-text">Last updated {CHECKED} · Reviewed by the KWIKAR team. Prices and availability are confirmed at the time of booking.</p>'
+          + '</div></section>')
+    return s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
 
 
 def build_home():
@@ -587,7 +636,7 @@ def build_home():
 <section class="kw-market-section"><div class="kw-market-wrap">{section_head("Holiday packages", action=("View all", "/holidays"), carousel_id="kw-home-holidays")}<div class="kw-home-row" id="kw-home-holidays">{hol}</div></div></section>
 <section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Private transfers", action=("View all", "/transfers"), carousel_id="kw-home-transfers")}<div class="kw-home-row" id="kw-home-transfers">{cars}</div></div></section>
 <section class="kw-market-section"><div class="kw-market-wrap">{section_head("Visa assistance", action=("View all", "/visa"))}<div class="kw-home-visa">{visas}</div></div></section>
-<section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Why KWIKAR")}<div class="kw-market-benefits"><div><h3>Clear choices</h3><p>Explore experiences and current supplier prices.</p></div><div><h3>WhatsApp booking</h3><p>Send your request in a minute. No account or online payment needed.</p></div><div><h3>WhatsApp support</h3><p>Ask our team about your travel plans.</p></div><div><h3>Local help</h3><p>Plan experiences and transfers across the UAE.</p></div></div></div></section>'''
+<section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Why travellers choose KWIKAR")}<div class="kw-market-benefits kw-benefits-5"><div><span>01</span><h3>One team for the whole trip</h3><p>Activities, cruises, transfers, visas and holidays in one conversation.</p></div><div><span>02</span><h3>Clear quotes first</h3><p>The final price and terms are confirmed before you pay, with no booking or card fees.</p></div><div><span>03</span><h3>WhatsApp support</h3><p>Message the team directly about your plans, before and during your trip.</p></div><div><span>04</span><h3>Local UAE company</h3><p>Operated by Kwikar LLC-FZ in the United Arab Emirates.</p></div><div><span>05</span><h3>Modern fleet</h3><p>From electric cars to seven-seat vans for families and groups.</p></div></div></div></section>'''
     main += home_guide()
     faq_ld = ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
         {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': _plain(a)}} for q, a in home_faqs()]})
@@ -606,7 +655,7 @@ except Exception:
     HUB_INTROS = {}
 
 
-def hub_intro(key, heading, items, where=''):
+def hub_intro(key, heading, items, where='', eyebrow='ABOUT'):
     """80–150 word intro for a hub: hand-written text + live counts, prices and top picks from the API."""
     text = HUB_INTROS.get(key)
     if not text or not items:
@@ -616,7 +665,8 @@ def hub_intro(key, heading, items, where=''):
     picks = ', '.join(f'<a href="{tour_href(t)}">{e(t["name"])}</a>' for t in top[:-1]) + (f' and <a href="{tour_href(top[-1])}">{e(top[-1]["name"])}</a>' if len(top) > 1 else f'<a href="{tour_href(top[0])}">{e(top[0]["name"])}</a>')
     live = (f'KWIKAR currently lists {len(items)} experience{"s" if len(items) != 1 else ""}{where}'
             + (f', with prices from {money(min(priced))}' if priced else '') + f'. Popular picks include {picks}.')
-    return (f'<section class="kw-hub-intro"><div class="kw-market-wrap"><h2>{e(heading)}</h2><p>{e(text)}</p><p>{live}</p></div></section>')
+    return (f'<section class="kw-seo-section kw-hub-about"><div class="kw-market-wrap kw-seo-narrow">'
+            + seo_head(eyebrow, e(heading)) + f'<div class="kw-seo-prose"><p>{e(text)}</p><p>{live}</p></div></div></section>')
 
 
 def list_search():
@@ -652,7 +702,7 @@ def build_listings():
     main = (f'<section class="kw-list-banner" style="background-image:linear-gradient(90deg,#07162aeb,#07162a3d),url(\'/assets/img/hero-dubai.webp\')"><div class="kw-market-wrap">'
             f'<nav class="kw-list-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Activities &amp; attractions</nav><h1>Activities &amp; attractions</h1>'
             f'<p>Discover tours, tickets and experiences across the UAE and beyond.</p>{list_search()}</div></section>'
-            f'{hub_intro("page:activities", "About activities and attractions on KWIKAR", TOURS)}{list_body(TOURS)}')
+            f'{list_body(TOURS)}{hub_intro("page:activities", "Activities and attractions across the UAE", TOURS, eyebrow="ABOUT KWIKAR ACTIVITIES")}')
     page('/activities', 'Activities & Attractions', 'Browse KWIKAR experiences and attractions by destination, category and price.', main,
          active='Activities', main_class='kw-list-page kw-list-standard', main_attrs=' data-listing data-kind="standard"',
          crumbs=[('Home', '/'), ('Activities', '/activities')])
@@ -689,7 +739,7 @@ def build_listings():
             places_html = f'<section class="kw-category-places"><div class="kw-market-wrap"><div class="kw-section-head"><div><h2>Explore {e(c["name"].lower())} by destination</h2></div></div><div class="kw-category-places-row">{btns}</div></div></section>'
         related = ''.join(f'<a href="/activities/{x["slug"]}">{e(x["name"])}<span>↗</span></a>' for x in LIVE_CATS if x['slug'] != slug)[:100000]
         rel_html = f'<section class="kw-related-categories"><div class="kw-market-wrap"><h2>Keep exploring</h2><div>{related}</div></div></section>'
-        main = lead + hub_intro(f'cat:{slug}', f'About {c["name"].lower()} in the UAE', items) + places_html + list_body(items, category=slug, kind=kind) + rel_html
+        main = lead + places_html + list_body(items, category=slug, kind=kind) + hub_intro(f'cat:{slug}', f'{c["name"]} in the UAE', items, eyebrow='GOOD TO KNOW') + rel_html
         page(f'/activities/{slug}', f'{c["name"]} Experiences', f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
              active='Cruises' if slug == 'cruises' else 'Activities', noindex=not items,
              main_class=f'kw-list-page kw-list-{kind} kw-category-{slug}',
@@ -715,7 +765,7 @@ def build_destinations():
     main = (f'<section class="kw-attractions-hero"><div class="kw-market-wrap"><span class="kw-eyebrow">KWIKAR DESTINATIONS</span><h1>Where would you like to explore?</h1>'
             f'<p>Browse by city, then choose an experience or ask our team to plan your day.</p>{search}</div></section>'
             f'<section class="kw-market-section"><div class="kw-market-wrap"><div class="kw-section-head"><div><span class="kw-eyebrow">EXPLORE THE EMIRATES</span><h2>United Arab Emirates</h2></div><a class="kw-text-link" href="/activities">Browse by activity ↗</a></div><div class="kw-attractions-grid">{tiles}</div></div></section>'
-            + hub_intro('page:destinations', 'Choosing where to go', TOURS)
+            + hub_intro('page:destinations', 'Choosing where to go', TOURS, eyebrow='PLANNING')
             + (f'<section class="kw-market-section kw-market-alt"><div class="kw-market-wrap"><span class="kw-eyebrow">TRAVEL FURTHER</span><h2>Worldwide destinations</h2><p class="kw-market-subtitle">Explore international experiences from the current catalogue.</p><div class="kw-attractions-world">{wl}</div></div></section>' if wl else ''))
     page('/destinations', 'Destinations', 'Browse KWIKAR experiences by UAE city and worldwide destination.', main, active='Destinations',
          main_class='kw-attractions-hub', crumbs=[('Home', '/'), ('Destinations', '/destinations')])
@@ -750,8 +800,8 @@ def build_destinations():
                 f'<p>Explore experiences in {e("the UAE" if lid == "other" else name)}, compare options and enquire for your preferred travel date.</p>'
                 f'<a class="kw-lead-action" href="#kw-page-results">Browse {len(items)} experiences ↓</a>{list_search()}</div>'
                 f'<div class="kw-destination-lead-photo"><img src="{e(img)}" alt="Explore {e(name)}"></div></div></section>'
-                f'{themes_html}{hub_intro(f"dest:{lid}", "About experiences in the UAE" if lid == "other" else f"About things to do in {name}", items, "" if lid == "other" else f" in {name}")}'
-                f'{list_body(items, location=lid, kind="destination")}{rel}')
+                f'{themes_html}{list_body(items, location=lid, kind="destination")}'
+                f'{hub_intro(f"dest:{lid}", "Experiences across the UAE" if lid == "other" else f"Visiting {name}", items, "" if lid == "other" else f" in {name}", eyebrow="GOOD TO KNOW")}{rel}')
         page(f'/destinations/{lid}', heading,
              f'{heading}: compare {len(items)} tours, attraction tickets and experiences with current prices. Book with KWIKAR on WhatsApp.', main,
              active='Destinations', main_class='kw-list-page kw-list-destination', main_attrs=f' data-listing data-kind="destination" data-location="{lid}"',
@@ -895,12 +945,14 @@ def build_product(t, d):
             choose.append(('Most premium', top_['name'], _opt_price(top_)))
 
     def offer_card(o):
-        meta = (f'{_num(o["hours"])} hour{"" if float(o["hours"]) == 1 else "s"}' if o.get('hours') else '') + (f' · {_num(o["minPeople"])}–{_num(o["maxPeople"])} guests' if o.get('minPeople') is not None and o.get('maxPeople') is not None else '')
+        meta = ' · '.join(x_ for x_ in [(f'{_num(o["hours"])} hour{"" if float(o["hours"]) == 1 else "s"}' if o.get('hours') else ''),
+                                       (transfer(o) if transfer(o) != '—' else ''),
+                                       (f'{_num(o["minPeople"])}–{_num(o["maxPeople"])} guests' if o.get('minPeople') is not None and o.get('maxPeople') is not None else '')] if x_)
         tr_ = ''
         if o.get('pickupRequired'):
             tr_ = f'<p>{"Private transfer" if o.get("transferKind") == "private" else "Sharing transfer" if o.get("transferKind") == "sharing" else "Transfer included"}{" · priced once per booking" if o.get("transferPricingMode") == "per_booking" else " · included in per-person price"}</p>'
-        det = f'<details><summary>Details and inclusions</summary><div>{o["desc"]}</div></details>' if o.get('desc') else ''
-        return f'<article class="kw-offer"><div><h3>{e(o["name"])}</h3><p>{e(meta)}</p>{tr_}{det}</div><strong>{e(_opt_price(o))}</strong></article>'
+        return (f'<details class="kw-offer-row"><summary><span><strong>{e(o["name"])}</strong><small>{e(meta)}</small></span><em>{e(_opt_price(o))}</em></summary>'
+                f'<div>{tr_}{o.get("desc") or "<p>Our team shares the full details for this option on WhatsApp.</p>"}</div></details>')
     options_html = ''
     if offers:
         choose_html = ''
@@ -910,8 +962,8 @@ def build_product(t, d):
             choose_html = ('<div class="kw-choose"><h3>Which should I choose?</h3><ul>' + ''.join(f'<li><strong>{e(k)}:</strong> {e(n_)}{f" <span>({e(p_)})</span>" if p_ else ""}</li>' for k, n_, p_ in choose)
                            + '</ul><p>Not sure? <a href="' + e(wa(f'Hi KWIKAR, which {name} option should I choose?')) + '" target="_blank" rel="noopener noreferrer">Ask our team on WhatsApp</a>.</p></div>')
         options_html = (f'<section class="kw-detail-block" id="options"><h2>Available options</h2>'
-                        + (f'<div class="kw-table-wrap"><table class="kw-opt-table"><caption>Compare the {len(offers)} options</caption><thead><tr><th scope="col">Option</th><th scope="col">Duration</th><th scope="col">Transfer</th><th scope="col">Price</th></tr></thead><tbody>{rows}</tbody></table></div>' if len(offers) > 1 else '')
-                        + choose_html + ''.join(offer_card(o) for o in offers) + '</section>')
+                        + (f'<p class="kw-offer-intro">Compare the {len(offers)} options. Tap an option to see what it includes.</p>' if len(offers) > 1 else '')
+                        + '<div class="kw-offer-rows">' + ''.join(offer_card(o) for o in offers) + '</div>' + choose_html + '</section>')
 
     inc = ''
     if x.get('included') or x.get('not_included'):
@@ -921,13 +973,13 @@ def build_product(t, d):
                + '</div></section>')
     vis = ''
     if x.get('visitor_info'):
-        vis = '<section class="kw-detail-block"><h2>Visitor information</h2><dl class="kw-visitor">' + ''.join(f'<div><dt>{e(k)}</dt><dd>{v}</dd></div>' for k, v in x['visitor_info']) + '</dl></section>'
+        vis = '<section class="kw-detail-block"><h2>Visitor information</h2>' + facts([(e(k), v) for k, v in x['visitor_info']]) + '</section>'
     best_for = (f'<h3 class="kw-sub">Best for</h3><ul class="kw-ticks">{"".join((f"<li><strong>{e(b[0])}:</strong> {e(b[1])}</li>" if isinstance(b, list) else f"<li>{e(b)}</li>") for b in x["best_for"])}</ul>') if x.get('best_for') else ''
     tip = f'<aside class="kw-tip"><strong>KWIKAR tip</strong><p>{e(x["tip"])}</p></aside>' if x.get('tip') else ''
 
     itin = d.get('itinerary') or []
     if x.get('steps'):
-        how = f'<section class="kw-detail-block"><h2>{e(x.get("steps_title") or "How it works")}</h2>' + ''.join(f'<div class="kw-step"><strong>{e(a)}</strong><p>{e(b)}</p></div>' for a, b in x['steps']) + '</section>'
+        how = f'<section class="kw-detail-block"><h2>{e(x.get("steps_title") or "How it works")}</h2><ol class="kw-steps">' + ''.join(f'<li><strong>{e(a)}</strong><p>{e(b)}</p></li>' for a, b in x['steps']) + '</ol></section>'
     elif itin:
         how = '<section class="kw-detail-block"><h2>Itinerary</h2>' + ''.join(f'<div class="kw-step"><strong>{e(s_["name"])}</strong><p>{e(s_.get("desc") or "")}</p></div>' for s_ in itin if s_.get('name')) + '</section>'
     else:
@@ -944,8 +996,8 @@ def build_product(t, d):
              ('Can I cancel or change my booking?', "Changes and refunds follow the supplier's rules for this experience, shown in the cancellation policy on this page. Contact us as soon as possible and we will check what applies to your booking.")]
     faq_html = f'<p class="kw-faq-note">{e(x["faq_note"])}</p>' if x.get('faq_note') else ''
     if faqs:
-        faq_html += '<h3 class="kw-faq-group">About this experience</h3>' + ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in faqs)
-    faq_html += '<h3 class="kw-faq-group">Booking with KWIKAR</h3>' + ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in kfaqs)
+        faq_html += '<h3 class="kw-faq-group">About this experience</h3>' + faq_cards(faqs, open_all=False)
+    faq_html += '<h3 class="kw-faq-group">Booking with KWIKAR</h3>' + faq_cards(kfaqs, open_all=False)
 
     safe_terms = ''.join(f'<p><strong>{e(k)}:</strong> {v}</p>' for k, v in x['terms']) if x.get('terms') else _customer_terms(d.get('terms'))
     cancel_html = f'<section class="kw-detail-block"><h2>Cancellation policy</h2>{"".join(f"<p>{e(_plain(c))}</p>" for c in cancel)}</section>' if cancel else ''
@@ -986,7 +1038,7 @@ def build_product(t, d):
 {f'<div class="kw-detail-photos">{pics}</div>' if photos else ''}
 <div class="kw-product-badges">{badges}</div>
 <div class="kw-detail-grid"><div>
-<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p><dl class="kw-glance">{glance_html}</dl></section>
+<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p><dl class="kw-facts kw-facts-2">{glance_html}</dl></section>
 {f'<section class="kw-detail-block"><h2>Overview</h2><div>{overview}</div>{best_for}</section>' if overview or best_for else ''}
 {tip}
 {options_html}
@@ -1048,7 +1100,7 @@ EST = {
 
 
 def faq_block(title, items):
-    return f'<section class="kw-section"><div class="kw-wrap">{section_head(title)}' + ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in items) + '</div></section>'
+    return f'<section class="kw-section"><div class="kw-wrap kw-seo-narrow">{seo_head("FAQ", e(title), None, center=True)}{faq_cards(items, open_all=False)}</div></section>'
 
 
 def build_transfers():
@@ -1110,10 +1162,10 @@ def build_visa():
             f'<button class="kw-button" type="submit">Enquire on WhatsApp ↗</button></form>')
     uae_v = [v for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price')]
     low_v = min(v['price'] for v in uae_v)
-    quick = (f'<section class="kw-section kw-visa-quick"><div class="kw-wrap"><div class="kw-detail-block kw-quick"><p>KWIKAR helps you apply for a UAE tourist visa for 14, 30 or 60 days, single or multiple entry, from {money(low_v)}. '
+    quick = (f'<section class="kw-section kw-visa-quick"><div class="kw-wrap">' + seo_head('AT A GLANCE', 'UAE tourist visa in short') + f'<div class="kw-detail-block kw-quick"><p>KWIKAR helps you apply for a UAE tourist visa for 14, 30 or 60 days, single or multiple entry, from {money(low_v)}. '
              'Processing usually takes 3–4 working days, and express processing is available on request. You typically need a clear passport copy valid for at least six months, a recent colour photo, a return or onward ticket and travel medical insurance. '
              'The visa is issued by the UAE authorities, so approval is never guaranteed.</p>'
-             '<dl class="kw-glance"><div><dt>Lengths</dt><dd>14, 30 or 60 days</dd></div><div><dt>Entries</dt><dd>Single or multiple</dd></div>'
+             '<dl class="kw-facts kw-facts-2"><div><dt>Lengths</dt><dd>14, 30 or 60 days</dd></div><div><dt>Entries</dt><dd>Single or multiple</dd></div>'
              f'<div><dt>Price</dt><dd>From {money(low_v)}</dd></div><div><dt>Processing</dt><dd>3–4 working days; express on request</dd></div>'
              '<div><dt>Passport</dt><dd>Valid for at least 6 months</dd></div><div><dt>Issued by</dt><dd>UAE immigration authorities</dd></div></dl></div></div></section>')
     docs = ('<h3>Documents you will usually need</h3><ul class="kw-ticks"><li>Passport copy, valid for at least six months from your arrival date</li><li>Recent colour passport photo on a white background</li>'
@@ -1210,7 +1262,7 @@ def build_blog():
         body = body.replace('{aquarium}', tour_href(aq) if aq else '/search?q=aquarium')
         img = (DETAILS.get(a.get('tour_id')) or {}).get('img') or (tour or {}).get('img') or '/assets/img/hero-dubai.webp'
         glance = ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in a.get('glance', []))
-        faqs = ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(x)}</p></details>' for q, x in a.get('faqs', []))
+        faqs = faq_cards(a.get('faqs', []), open_all=True) if a.get('faqs') else ''
         rel = [r for r in (tour_by_id(i) for i in a.get('related', [])) if r]
         others = [b for b in POSTS if b is not a]
         sources = ''.join(f'<li><a href="{e(u)}" target="_blank" rel="noopener noreferrer">{e(n)}</a></li>' for n, u in a.get('sources', []))
@@ -1224,7 +1276,7 @@ def build_blog():
 <h1>{e(a['h1'])}</h1>
 <p class="kw-detail-meta">By the KWIKAR team · Published {nice(a['published'])} · Updated {nice(a['updated'])}</p>
 <img class="kw-blog-hero" src="{e(img)}" alt="{e(a['h1'])}" fetchpriority="high">
-<section class="kw-detail-block kw-quick" aria-label="Summary"><p>{e(a['summary'])}</p>{f'<dl class="kw-glance">{glance}</dl>' if glance else ''}</section>
+<section class="kw-detail-block kw-quick" aria-label="Summary"><p>{e(a['summary'])}</p>{f'<dl class="kw-facts kw-facts-2">{glance}</dl>' if glance else ''}</section>
 <div class="kw-blog-body">{body}</div>
 {cta}
 {f'<section class="kw-detail-block"><h2>Questions</h2>{faqs}</section>' if faqs else ''}
