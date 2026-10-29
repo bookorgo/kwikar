@@ -1,0 +1,78 @@
+/* ===== Additions for the static site (same look as the previous KWIKAR styles) ===== */
+.kw-mega-menu[hidden],[hidden]{display:none!important}
+.kw-ico-open,.kw-ico-close{display:inline-flex}
+.kw-header-vb{overflow-x:clip}
+
+/* SEO blocks on tour pages */
+.kw-quick{padding-top:6px}
+.kw-quick>p{font-size:17px!important;line-height:1.65!important;color:#283444!important;margin:0 0 16px!important}
+.kw-glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0}
+.kw-glance>div{background:#f5f8fc;border:1px solid #e4ebf3;border-radius:10px;padding:11px 13px}
+.kw-glance dt{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#6b7786;font-weight:700}
+.kw-glance dd{margin:3px 0 0;font-weight:700;color:#0b1018;font-size:14px;line-height:1.4}
+.kw-tip{margin:18px 0;padding:16px 18px;border-left:3px solid #1265e8;background:#f1f7ff;border-radius:0 10px 10px 0}
+.kw-tip strong{display:block;color:#164f9c;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.kw-tip p{margin:6px 0 0;color:#283444;font-size:15px}
+.kw-table-wrap{overflow-x:auto;margin:0 0 16px;border:1px solid #e4e9ef;border-radius:10px}
+.kw-opt-table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.kw-opt-table caption{text-align:left;padding:11px 14px;font-weight:700;color:#5e6672;font-size:13px;caption-side:top}
+.kw-opt-table th,.kw-opt-table td{padding:11px 14px;text-align:left;border-top:1px solid #e4e9ef;vertical-align:top}
+.kw-opt-table thead th{background:#f6f8fb;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5e6672}
+.kw-opt-table tbody th{font-weight:700;color:#0b1018}
+.kw-opt-table td:last-child{white-space:nowrap;font-weight:700}
+.kw-choose{background:#f6f8fb;border-radius:12px;padding:16px 18px;margin:6px 0 14px}
+.kw-choose h3{font:800 17px 'Manrope',sans-serif;margin-bottom:8px}
+.kw-choose ul{list-style:none!important;padding:0!important;margin:0}
+.kw-choose li{padding:5px 0;font-size:15px;color:#283444}
+.kw-choose li span{color:#5e6672}
+.kw-choose a,.kw-terms-links a{color:#1265e8;font-weight:700}
+.kw-inc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.kw-inc-grid h3,.kw-sub{font-weight:800;margin:4px 0 8px}
+.kw-ticks,.kw-crosses{list-style:none!important;padding:0!important}
+.kw-ticks li,.kw-crosses li{position:relative;padding:4px 0 4px 26px;color:#283444}
+.kw-ticks li:before{content:"✓";position:absolute;left:2px;color:#17895a;font-weight:800}
+.kw-crosses li:before{content:"✕";position:absolute;left:2px;color:#b5452f;font-weight:800}
+.kw-visitor{display:grid;gap:8px;margin:0}
+.kw-visitor>div{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f6}
+.kw-visitor dt{font-weight:700}.kw-visitor dd{margin:0;color:#5e6672}
+.kw-faq-group{font:800 16px 'Manrope',sans-serif;margin:16px 0 2px;color:#0b1018}
+.kw-checked{font-size:13px;color:#6b7786;margin:18px 0 0}
+.kw-seller{font-size:12px;color:#6b7786;text-align:center;margin-top:6px;line-height:1.5}
+.kw-detail-related{margin-top:56px}
+.kw-detail-related .kw-section-head h2{font:800 clamp(24px,2.4vw,32px)/1.2 'Manrope',sans-serif;letter-spacing:-.035em}
+.kw-detail-related .kw-list-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kw-related-cats{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.kw-related-cats a{border:1px solid #dfe6ee;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;color:#18324f}
+.kw-related-cats a span{margin-left:6px;color:#1265e8}
+.kw-final-cta{margin-top:56px;background:#0b1728;color:#fff;border-radius:16px;padding:32px 36px;display:flex;justify-content:space-between;align-items:center;gap:28px}
+.kw-final-cta h2{font:800 clamp(22px,2.4vw,30px)/1.2 'Manrope',sans-serif;letter-spacing:-.03em}
+.kw-final-cta p{color:#bbc7d6;margin-top:8px;max-width:560px}
+.kw-final-cta>div:last-child{display:flex;align-items:center;gap:18px;flex:none}
+.kw-final-wa{color:#8bd7b0;font-weight:800}
+.kw-terms-links{font-size:14px}
+.kw-visa-categories .kw-visa-group+.kw-visa-group{margin-top:40px}
+.kw-visa-group h2{font:800 24px 'Manrope',sans-serif;margin-bottom:16px}
+.kw-holiday-group{margin-top:34px}.kw-holiday-group h2{font:800 24px 'Manrope',sans-serif;margin-bottom:16px}
+.kw-market-empty{grid-column:1/-1;padding:40px;background:#f6f8fb;border-radius:12px;text-align:center;color:#5e6672}
+.kw-market-empty a,.kw-market-empty button{color:#1265e8;font-weight:800;background:none;border:0}
+
+/* Calendar in the booking sheet (same look as react-day-picker) */
+.kw-cal{max-width:380px;margin:auto}
+.kw-cal-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 13px}
+.kw-cal-head strong{font-weight:800}
+.kw-cal-head button{width:36px;height:36px;border:1px solid #dfe6ee;border-radius:8px;background:#fff;color:#2677ed;font-size:20px}
+.kw-cal-head button:disabled{opacity:.3;cursor:default}
+.kw-cal table{width:100%;border-collapse:collapse;table-layout:fixed}
+.kw-cal th{font-size:12px;color:#6b7786;font-weight:700;padding:4px 0}
+.kw-cal td{padding:2px;text-align:center}
+.kw-cal td button{width:100%;max-width:46px;aspect-ratio:1;border:0;background:none;border-radius:11px;font-weight:600;color:#0b1018}
+.kw-cal td button:hover:not(:disabled){background:#eef4ff}
+.kw-cal td button.selected{background:#2677ed;color:#fff}
+.kw-cal td button.today{box-shadow:inset 0 0 0 1px #2677ed}
+.kw-cal td button:disabled{color:#b8c0cb;text-decoration:line-through;cursor:not-allowed}
+.kw-sheet-error{color:#b5452f;font-size:13px;margin-top:10px}
+.kw-wa-send{background:#176d45!important}.kw-wa-send:hover{background:#0f5936!important}
+
+@media(max-width:1100px){.kw-detail-related .kw-list-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.kw-final-cta{flex-direction:column;align-items:flex-start;padding:26px 22px}.kw-inc-grid{grid-template-columns:1fr}.kw-visitor>div{grid-template-columns:1fr;gap:2px}}
+@media(max-width:560px){.kw-detail-related .kw-list-grid{grid-template-columns:1fr}.kw-glance{grid-template-columns:1fr 1fr}.kw-final-cta>div:last-child{flex-direction:column;align-items:stretch;width:100%}}

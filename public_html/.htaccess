@@ -344,6 +344,13 @@ RewriteRule ^tour\.html$ /activities/uae/royal-platinum-desert-experience? [R=30
 RewriteRule ^(?:ar/)?tour/2650/?$ /activities/uae/private-night-safari-and-astronomy [R=301,L]
 RewriteCond %{QUERY_STRING} (?:^|&)id=2650(?:&|$)
 RewriteRule ^tour\.html$ /activities/uae/private-night-safari-and-astronomy? [R=301,L]
+RewriteRule ^activities/abu-dhabi/?$ /destinations/abu-dhabi [R=301,L]
+RewriteRule ^activities/dubai/?$ /destinations/dubai [R=301,L]
+RewriteRule ^activities/fujairah/?$ /destinations/fujairah [R=301,L]
+RewriteRule ^activities/oman/?$ /destinations/oman [R=301,L]
+RewriteRule ^activities/ras-al-khaimah/?$ /destinations/ras-al-khaimah [R=301,L]
+RewriteRule ^activities/spain/?$ /destinations/spain [R=301,L]
+RewriteRule ^activities/uae/?$ /destinations/other [R=301,L]
 RewriteRule ^tour\.html$ /activities? [R=301,L]
 RewriteRule ^activities/events:o6vcym(:0)?$ /activities/events [R=301,L]
 RewriteRule ^destinations/sharjah:numxfl:0$ /destinations/sharjah [R=301,L]
@@ -356,7 +363,6 @@ RewriteRule ^ar/car/.*$ /transfers [R=301,L]
 RewriteRule ^car/.*$ /transfers [R=301,L]
 RewriteRule ^location/([a-z-]+)/?$ /destinations/$1 [R=301,L]
 RewriteRule ^attractions/?$ /destinations [R=301,L]
-RewriteRule ^destinations/other/?$ /activities/uae [R=301,L]
 RewriteRule ^api/sitemap-tours\.php$ /sitemap-products.xml [R=301,L]
 
 
