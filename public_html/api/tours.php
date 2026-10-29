@@ -19,9 +19,11 @@ const API_BASE   = 'https://api.traveldesk.me/public/b2b/v1';
 const FRESH_SECS = 600;            // 10 minutes
 const STALE_SECS = 7 * 24 * 3600;  // 7 days
 
+// The key file is looked for OUTSIDE the website folder first, so Git deployments
+// never overwrite or delete it:  /home/<user>/kwikar-config.php
 $config = [];
-if (is_file(__DIR__ . '/config.php')) {
-    $config = require __DIR__ . '/config.php';
+foreach ([dirname(__DIR__, 4) . '/kwikar-config.php', dirname(__DIR__, 2) . '/kwikar-config.php', __DIR__ . '/config.php'] as $cfgFile) {
+    if (@is_file($cfgFile)) { $config = require $cfgFile; break; }
 }
 $apiKey = is_array($config) ? trim((string)($config['KWIKAR_API_KEY'] ?? '')) : '';
 $apiBase = is_array($config) && !empty($config['API_BASE']) ? (string)$config['API_BASE'] : API_BASE;
