@@ -639,3 +639,87 @@ a.visa-card:hover { border-color: var(--blue); transform: translateY(-3px); }
 .empty .btn.wa { background: var(--green); }
 .gallery { background: #e8edf3; }
 .tour-body .wa-float { display: none; }
+
+/* =========================================================
+   Match the previous KWIKAR site design
+   ========================================================= */
+/* Headings: sans bold everywhere except the home hero */
+.page-hero h1, .banner-hero h1, .info-page h1, .status-page h1 {
+  font-family: var(--font); font-weight: 700; letter-spacing: -1px; line-height: 1.12;
+}
+.page-hero h1 { font-size: 40px; }
+.banner-hero h1 { font-size: 40px; }
+.info-page h1 { font-size: 40px; }
+
+/* Page hero: text left, photo right with a slanted edge */
+.page-hero { padding: 0; overflow: hidden; }
+.page-hero-grid { align-items: stretch; gap: 48px; }
+.page-hero-grid > div:first-child { padding: 56px 0; display: flex; flex-direction: column; justify-content: center; }
+.page-hero .photo { border-radius: 0; aspect-ratio: auto; min-height: 340px; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); }
+.page-hero .photo[data-hero-img] { clip-path: none; border-radius: 14px; margin: 36px 0; min-height: 300px; }
+.page-hero .mt { align-self: flex-start; }
+
+/* Listing: bordered cards, sidebar divider */
+.list-sidebar { border-right: 1px solid var(--line); padding-right: 24px; }
+.list-sidebar h2 { text-transform: none; letter-spacing: 0; font-size: 16px; color: var(--ink); margin-bottom: 8px; }
+.list-grid .exp-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.list-grid .exp-card .media { border-radius: 0; }
+.list-grid .exp-card > :not(.media) { margin-left: 16px; margin-right: 16px; }
+.list-grid .exp-card > :last-child { margin-bottom: 18px; }
+.list-grid .exp-card .link { margin-top: auto; }
+.list-grid .exp-card.skeleton { box-shadow: none; }
+
+/* Tour page */
+.gallery, .gallery.n3 { grid-template-columns: 2fr 1fr; grid-template-rows: 165px 165px; }
+.gallery img:first-child { grid-row: span 2; }
+.gallery.n2 img:nth-child(2) { grid-row: span 2; }
+.gallery.n1 { grid-template-columns: 1fr; grid-template-rows: 330px; }
+.badges span { background: var(--blue-soft); color: #1e4f9a; font-weight: 600; font-size: 12px; padding: 7px 12px; }
+.offer, .offer:first-of-type { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+
+/* Cars: whole car visible on a light background */
+.car-media { background: #eef2f6; }
+.car-media img { object-fit: contain; }
+.box-body .eyebrow-blue { margin-bottom: 2px; }
+.box-body .actions .muted { font-size: 14px; }
+
+/* Transfer estimator */
+.tabs { background: transparent; padding: 0; gap: 8px; }
+.tabs button { flex: 0 0 auto; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.tabs button.selected { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: none; }
+.est-result { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+.est-result span { color: var(--blue); }
+.est-result strong { color: var(--ink); font-size: 40px; }
+.est-result p { color: var(--muted); }
+.est-result p.sel { color: var(--text); font-weight: 400; }
+.estimator { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.estimator > div:first-child { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+
+/* Contact cards */
+.contact-list a { background: #fff; border: 1px solid var(--line); }
+
+/* One button colour, like the old site (floating WhatsApp stays green) */
+.btn.wa { background: var(--blue); }
+.btn.wa:hover { background: var(--blue-dark); }
+.empty .btn.wa { background: var(--blue); }
+
+/* Worldwide destinations as cards */
+.world-grid a { flex-direction: column; align-items: flex-start; padding: 18px; gap: 6px; }
+.world-grid small { color: var(--blue); }
+
+@media (max-width: 1100px) {
+  .list-sidebar { border-right: 0; }
+}
+@media (max-width: 760px) {
+  .page-hero h1, .banner-hero h1, .info-page h1 { font-size: 30px; }
+  .page-hero-grid { gap: 0; }
+  .page-hero-grid > div:first-child { padding: 32px 0 24px; }
+  .page-hero .photo { min-height: 220px; clip-path: none; border-radius: 12px; margin-bottom: 24px; }
+  .page-hero .photo[data-hero-img] { margin: 0 0 24px; }
+  .gallery, .gallery.n2, .gallery.n3 { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 110px; }
+  .gallery img:first-child { grid-column: span 2; grid-row: auto; }
+  .gallery.n2 img:nth-child(2) { grid-column: span 2; grid-row: auto; }
+  .gallery.n1 { grid-template-rows: 240px; }
+}
+
+.estimator [hidden] { display: none !important; }
