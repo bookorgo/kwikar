@@ -232,6 +232,14 @@
   "related_heading": "More to do near Burj Khalifa",
   "related_links": [
    [
+    "Prime vs Non-Prime: which ticket to book",
+    "/blog/dubai/burj-khalifa-prime-vs-non-prime"
+   ],
+   [
+    "Best time to visit Burj Khalifa",
+    "/blog/dubai/best-time-to-visit-burj-khalifa"
+   ],
+   [
     "Dubai Aquarium & Underwater Zoo tickets",
     "search:Aquarium and Underwater Zoo"
    ],
@@ -989,5 +997,41 @@
    "BBQ on board",
    "Book on WhatsApp"
   ]
+ },
+ "102": {
+  "badges": [
+   "Seasonal: open October to May",
+   "Book on WhatsApp"
+  ],
+  "at_a_glance": [
+   [
+    "Season",
+    "Season 31 opened on 14 October 2026 and runs until May 2027"
+   ],
+   [
+    "Opening hours",
+    "Monday–Thursday 4pm–midnight; weekends 4pm–1am"
+   ]
+  ],
+  "tip": "Global Village is busiest on weekend evenings. Arrive soon after 4pm on a weekday for shorter queues and an easier first walk around the pavilions.",
+  "last_checked": "2026-10-30"
+ },
+ "185": {
+  "badges": [
+   "Seasonal: reopened 8 October 2026",
+   "Book on WhatsApp"
+  ],
+  "at_a_glance": [
+   [
+    "Season",
+    "Season 15 opened on 8 October 2026; outdoor garden, closed in summer"
+   ],
+   [
+    "Opening hours",
+    "Daily 9am–9pm; last entry 8:30pm"
+   ]
+  ],
+  "tip": "Weekday mornings are the quietest. For photos, arrive about an hour before sunset; the garden is lit up from about 7pm.",
+  "last_checked": "2026-10-30"
  }
 }

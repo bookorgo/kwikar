@@ -287,7 +287,7 @@ def mobile_nav(path):
 
 
 FOOTER_LINKS = [('/destinations', 'Destinations'), ('/activities', 'Activities'), ('/destinations/dubai', 'Dubai'), ('/holidays', 'Holidays'),
-                ('/transfers', 'Transfers'), ('/visa', 'Visa'), ('/contact', 'Contact'), ('/about', 'About'), ('/privacy', 'Privacy policy'),
+                ('/transfers', 'Transfers'), ('/visa', 'Visa'), ('/blog', 'Travel guides'), ('/contact', 'Contact'), ('/about', 'About'), ('/privacy', 'Privacy policy'),
                 ('/terms', 'Terms & conditions'), ('/booking-information', 'Booking information'), ('/refund-policy', 'Refund & cancellation')]
 
 
@@ -544,6 +544,7 @@ def home_guide():
 <li><strong>Check seasonal openings.</strong> Outdoor attractions such as Global Village and Dubai Miracle Garden open for a season, not all year.</li>
 <li><strong>Respect Ramadan customs.</strong> During the holy month, avoid eating or drinking in public during daylight hours.</li>
 </ul>
+{('<h2>Travel Guides</h2><p>Planning tips from our team: ' + ', '.join(f'<a href="{post_href(b)}">{e(b["h1"])}</a>' for b in POSTS[:4]) + '. See all <a href="/blog">travel guides</a>.</p>') if POSTS else ''}
 <h2>Frequently Asked Questions</h2>
 {faqs}
 <div class="kw-final-cta"><div><h2>Plan Your UAE Trip Today</h2><p>Tell us where you want to go and when. Our team will reply with options and a clear quote.</p></div><div><a class="kw-button" href="{e(wa_)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a><a class="kw-final-wa" href="tel:+{PHONE}">Call {PHONE_FMT}</a><a class="kw-final-wa" href="/contact">Send an enquiry</a></div></div>
@@ -598,6 +599,25 @@ def build_home():
 
 
 # ================================================================= listings (same markup as ExperienceList)
+try:
+    HUB_INTROS = json.load(open(os.path.join(ROOT, 'data', 'hub-intros.json'), encoding='utf-8'))
+except Exception:
+    HUB_INTROS = {}
+
+
+def hub_intro(key, heading, items, where=''):
+    """80–150 word intro for a hub: hand-written text + live counts, prices and top picks from the API."""
+    text = HUB_INTROS.get(key)
+    if not text or not items:
+        return ''
+    priced = [t['price'] for t in items if t.get('price')]
+    top = items[:3]
+    picks = ', '.join(f'<a href="{tour_href(t)}">{e(t["name"])}</a>' for t in top[:-1]) + (f' and <a href="{tour_href(top[-1])}">{e(top[-1]["name"])}</a>' if len(top) > 1 else f'<a href="{tour_href(top[0])}">{e(top[0]["name"])}</a>')
+    live = (f'KWIKAR currently lists {len(items)} experience{"s" if len(items) != 1 else ""}{where}'
+            + (f', with prices from {money(min(priced))}' if priced else '') + f'. Popular picks include {picks}.')
+    return (f'<section class="kw-hub-intro"><div class="kw-market-wrap"><h2>{e(heading)}</h2><p>{e(text)}</p><p>{live}</p></div></section>')
+
+
 def list_search():
     return '<form class="kw-list-search" role="search" data-list-search><input placeholder="Search experiences" aria-label="Search experiences"><button type="submit">Search →</button></form>'
 
@@ -630,7 +650,8 @@ def build_listings():
     # /activities
     main = (f'<section class="kw-list-banner" style="background-image:linear-gradient(90deg,#07162aeb,#07162a3d),url(\'/assets/img/hero-dubai.webp\')"><div class="kw-market-wrap">'
             f'<nav class="kw-list-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Activities &amp; attractions</nav><h1>Activities &amp; attractions</h1>'
-            f'<p>Discover tours, tickets and experiences across the UAE and beyond.</p>{list_search()}</div></section>{list_body(TOURS)}')
+            f'<p>Discover tours, tickets and experiences across the UAE and beyond.</p>{list_search()}</div></section>'
+            f'{hub_intro("page:activities", "About activities and attractions on KWIKAR", TOURS)}{list_body(TOURS)}')
     page('/activities', 'Activities & Attractions', 'Browse KWIKAR experiences and attractions by destination, category and price.', main,
          active='Activities', main_class='kw-list-page kw-list-standard', main_attrs=' data-listing data-kind="standard"',
          crumbs=[('Home', '/'), ('Activities', '/activities')])
@@ -667,7 +688,7 @@ def build_listings():
             places_html = f'<section class="kw-category-places"><div class="kw-market-wrap"><div class="kw-section-head"><div><h2>Explore {e(c["name"].lower())} by destination</h2></div></div><div class="kw-category-places-row">{btns}</div></div></section>'
         related = ''.join(f'<a href="/activities/{x["slug"]}">{e(x["name"])}<span>↗</span></a>' for x in LIVE_CATS if x['slug'] != slug)[:100000]
         rel_html = f'<section class="kw-related-categories"><div class="kw-market-wrap"><h2>Keep exploring</h2><div>{related}</div></div></section>'
-        main = lead + places_html + list_body(items, category=slug, kind=kind) + rel_html
+        main = lead + hub_intro(f'cat:{slug}', f'About {c["name"].lower()} in the UAE', items) + places_html + list_body(items, category=slug, kind=kind) + rel_html
         page(f'/activities/{slug}', f'{c["name"]} Experiences', f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
              active='Cruises' if slug == 'cruises' else 'Activities', noindex=not items,
              main_class=f'kw-list-page kw-list-{kind} kw-category-{slug}',
@@ -693,6 +714,7 @@ def build_destinations():
     main = (f'<section class="kw-attractions-hero"><div class="kw-market-wrap"><span class="kw-eyebrow">KWIKAR DESTINATIONS</span><h1>Where would you like to explore?</h1>'
             f'<p>Browse by city, then choose an experience or ask our team to plan your day.</p>{search}</div></section>'
             f'<section class="kw-market-section"><div class="kw-market-wrap"><div class="kw-section-head"><div><span class="kw-eyebrow">EXPLORE THE EMIRATES</span><h2>United Arab Emirates</h2></div><a class="kw-text-link" href="/activities">Browse by activity ↗</a></div><div class="kw-attractions-grid">{tiles}</div></div></section>'
+            + hub_intro('page:destinations', 'Choosing where to go', TOURS)
             + (f'<section class="kw-market-section kw-market-alt"><div class="kw-market-wrap"><span class="kw-eyebrow">TRAVEL FURTHER</span><h2>Worldwide destinations</h2><p class="kw-market-subtitle">Explore international experiences from the current catalogue.</p><div class="kw-attractions-world">{wl}</div></div></section>' if wl else ''))
     page('/destinations', 'Destinations', 'Browse KWIKAR experiences by UAE city and worldwide destination.', main, active='Destinations',
          main_class='kw-attractions-hub', crumbs=[('Home', '/'), ('Destinations', '/destinations')])
@@ -727,7 +749,8 @@ def build_destinations():
                 f'<p>Explore experiences in {e("the UAE" if lid == "other" else name)}, compare options and enquire for your preferred travel date.</p>'
                 f'<a class="kw-lead-action" href="#kw-page-results">Browse {len(items)} experiences ↓</a>{list_search()}</div>'
                 f'<div class="kw-destination-lead-photo"><img src="{e(img)}" alt="Explore {e(name)}"></div></div></section>'
-                f'{themes_html}{list_body(items, location=lid, kind="destination")}{rel}')
+                f'{themes_html}{hub_intro(f"dest:{lid}", "About experiences in the UAE" if lid == "other" else f"About things to do in {name}", items, "" if lid == "other" else f" in {name}")}'
+                f'{list_body(items, location=lid, kind="destination")}{rel}')
         page(f'/destinations/{lid}', heading,
              f'{heading}: compare {len(items)} tours, attraction tickets and experiences with current prices. Book with KWIKAR on WhatsApp.', main,
              active='Destinations', main_class='kw-list-page kw-list-destination', main_attrs=f' data-listing data-kind="destination" data-location="{lid}"',
@@ -1127,6 +1150,7 @@ def info(path, title, desc, body, label):
 def build_info_pages():
     info('/about', 'About KWIKAR', 'Learn how KWIKAR helps travellers explore experiences, holidays, transfers and visa assistance in the UAE.', '''
 <h1>Travel plans, made simpler.</h1><p>KWIKAR LLC-FZ helps travellers explore experiences, holiday ideas, private transfers and visa assistance in the UAE and beyond. Browse what interests you, then tell our team your dates and requirements.</p>
+<h2>How we check our information</h2><ul><li><strong>Prices and options</strong> come from our suppliers' live rates and are refreshed several times a day. Each tour page shows when they were last checked.</li><li><strong>Visitor details</strong> on our main pages, such as opening hours, entry rules and what to bring, are written by the KWIKAR team from official venue and supplier information, and each page shows the date it was checked.</li><li><strong>Final details</strong> are confirmed by our team for your date before you pay, because supplier rules can change.</li><li><strong>No invented reviews or ratings.</strong> We do not show ratings from other websites as our own.</li><li><strong>Corrections:</strong> if you spot something out of date, email <a href="mailto:info@kwikar.com">info@kwikar.com</a> and we will check and fix it.</li></ul>
 <h2>How enquiries work</h2><ol><li>Explore experiences and indicative prices.</li><li>Send your request on WhatsApp with your preferred date and number of guests.</li><li>Our team confirms availability, final price and applicable booking terms before payment.</li></ol><p>Questions? <a href="/contact">Get in touch</a>.</p>''', 'About')
     info('/privacy', 'Privacy', 'How KWIKAR uses the information you share in WhatsApp and email enquiries.', f'''
 <h1>Privacy and enquiries</h1><p>KWIKAR LLC-FZ uses the details you share to respond to travel enquiries and arrange requested services. This website does not take online payments and does not ask for or store card details.</p>
@@ -1150,6 +1174,83 @@ def build_info_pages():
 <h2>Tour booking</h2><p>Choose an experience, option, date and guests, then send your booking request on WhatsApp. The supplier recommended prices are indicative; our team checks age-based guest prices, date and availability, then replies with the final AED amount and how to pay. Your booking is confirmed when we send your confirmation and voucher reference.</p>
 <h2>Transfers, visas and holidays</h2><p>Send an enquiry with your travel details. Transfers and holidays are arranged on WhatsApp. For visas, contact our team to check requirements and pricing. A website starting price does not reserve a vehicle, visa or holiday. The confirmed AED quote is the customer total, with no separate card or booking fee.</p>
 <p>Read our <a href="/terms">terms</a>, <a href="/refund-policy">refund and cancellation policy</a> and <a href="/privacy">privacy policy</a>. Questions? <a href="/contact">Contact KWIKAR</a>.</p>''', 'Booking information')
+
+
+# ================================================================= blog / guides (data/blog/*.json)
+def load_posts():
+    posts = []
+    for f in sorted(os.listdir(os.path.join(ROOT, 'data', 'blog'))):
+        if f.endswith('.json'):
+            posts.append(json.load(open(os.path.join(ROOT, 'data', 'blog', f), encoding='utf-8')))
+    return sorted(posts, key=lambda a: a['published'], reverse=True)
+
+
+POSTS = load_posts() if os.path.isdir(os.path.join(ROOT, 'data', 'blog')) else []
+
+
+def post_href(a):
+    return f'/blog/{a["city"]}/{a["slug"]}'
+
+
+def tour_by_id(tid):
+    return next((t for t in TOURS if t['id'] == tid), None)
+
+
+def build_blog():
+    if not POSTS:
+        return
+    def nice(d):
+        return datetime.date.fromisoformat(d).strftime('%-d %b %Y')
+    for a in POSTS:
+        path = post_href(a)
+        tour = tour_by_id(a.get('tour_id'))
+        body = a['body'].replace('{tour}', tour_href(tour) if tour else '/activities')
+        aq = tour_by_id(144)
+        body = body.replace('{aquarium}', tour_href(aq) if aq else '/search?q=aquarium')
+        img = (DETAILS.get(a.get('tour_id')) or {}).get('img') or (tour or {}).get('img') or '/assets/img/hero-dubai.webp'
+        glance = ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in a.get('glance', []))
+        faqs = ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(x)}</p></details>' for q, x in a.get('faqs', []))
+        rel = [r for r in (tour_by_id(i) for i in a.get('related', [])) if r]
+        others = [b for b in POSTS if b is not a]
+        sources = ''.join(f'<li><a href="{e(u)}" target="_blank" rel="noopener noreferrer">{e(n)}</a></li>' for n, u in a.get('sources', []))
+        cta = ''
+        if tour:
+            cta = (f'<section class="kw-final-cta"><div><h2>Book {e(tour["name"])}</h2><p>Compare every option and current price, then send your request on WhatsApp.'
+                   + (f' From {money(tour["price"])} per person.' if tour.get('price') else '') + '</p></div>'
+                   f'<div><a class="kw-button" href="{tour_href(tour)}">See tickets and prices</a></div></section>')
+        main = f"""<nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog">Travel guides</a> / {e(a['h1'])}</nav>
+<article class="kw-blog-article">
+<h1>{e(a['h1'])}</h1>
+<p class="kw-detail-meta">By the KWIKAR team · Published {nice(a['published'])} · Updated {nice(a['updated'])}</p>
+<img class="kw-blog-hero" src="{e(img)}" alt="{e(a['h1'])}" fetchpriority="high">
+<section class="kw-detail-block kw-quick" aria-label="Summary"><p>{e(a['summary'])}</p>{f'<dl class="kw-glance">{glance}</dl>' if glance else ''}</section>
+<div class="kw-blog-body">{body}</div>
+{cta}
+{f'<section class="kw-detail-block"><h2>Questions</h2>{faqs}</section>' if faqs else ''}
+{f'<section class="kw-detail-related"><div class="kw-section-head"><div><h2>Experiences in this guide</h2></div></div><div class="kw-list-grid">{"".join(list_card(r) for r in rel)}</div></section>' if rel else ''}
+{f'<section class="kw-detail-block kw-more-links"><h2>More travel guides</h2><ul>' + "".join(f'<li><a href="{post_href(b)}">{e(b["h1"])}</a></li>' for b in others) + '</ul></section>' if others else ''}
+{f'<section class="kw-detail-block"><h3>Sources</h3><ul class="kw-sources">{sources}</ul><p class="kw-checked">Prices on linked pages come from live supplier rates. Venue rules can change; our team confirms details for your date before you pay.</p></section>' if sources else ''}
+</article>"""
+        post_ld = {'@context': 'https://schema.org', '@type': 'BlogPosting', 'headline': a['h1'], 'description': a['description'],
+                   'datePublished': a['published'], 'dateModified': a['updated'], 'image': [img if img.startswith('http') else SITE + img],
+                   'author': {'@type': 'Organization', 'name': 'KWIKAR team', 'url': SITE + '/about'},
+                   'publisher': {'@id': SITE + '/#organization'}, 'mainEntityOfPage': SITE + path, 'inLanguage': 'en'}
+        lds = ld(post_ld)
+        if a.get('faqs'):
+            lds += ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+                {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': x}} for q, x in a['faqs']]})
+        page(path, a['title'], a['description'], main, full_title=True, head_extra=lds, og_image=img,
+             main_class='kw-wrap kw-detail kw-blog', crumbs=[('Home', '/'), ('Travel guides', '/blog'), (a['h1'], path)])
+    cards = ''.join(
+        f'<article class="kw-list-card"><a href="{post_href(a)}"><img src="{e((DETAILS.get(a.get("tour_id")) or {}).get("img") or "/assets/img/hero-dubai.webp")}" loading="lazy" alt=""></a>'
+        f'<div><span>{e(loc_name(a["city"]))} · Guide</span><h3><a href="{post_href(a)}">{e(a["h1"])}</a></h3><p>{e(a["summary"][:150].rsplit(" ", 1)[0])}…</p>'
+        f'<a class="kw-card-view" href="{post_href(a)}">Read the guide →</a></div></article>' for a in POSTS)
+    main = (f'<section class="kw-list-banner" style="background-image:linear-gradient(90deg,#07162aeb,#07162a3d),url(\'/assets/img/hero-dubai.webp\')"><div class="kw-market-wrap">'
+            f'<nav class="kw-list-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Travel guides</nav><h1>Dubai and UAE Travel Guides</h1>'
+            f'<p>Practical guides from the KWIKAR team to help you choose tickets, plan your days and get more from your trip.</p></div></section>'
+            f'<div class="kw-market-wrap kw-blog-list"><div class="kw-list-grid">{cards}</div></div>')
+    page('/blog', 'Dubai and UAE Travel Guides', 'Practical Dubai and UAE travel guides from KWIKAR: which tickets to book, the best times to visit and how to plan your days.',
+         main, main_class='kw-list-page', crumbs=[('Home', '/'), ('Travel guides', '/blog')])
 
 
 def build_status_pages():
@@ -1182,7 +1283,7 @@ def build_seo_files():
     def urlset(paths):
         return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 + ''.join(f'  <url><loc>{SITE}{p_}</loc><lastmod>{TODAY}</lastmod></url>\n' for p_ in paths) + '</urlset>\n')
-    pages = ['/', '/holidays', '/transfers', '/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy']
+    pages = ['/', '/holidays', '/transfers', '/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy'] + (['/blog'] + [post_href(a) for a in POSTS] if POSTS else [])
     hubs = ['/destinations', '/activities'] + [f'/destinations/{l["id"]}' for l in LOCATIONS if l['id'] in LIVE_LOCS] + [f'/activities/{c["slug"]}' for c in LIVE_CATS]
     products = [tour_href(t) for t in ALL_TOURS if tf.visible(t)]
     for name, paths in (('pages', pages), ('hubs', hubs), ('products', products)):
@@ -1241,6 +1342,7 @@ if __name__ == '__main__':
     build_visa()
     build_contact()
     build_info_pages()
+    build_blog()
     build_status_pages()
     build_seo_files()
     n = sum(len([f for f in fs if f.endswith('.html')]) for _, _, fs in os.walk(OUT))
