@@ -850,7 +850,9 @@ def build_product(t, d):
         glance.append(('Runs on', 'Every day' if len(days) >= 7 else ', '.join(dd[:3].title() for dd in DAYS if dd in days)))
     if free_h:
         glance.append(('Cancellation', f'Free up to {free_h} hours before'))
-    glance += [tuple(g) for g in x.get('at_a_glance', [])]
+    over = {k: v for k, v in x.get('at_a_glance', [])}          # hand-checked facts replace the automatic ones
+    glance = [(k, over.pop(k) if k in over else v) for k, v in glance if k not in x.get('glance_hide', [])]
+    glance += [(k, v) for k, v in x.get('at_a_glance', []) if k in over]
     glance_html = ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in glance)
 
     # ---- options: comparison table + which to choose + details (previous kw-offer cards)
@@ -932,7 +934,7 @@ def build_product(t, d):
     checked = x.get('last_checked')
     checked_txt = (f'Details checked by our team on {datetime.date.fromisoformat(checked).strftime("%-d %b %Y")}. ' if checked else '') + f'Prices and options from the supplier, last checked {CHECKED}.'
     meta = e(cname) + (f' · {" · ".join(e(c) for c in cats)}' if cats else '')
-    badges = (f'<span>Free cancellation up to {free_h} hours before</span>' if free_h else '') + f'<span>{"Transfer options available" if any(o.get("pickupRequired") for o in offers) else "Meet at location"}</span><span>Book on WhatsApp</span>'
+    badges = ''.join(f'<span>{e(b)}</span>' for b in x['badges']) if x.get('badges') else (f'<span>Free cancellation up to {free_h} hours before</span>' if free_h else '') + f'<span>{"Transfer options available" if any(o.get("pickupRequired") for o in offers) else "Meet at location"}</span><span>Book on WhatsApp</span>'
     alts = x.get('alts') or []
     pics = ''.join(f'<img src="{e(p)}" alt="{e(alts[i] if i < len(alts) else (name + ("" if i == 0 else f" image {i + 1}")))}"{" fetchpriority=high" if i == 0 else " loading=lazy"}>' for i, p in enumerate(photos))
     if x.get('subtitle'):
@@ -1061,6 +1063,18 @@ def build_transfers():
          active='Transfers', crumbs=[('Home', '/'), ('Transfers', '/transfers')])
 
 
+def VISA_FAQS(low_v):
+    return [
+        ('How much is a UAE tourist visa?', f'With KWIKAR, UAE tourist visas start from {money(low_v)} for 14 days, single entry. 30- and 60-day visas and multiple-entry visas cost more; the current prices are listed above. Our team confirms the final fee for your nationality before you pay.'),
+        ('What documents do I need for a UAE tourist visa?', 'Usually a passport copy valid for at least six months, a recent colour photo, a return or onward ticket and travel medical insurance. Some nationalities also need a national ID card. We confirm the full list for your nationality.'),
+        ('How long does a UAE tourist visa take?', 'Processing usually takes 3–4 working days. Express processing is available on request for some nationalities, at an extra cost.'),
+        ('What is the difference between single and multiple entry?', 'A single-entry visa lets you enter the UAE once. A multiple-entry visa lets you leave and come back during its validity, which suits trips that include Oman or other nearby countries.'),
+        ('Is approval guaranteed?', 'No. Visa decisions are made by the UAE immigration authorities. We help you understand the requirements and prepare a complete application.'),
+        ('Can I apply if I am already in the UAE?', 'In some cases, yes, but extra government fees apply when the applicant is inside the UAE. Tell us your situation and we will explain the options.'),
+        ('Do you help with other visas?', 'Yes. We can also help with the 96-hour UAE transit visa, express UAE visas and the Saudi Arabia tourist e-visa. Ask us for current requirements and fees.'),
+    ]
+
+
 def build_visa():
     def card(v):
         return (f'<article class="kw-visa"><span class="kw-eyebrow">{e(v["stay"])} · Estimate {e(v["processing"])}</span><h3>{e(v["name"])}</h3>'
@@ -1070,14 +1084,29 @@ def build_visa():
     form = (f'<form class="kw-form" data-wa="Visa enquiry"><label>Visa type<select name="type" data-label="Type" data-prefill="type">{opts}</select></label><label>Nationality<input required name="nationality" data-label="Nationality"></label>'
             f'<label>Planned travel date<input type="date" name="date" data-label="Travel date"></label><label>Your name<input required name="name" data-label="Name"></label><label>Phone or email<input required name="contact" data-label="Contact"></label>'
             f'<button class="kw-button" type="submit">Enquire on WhatsApp ↗</button></form>')
-    main = (page_hero('TRAVEL DOCUMENTS', 'Visa guidance, made easier.', 'Tell us about your travel plans and our team will explain the available visa options, documents and current processing estimates.', photo('1436491865332-7a61a109cc05', 1600))
+    uae_v = [v for v in VISAS if 'UAE Tourist' in v['name'] and v.get('price')]
+    low_v = min(v['price'] for v in uae_v)
+    quick = (f'<section class="kw-section kw-visa-quick"><div class="kw-wrap"><div class="kw-detail-block kw-quick"><p>KWIKAR helps you apply for a UAE tourist visa for 14, 30 or 60 days, single or multiple entry, from {money(low_v)}. '
+             'Processing usually takes 3–4 working days, and express processing is available on request. You typically need a clear passport copy valid for at least six months, a recent colour photo, a return or onward ticket and travel medical insurance. '
+             'The visa is issued by the UAE authorities, so approval is never guaranteed.</p>'
+             '<dl class="kw-glance"><div><dt>Lengths</dt><dd>14, 30 or 60 days</dd></div><div><dt>Entries</dt><dd>Single or multiple</dd></div>'
+             f'<div><dt>Price</dt><dd>From {money(low_v)}</dd></div><div><dt>Processing</dt><dd>3–4 working days; express on request</dd></div>'
+             '<div><dt>Passport</dt><dd>Valid for at least 6 months</dd></div><div><dt>Issued by</dt><dd>UAE immigration authorities</dd></div></dl></div></div></section>')
+    docs = ('<h3>Documents you will usually need</h3><ul class="kw-ticks"><li>Passport copy, valid for at least six months from your arrival date</li><li>Recent colour passport photo on a white background</li>'
+            '<li>Return or onward flight ticket</li><li>Travel medical insurance valid in the UAE</li><li>National ID card for some nationalities (for example Pakistan, Iraq, Iran and Afghanistan)</li></ul>'
+            '<p>Further documents may be requested depending on nationality. Do not send passport documents in the enquiry form; our team tells you the secure way to share them. '
+            'Requirements checked against the <a href="https://gdrfad.gov.ae/en/node/13896" target="_blank" rel="noopener noreferrer">GDRFA Dubai tourist visa page</a>.</p>')
+    main = (page_hero('TRAVEL DOCUMENTS', 'UAE Tourist Visa: 14, 30 and 60 Days', 'Tell us about your travel plans and our team will explain the available visa options, documents and current processing estimates.', photo('1436491865332-7a61a109cc05', 1600))
+            + quick
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Find the right visa", "VISA OPTIONS")}<p class="kw-section-intro">Starting prices are indicative benchmarks for eligible applications. Our team confirms your actual visa cost after checking nationality, eligibility and processing. No payment is requested through this page.</p><div class="kw-visa-categories">{groups}</div></div></section>'
-            + f'<section class="kw-section kw-market-alt" id="visa-enquiry"><div class="kw-wrap kw-service-layout"><div>{section_head("How to get started", "APPLICATION")}<ol class="kw-process"><li>Choose the visa and share your travel date.</li><li>We check eligibility and confirm current fees and document requirements.</li><li>Submit documents through the agreed secure channel.</li><li>Our team updates you on the application outcome.</li></ol><h3>Documents to prepare</h3><p>Typically a clear passport copy with at least six months validity and a recent colour photograph. Further documents may be required based on nationality and visa type. Do not send passport documents in this enquiry form.</p></div>{form}</div></section>'
-            + faq_block('Visa questions', [('Is approval guaranteed?', 'No. Visa decisions are made by the issuing authority. We help you understand requirements and submit your enquiry.'),
-                                           ('How long does processing take?', 'Processing estimates vary by visa and application. We confirm the current expected timing before you apply.'),
-                                           ('What if I need an urgent visa?', 'Ask us about available express processing for your nationality and travel date. Availability and fees vary.')]))
-    page('/visa', 'Visa Assistance', 'Explore UAE tourist visa options and enquire with KWIKAR about eligibility, documents and current processing times.', main,
-         active='Visas', crumbs=[('Home', '/'), ('Visa', '/visa')])
+            + f'<section class="kw-section kw-market-alt" id="visa-enquiry"><div class="kw-wrap kw-service-layout"><div>{section_head("How to get started", "APPLICATION")}<ol class="kw-process"><li>Choose the visa and share your travel date.</li><li>We check eligibility and confirm current fees and document requirements.</li><li>Submit documents through the agreed secure channel.</li><li>Our team updates you on the application outcome.</li></ol>{docs}</div>{form}</div></section>'
+            + faq_block('Visa questions', VISA_FAQS(low_v))
+            + f'<section class="kw-section"><div class="kw-wrap"><p class="kw-checked">Visa options and fees last reviewed by the KWIKAR team on 30 Oct 2026. Government rules can change; we confirm current requirements before you apply.</p></div></section>')
+    faq_ld = ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+        {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in VISA_FAQS(low_v)]})
+    page('/visa', 'UAE Tourist Visa – 14, 30 & 60 Days | KWIKAR',
+         f'Apply for a UAE tourist visa with KWIKAR: 14, 30 or 60 days, single or multiple entry, from {money(low_v)}. Check documents and processing, then ask on WhatsApp.',
+         main, active='Visas', full_title=True, head_extra=faq_ld, crumbs=[('Home', '/'), ('Visa', '/visa')])
 
 
 def build_contact():
