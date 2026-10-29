@@ -1,19 +1,273 @@
 {
-  "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden on the page.",
-  "_example_136": {
-    "slug": "burj-khalifa-at-the-top-tickets",
-    "title": "Burj Khalifa At the Top Tickets – Levels 124, 125, 148 | KWIKAR",
-    "description": "Book Burj Khalifa At the Top tickets from AED 189: Non-Prime, Prime, Fast Track and Level 148 options. Confirm your time slot on WhatsApp.",
-    "h1": "Burj Khalifa At the Top Tickets",
-    "quick_answer": "",
-    "at_a_glance": [["Best time", "..."]],
-    "best_for": ["..."],
-    "included": ["..."],
-    "not_included": ["..."],
-    "visitor_info": [["Getting there", "..."]],
-    "tip": "One first-hand tip from the KWIKAR team.",
-    "faqs": [["Question?", "Answer in 25–50 words."]],
-    "last_checked": "2026-10-29",
-    "sources": ["https://..."]
-  }
+ "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301).",
+ "136": {
+  "slug": "burj-khalifa-at-the-top-tickets",
+  "title": "Burj Khalifa Tickets – At the Top Levels 124, 125 & 148 | KWIKAR",
+  "description": "Book Burj Khalifa At the Top tickets from {from}. Compare Silver, Gold and Platinum levels and Prime or Non-Prime times, then confirm on WhatsApp.",
+  "og_title": "Burj Khalifa At the Top Tickets – KWIKAR",
+  "og_description": "Choose your level and time slot. Silver tickets from {from} per person.",
+  "h1": "Burj Khalifa At the Top Tickets",
+  "subtitle": "Levels 124, 125, 148 and 152–154 · Downtown Dubai",
+  "alts": [
+   "Burj Khalifa tower seen from Downtown Dubai on a clear day",
+   "Visitors at the floor-to-ceiling windows of the At the Top observation deck",
+   "Close view of the Burj Khalifa façade against the sky",
+   "View over Downtown Dubai from the At the Top deck"
+  ],
+  "quick_answer": "At the Top is the observation deck inside Burj Khalifa, the world's tallest building at 828 metres. Standard Silver tickets cover levels 124 and 125, about 452–456 metres up, and start from {from} per person. Upgrade to Gold for level 148 or Platinum for the lounge on levels 152–154. Entry is from the lower ground floor of The Dubai Mall.",
+  "at_a_glance": [
+   [
+    "Location",
+    "The Dubai Mall, lower ground (LG) level, Downtown Dubai"
+   ],
+   [
+    "Levels",
+    "Silver 124–125 · Gold 148 · Platinum 152–154"
+   ],
+   [
+    "Time to allow",
+    "1.5–2 hours including queues and the lift"
+   ],
+   [
+    "Best time",
+    "Sunset (Prime Time) for light; early morning or late evening for shorter queues"
+   ],
+   [
+    "Ticket",
+    "Mobile ticket; show it with photo ID at check-in"
+   ],
+   [
+    "Children",
+    "Age 0–3 free; children must be with an adult"
+   ],
+   [
+    "Accessibility",
+    "Wheelchair accessible; staff can help with extra needs"
+   ]
+  ],
+  "overview": [
+   "Burj Khalifa rises 828 metres over Downtown Dubai. From the At the Top decks you look straight down on The Dubai Fountain, out over the coast to Palm Jumeirah, and inland across the desert edge on a clear day. It is the natural first stop on any list of <a href=\"/destinations/dubai\">things to do in Dubai</a>.",
+   "You choose the height. Silver takes you to levels 124 and 125, with floor-to-ceiling glass and an outdoor terrace that closes in bad weather. Gold adds level 148, a quieter lounge-style deck at about 555 metres with a host, Arabic coffee and sweets. Platinum goes to the lounge on levels 152–154, the highest point visitors can reach, with a seated, hosted experience.",
+   "The ticket you book fixes your entry time. Prime Time slots fall around sunset and cost more because they sell out first. Non-Prime slots are cheaper and usually less crowded."
+  ],
+  "best_for": [
+   [
+    "First-time visitors to Dubai",
+    "Silver Non-Prime gives the classic view at the lowest price."
+   ],
+   [
+    "Photographers",
+    "Book a Prime Time slot about 30 minutes before sunset to catch day, golden hour and city lights in one visit."
+   ],
+   [
+    "Special occasions or short queues",
+    "Gold or Platinum include a host, a separate lounge and fewer people at the glass."
+   ],
+   [
+    "Families",
+    "Combine Silver with Dubai Aquarium & Underwater Zoo, in the same mall."
+   ]
+  ],
+  "choose": [
+   [
+    "Lowest price",
+    "Silver Non-Prime."
+   ],
+   [
+    "Sunset photos",
+    "Silver Prime Time. Book early; these slots sell out first."
+   ],
+   [
+    "Short on time or travelling in peak season",
+    "Silver + Fast Track."
+   ],
+   [
+    "Higher, quieter, hosted",
+    "Gold (level 148)."
+   ],
+   [
+    "Once-in-a-lifetime",
+    "Platinum (levels 152–154)."
+   ]
+  ],
+  "included": [
+   "Entry to the levels in your chosen ticket",
+   "Lift ride on one of the world's fastest elevators",
+   "Extras listed in your option (fast track, aquarium entry, Burj Club rooftop, lounge refreshments)",
+   "Mobile ticket for each guest after your booking is confirmed"
+  ],
+  "not_included": [
+   "Hotel transfers",
+   "Food and drinks bought on site",
+   "Souvenir photos",
+   "VR and green-screen experiences",
+   "Gift shop items"
+  ],
+  "visitor_info": [
+   [
+    "Getting there by metro",
+    "Red Line to Burj Khalifa/Dubai Mall station, then the air-conditioned link bridge into The Dubai Mall. Allow 10–15 minutes' walk to the At the Top entrance."
+   ],
+   [
+    "Taxi or private car",
+    "Ask for The Dubai Mall, Grand Parking or Fashion Parking, then follow signs to At the Top on the lower ground level. Or book a <a href=\"/transfers\">private hotel transfer</a> and skip the taxi queue on the way back."
+   ],
+   [
+    "Check-in",
+    "Go to the At the Top entrance on the LG level of The Dubai Mall, near the Dubai Aquarium side. Arrive 20–30 minutes before your time slot. Each guest needs their own QR code and a valid photo ID."
+   ],
+   [
+    "Bags and banned items",
+    "Large bags, strollers, laptops, lighters, e-cigarettes, aerosols, food, drinks and sharp items are not allowed on the decks. Shoes with wheels are not allowed, and service animals cannot enter. Use the luggage room at the entrance."
+   ],
+   [
+    "Dress code",
+    "Modest, comfortable clothing. Shoulders and knees covered is a safe rule in The Dubai Mall. The outdoor terrace can be windy."
+   ]
+  ],
+  "steps_title": "How the visit works",
+  "steps": [
+   [
+    "Check in",
+    "At the At the Top entrance, LG level, The Dubai Mall. Show your QR code and photo ID."
+   ],
+   [
+    "Walk the exhibition",
+    "Learn about the history and engineering of the tower while you queue."
+   ],
+   [
+    "Ride the lift",
+    "About one minute to level 124."
+   ],
+   [
+    "Enjoy the view",
+    "Silver: levels 124 and 125, including the outdoor terrace. Gold: start on 148, then 125 and 124. Platinum: hosted lounge on 152–154, then the lower decks."
+   ],
+   [
+    "Exit",
+    "Back into The Dubai Mall."
+   ]
+  ],
+  "faqs_replace": true,
+  "faq_note": "Entry, ID, children and dress answers follow At the Top's venue rules. Booking, lateness and refund answers follow KWIKAR's terms.",
+  "faqs": [
+   [
+    "Which Burj Khalifa ticket should I choose?",
+    "For most first-time visitors, Silver (levels 124 and 125) gives the classic view at the lowest price. Choose Prime Time for sunset, Gold for a quieter hosted deck on level 148, or Platinum for the highest lounge on levels 152–154."
+   ],
+   [
+    "How much is a Burj Khalifa ticket?",
+    "On KWIKAR, At the Top tickets start from {from} per person for Silver (levels 124–125) at a Non-Prime time. Prime Time, Gold (level 148) and Platinum (levels 152–154) cost more; current prices for every option are in the table above. Children aged 0–3 enter free."
+   ],
+   [
+    "What is the difference between Prime and Non-Prime tickets?",
+    "Prime Time tickets are for the busiest slots, mainly the hours around sunset, and cost more. Non-Prime covers the rest of the day. The view and levels are the same; only the entry time and price differ. Our team confirms the exact slot times for your date."
+   ],
+   [
+    "What is the dress code?",
+    "There is no formal dress code, but modest, comfortable clothing is expected, as across The Dubai Mall. Covering shoulders and knees is a safe choice. Wear comfortable shoes and bring a light layer for the outdoor terrace, which can be windy."
+   ],
+   [
+    "What are the conditions for children?",
+    "Children aged 0–3 enter free but still need a ticket at check-in. Children must stay with an adult at all times. Strollers are not allowed on the decks and must be left in the luggage room."
+   ],
+   [
+    "How long does the visit take?",
+    "Allow 1.5 to 2 hours in total. That includes check-in, the exhibition walk, the lift and around 40 minutes on the decks. Fast Track tickets can cut this to about 1 hour."
+   ],
+   [
+    "How do I find the check-in desk?",
+    "The At the Top entrance is on the lower ground (LG) level of The Dubai Mall. From the metro link bridge or any car park, follow the signs for At the Top / Burj Khalifa. Arrive 20–30 minutes before your slot."
+   ],
+   [
+    "Do I need to print my ticket?",
+    "No. Show the mobile ticket on your phone with a valid photo ID. Each guest needs their own QR code, so keep all tickets ready if you booked for a group."
+   ],
+   [
+    "What documents are required for entry?",
+    "Bring a valid photo ID such as a passport, Emirates ID or driving licence. A digital copy is usually accepted."
+   ],
+   [
+    "What should I do if I am late?",
+    "Contact us right away on +971 50 559 9243 or WhatsApp. Entry depends on your time slot, and late arrivals may be refused or moved to the next available slot at the venue's discretion. Tickets are usually non-refundable once the slot has passed."
+   ],
+   [
+    "May I bring my own food and drinks?",
+    "No. Outside food and drinks are not allowed on the observation decks. You can eat before or after your visit in The Dubai Mall, or choose a Burj Club Rooftop option."
+   ],
+   [
+    "Can I cancel or change my Burj Khalifa ticket?",
+    "At the Top general admission tickets are usually final once issued and cannot be refunded or changed. Our team confirms the policy for your chosen option on WhatsApp before you pay, so check it then and contact us if your plans change."
+   ],
+   [
+    "What is the best time to visit Burj Khalifa?",
+    "About 30 minutes before sunset gives daylight, golden hour and city lights in one visit, but it is the busiest and dearest slot. Early morning and late evening are quieter and cheaper. Winter (November to March) usually has the clearest air."
+   ],
+   [
+    "How do I get to Burj Khalifa by metro?",
+    "Take the Red Line to Burj Khalifa/Dubai Mall station, then follow the air-conditioned link bridge into The Dubai Mall. The walk to the At the Top entrance takes about 10–15 minutes."
+   ],
+   [
+    "Is Burj Khalifa At the Top wheelchair accessible?",
+    "Yes. The entrance, lifts and observation decks are wheelchair accessible, and staff can help visitors with extra needs. Strollers are not allowed on the decks, so plan to leave them in the luggage room."
+   ]
+  ],
+  "terms": [
+   [
+    "Booking and confirmation",
+    "Send your request on WhatsApp. Our team confirms availability and the final price, and your booking is confirmed when we send a mobile ticket for each guest. Entry is only valid for the date and time slot shown."
+   ],
+   [
+    "Cancellation",
+    "At the Top general admission tickets are usually non-refundable and cannot be changed once issued. Combo and upgrade options follow their own policy. We confirm the policy for your option before you pay. See our <a href=\"/refund-policy\">refund and cancellation policy</a>."
+   ],
+   [
+    "Entry rules",
+    "Photo ID required. Large bags, strollers, food and drinks are not allowed on the decks. The venue may close decks or delay entry for weather or safety; we will contact you about options if that happens."
+   ],
+   [
+    "Price",
+    "Prices are per person in AED. The total our team confirms on WhatsApp is the amount you pay, with no booking or card fees."
+   ]
+  ],
+  "related_heading": "More to do near Burj Khalifa",
+  "related_links": [
+   [
+    "Dubai Aquarium & Underwater Zoo tickets",
+    "search:Aquarium and Underwater Zoo"
+   ],
+   [
+    "Dubai dhow and dinner cruises",
+    "/activities/cruises"
+   ],
+   [
+    "Things to do in Dubai",
+    "/destinations/dubai"
+   ],
+   [
+    "All activities in the UAE",
+    "/activities"
+   ],
+   [
+    "Private hotel transfer to Dubai Mall",
+    "/transfers"
+   ],
+   [
+    "UAE tourist visa help",
+    "/visa"
+   ],
+   [
+    "Dubai holiday packages",
+    "/holidays"
+   ]
+  ],
+  "cta_heading": "Ready to see Dubai from 456 metres?",
+  "cta_text": "Pick your level and time slot. Silver tickets from {from} per person.",
+  "last_checked": "2026-10-29",
+  "sources": [
+   "https://www.arabian-adventures.com",
+   "https://www.visitdubai.com",
+   "https://www.headout.com"
+  ]
+ }
 }

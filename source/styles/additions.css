@@ -76,3 +76,9 @@
 @media(max-width:1100px){.kw-detail-related .kw-list-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:800px){.kw-final-cta{flex-direction:column;align-items:flex-start;padding:26px 22px}.kw-inc-grid{grid-template-columns:1fr}.kw-visitor>div{grid-template-columns:1fr;gap:2px}}
 @media(max-width:560px){.kw-detail-related .kw-list-grid{grid-template-columns:1fr}.kw-glance{grid-template-columns:1fr 1fr}.kw-final-cta>div:last-child{flex-direction:column;align-items:stretch;width:100%}}
+.kw-faq-note{font-size:13px!important;color:#6b7786!important;margin:0 0 6px!important}
+.kw-more-links ul{list-style:none!important;padding:0!important;display:flex;flex-wrap:wrap;gap:9px}
+.kw-more-links a{display:inline-block;border:1px solid #dfe6ee;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;color:#18324f}
+.kw-more-links a:hover{border-color:#1265e8;color:#1265e8}
+.kw-final-cta p a{color:#8bd7b0;font-weight:700}
+.kw-detail-block a{color:#1265e8}

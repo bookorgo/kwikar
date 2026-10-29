@@ -78,6 +78,25 @@ except Exception:
     CHECKED = datetime.date.today().strftime('%-d %b %Y')
 TODAY = datetime.date.today().isoformat()
 
+# A hand-written slug in tour-extras.json renames the page; the old address keeps working (301).
+_REDIR_FILE = os.path.join(ROOT, 'data', 'slug-redirects.json')
+try:
+    SLUG_REDIRECTS = json.load(open(_REDIR_FILE, encoding='utf-8'))
+except Exception:
+    SLUG_REDIRECTS = {}
+_slugs_changed = False
+for _tid, _x in EXTRAS.items():
+    if _x.get('slug') and _tid in SLUGS:
+        _new = SLUGS[_tid].rsplit('/', 1)[0] + '/' + _x['slug']
+        if SLUGS[_tid] != _new:
+            SLUG_REDIRECTS[SLUGS[_tid]] = _new
+            SLUGS[_tid] = _new
+            _slugs_changed = True
+SLUG_REDIRECTS = {o: n for o, n in SLUG_REDIRECTS.items() if o not in SLUGS.values()}
+if _slugs_changed:
+    json.dump(SLUGS, open(tf.SLUG_FILE, 'w', encoding='utf-8'), indent=1, sort_keys=True)
+json.dump(SLUG_REDIRECTS, open(_REDIR_FILE, 'w', encoding='utf-8'), indent=1, sort_keys=True)
+
 
 def e(s):
     return html.escape(str(s if s is not None else ''), quote=True)
@@ -290,7 +309,7 @@ def _asset_version():
 
 
 def page(path, title, desc, main, active=None, scripts=('kw',), noindex=False, og_image='/assets/img/kwikar-share.webp',
-         full_title=False, head_extra='', crumbs=None, main_class='', main_attrs=''):
+         full_title=False, head_extra='', crumbs=None, main_class='', main_attrs='', og_title=None, og_desc=None):
     t = title if full_title else f'{title} | KWIKAR'
     url = SITE + path
     extra = ld(ORG_LD) + (ld(crumbs_ld(crumbs)) if crumbs else '') + head_extra
@@ -314,8 +333,8 @@ def page(path, title, desc, main, active=None, scripts=('kw',), noindex=False, o
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="KWIKAR">
-<meta property="og:title" content="{e(t)}">
-<meta property="og:description" content="{e(desc)}">
+<meta property="og:title" content="{e(og_title or t)}">
+<meta property="og:description" content="{e(og_desc or desc)}">
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{e(og)}">
 <meta name="twitter:card" content="summary_large_image">
@@ -644,6 +663,14 @@ def build_product(t, d):
     photos = [p for p in [d.get('img') or t.get('img')] + (d.get('photos') or []) if p][:4]
     cancel = [c for c in (d.get('cancellation') or []) if c]
     free_h = _free_cancel_hours(d)
+
+    def fill(v):   # {from} = lowest current API price, so hand-written text never shows an old price
+        if isinstance(v, str):
+            return v.replace('{from}', money(low) if low else 'the price our team confirms')
+        if isinstance(v, list):
+            return [fill(i) for i in v]
+        return v
+    x = {k: fill(v) for k, v in x.items()}
     h1 = x.get('h1') or name
 
     # ---- SEO head
@@ -711,7 +738,7 @@ def build_product(t, d):
             choose.append(('Most premium', top_['name'], _opt_price(top_)))
 
     def offer_card(o):
-        meta = (f'{_num(o["hours"])} hours' if o.get('hours') else '') + (f' · {_num(o["minPeople"])}–{_num(o["maxPeople"])} guests' if o.get('minPeople') is not None and o.get('maxPeople') is not None else '')
+        meta = (f'{_num(o["hours"])} hour{"" if float(o["hours"]) == 1 else "s"}' if o.get('hours') else '') + (f' · {_num(o["minPeople"])}–{_num(o["maxPeople"])} guests' if o.get('minPeople') is not None and o.get('maxPeople') is not None else '')
         tr_ = ''
         if o.get('pickupRequired'):
             tr_ = f'<p>{"Private transfer" if o.get("transferKind") == "private" else "Sharing transfer" if o.get("transferKind") == "sharing" else "Transfer included"}{" · priced once per booking" if o.get("transferPricingMode") == "per_booking" else " · included in per-person price"}</p>'
@@ -720,8 +747,10 @@ def build_product(t, d):
     options_html = ''
     if offers:
         choose_html = ''
+        if x.get('choose'):
+            choose = [(k, v, None) for k, v in x['choose']]
         if choose:
-            choose_html = ('<div class="kw-choose"><h3>Which should I choose?</h3><ul>' + ''.join(f'<li><strong>{e(k)}:</strong> {e(n_)} <span>({e(p_)})</span></li>' for k, n_, p_ in choose)
+            choose_html = ('<div class="kw-choose"><h3>Which should I choose?</h3><ul>' + ''.join(f'<li><strong>{e(k)}:</strong> {e(n_)}{f" <span>({e(p_)})</span>" if p_ else ""}</li>' for k, n_, p_ in choose)
                            + '</ul><p>Not sure? <a href="' + e(wa(f'Hi KWIKAR, which {name} option should I choose?')) + '" target="_blank" rel="noopener noreferrer">Ask our team on WhatsApp</a>.</p></div>')
         options_html = (f'<section class="kw-detail-block" id="options"><h2>Available options</h2>'
                         + (f'<div class="kw-table-wrap"><table class="kw-opt-table"><caption>Compare the {len(offers)} options</caption><thead><tr><th scope="col">Option</th><th scope="col">Duration</th><th scope="col">Transfer</th><th scope="col">Price</th></tr></thead><tbody>{rows}</tbody></table></div>' if len(offers) > 1 else '')
@@ -735,12 +764,14 @@ def build_product(t, d):
                + '</div></section>')
     vis = ''
     if x.get('visitor_info'):
-        vis = '<section class="kw-detail-block"><h2>Visitor information</h2><dl class="kw-visitor">' + ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in x['visitor_info']) + '</dl></section>'
-    best_for = (f'<h3 class="kw-sub">Best for</h3><ul class="kw-ticks">{"".join(f"<li>{e(b)}</li>" for b in x["best_for"])}</ul>') if x.get('best_for') else ''
+        vis = '<section class="kw-detail-block"><h2>Visitor information</h2><dl class="kw-visitor">' + ''.join(f'<div><dt>{e(k)}</dt><dd>{v}</dd></div>' for k, v in x['visitor_info']) + '</dl></section>'
+    best_for = (f'<h3 class="kw-sub">Best for</h3><ul class="kw-ticks">{"".join((f"<li><strong>{e(b[0])}:</strong> {e(b[1])}</li>" if isinstance(b, list) else f"<li>{e(b)}</li>") for b in x["best_for"])}</ul>') if x.get('best_for') else ''
     tip = f'<aside class="kw-tip"><strong>KWIKAR tip</strong><p>{e(x["tip"])}</p></aside>' if x.get('tip') else ''
 
     itin = d.get('itinerary') or []
-    if itin:
+    if x.get('steps'):
+        how = f'<section class="kw-detail-block"><h2>{e(x.get("steps_title") or "How it works")}</h2>' + ''.join(f'<div class="kw-step"><strong>{e(a)}</strong><p>{e(b)}</p></div>' for a, b in x['steps']) + '</section>'
+    elif itin:
         how = '<section class="kw-detail-block"><h2>Itinerary</h2>' + ''.join(f'<div class="kw-step"><strong>{e(s_["name"])}</strong><p>{e(s_.get("desc") or "")}</p></div>' for s_ in itin if s_.get('name')) + '</section>'
     else:
         how = ('<section class="kw-detail-block"><h2>How booking works</h2>'
@@ -749,16 +780,17 @@ def build_product(t, d):
                '<div class="kw-step"><strong>We confirm availability and price</strong><p>Our team checks with the supplier and replies with the final AED price.</p></div>'
                '<div class="kw-step"><strong>Pay and receive your confirmation</strong><p>Pay as agreed with our team and receive your booking details.</p></div></section>')
 
-    faqs = [(f['q'], f['a']) for f in (d.get('faq') or []) if f.get('q') and f.get('a')] + [tuple(f) for f in x.get('faqs', [])]
+    api_faqs = [] if x.get('faqs_replace') else [(f['q'], f['a']) for f in (d.get('faq') or []) if f.get('q') and f.get('a')]
+    faqs = api_faqs + [tuple(f) for f in x.get('faqs', [])]
     kfaqs = [('How do I book this with KWIKAR?', 'Tap Check availability, choose your date, guests and option, and send the request on WhatsApp. Our team checks availability with the supplier and replies with the final AED price before you pay.'),
              ('Are there booking or card fees?', 'No. The price our team confirms on WhatsApp is the total you pay. KWIKAR does not add a separate booking or card fee.'),
              ('Can I cancel or change my booking?', "Changes and refunds follow the supplier's rules for this experience, shown in the cancellation policy on this page. Contact us as soon as possible and we will check what applies to your booking.")]
-    faq_html = ''
+    faq_html = f'<p class="kw-faq-note">{e(x["faq_note"])}</p>' if x.get('faq_note') else ''
     if faqs:
         faq_html += '<h3 class="kw-faq-group">About this experience</h3>' + ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in faqs)
     faq_html += '<h3 class="kw-faq-group">Booking with KWIKAR</h3>' + ''.join(f'<details class="kw-faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in kfaqs)
 
-    safe_terms = _customer_terms(d.get('terms'))
+    safe_terms = ''.join(f'<p><strong>{e(k)}:</strong> {v}</p>' for k, v in x['terms']) if x.get('terms') else _customer_terms(d.get('terms'))
     cancel_html = f'<section class="kw-detail-block"><h2>Cancellation policy</h2>{"".join(f"<p>{e(_plain(c))}</p>" for c in cancel)}</section>' if cancel else ''
     terms_html = f'<section class="kw-detail-block"><h2>Terms</h2><div>{safe_terms}</div><p class="kw-terms-links">Also read our <a href="/booking-information">booking information</a> and <a href="/refund-policy">refund and cancellation policy</a>.</p></section>' if safe_terms else ''
 
@@ -770,7 +802,23 @@ def build_product(t, d):
     checked_txt = (f'Details checked by our team on {datetime.date.fromisoformat(checked).strftime("%-d %b %Y")}. ' if checked else '') + f'Prices and options from the supplier, last checked {CHECKED}.'
     meta = e(cname) + (f' · {" · ".join(e(c) for c in cats)}' if cats else '')
     badges = (f'<span>Free cancellation up to {free_h} hours before</span>' if free_h else '') + f'<span>{"Transfer options available" if any(o.get("pickupRequired") for o in offers) else "Meet at location"}</span><span>Book on WhatsApp</span>'
-    pics = ''.join(f'<img src="{e(p)}" alt="{e(name)}{"" if i == 0 else f" image {i + 1}"}"{" fetchpriority=high" if i == 0 else " loading=lazy"}>' for i, p in enumerate(photos))
+    alts = x.get('alts') or []
+    pics = ''.join(f'<img src="{e(p)}" alt="{e(alts[i] if i < len(alts) else (name + ("" if i == 0 else f" image {i + 1}")))}"{" fetchpriority=high" if i == 0 else " loading=lazy"}>' for i, p in enumerate(photos))
+    if x.get('subtitle'):
+        meta = e(x['subtitle'])
+    overview = ''.join(f'<p>{p_}</p>' for p_ in x['overview']) if x.get('overview') else (d.get('description') or '')
+
+    def link_for(target):
+        if target.startswith('search:'):
+            hit = next((r for r in TOURS if r['name'].lower() == target[7:].lower()), None) or next((r for r in TOURS if target[7:].lower() in r['name'].lower()), None)
+            return tour_href(hit) if hit else '/search?q=' + quote(target[7:])
+        return target
+    rel_links = ''
+    if x.get('related_links'):
+        rel_links = ('<section class="kw-detail-block kw-more-links"><h2>' + e(x.get('related_heading') or 'Related experiences') + '</h2><ul>'
+                     + ''.join(f'<li><a href="{e(link_for(u))}">{e(a)}</a></li>' for a, u in x['related_links']) + '</ul></section>')
+    cta_h = x.get('cta_heading') or f'Ready to book {name}?'
+    cta_t = x.get('cta_text') or 'Send your date and guests. Our team replies on WhatsApp with availability and the final price.'
     wa_q = wa(f'Hi KWIKAR, I would like to book {name}. Please share availability.')
     sheet_data = {'id': t['id'], 'name': name, 'url': SITE + path, 'cancellation': [_plain(c) for c in cancel],
                   'offers': [{k: o.get(k) for k in ('name', 'hours', 'price', 'unit', 'child', 'tripFee', 'adultBase', 'minPeople', 'maxPeople', 'daysOffered', 'pricingPeriods', 'transferKind', 'transferPricingMode', 'pickupRequired', 'childrenAllowed')} for o in offers]}
@@ -782,7 +830,7 @@ def build_product(t, d):
 <div class="kw-product-badges">{badges}</div>
 <div class="kw-detail-grid"><div>
 <section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p><dl class="kw-glance">{glance_html}</dl></section>
-{f'<section class="kw-detail-block"><h2>Overview</h2><div>{d["description"]}</div>{best_for}</section>' if d.get("description") or best_for else ''}
+{f'<section class="kw-detail-block"><h2>Overview</h2><div>{overview}</div>{best_for}</section>' if overview or best_for else ''}
 {tip}
 {options_html}
 {inc}{vis}
@@ -790,15 +838,16 @@ def build_product(t, d):
 <section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_html}</section>
 {cancel_html}
 {terms_html}
+{rel_links}
 <p class="kw-checked">{e(checked_txt)}</p>
 </div><aside><div class="kw-selection-card"><span>From</span><strong>{money(low) if low else "Price on request"}</strong><small>{(low_unit + " · no booking or card fees") if low else "Our team will confirm the price"}</small><button class="kw-button" type="button" data-book>Check availability</button><a href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a><p class="kw-seller">Booking handled by Kwikar LLC-FZ, United Arab Emirates.</p></div></aside></div>
 {f'<section class="kw-detail-related"><div class="kw-section-head"><div><h2>More things to do in {e(cname)}</h2></div><div class="kw-section-actions"><a href="{city_link}" class="kw-text-link">View all <span aria-hidden="true">↗</span></a></div></div><div class="kw-list-grid">{"".join(list_card(r) for r in rel)}</div>{f"<div class=kw-related-cats>{cat_links}</div>" if cat_links else ""}</section>' if rel else ''}
-<section class="kw-final-cta"><div><h2>Ready to book {e(name)}?</h2><p>Send your date and guests. Our team replies on WhatsApp with availability and the final price.</p></div><div><button class="kw-button" type="button" data-book>Check availability</button><a class="kw-final-wa" href="{e(wa_q)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a></div></section>
+<section class="kw-final-cta"><div><h2>{e(cta_h)}</h2><p>{e(cta_t)} Questions? <a href="{e(wa_q)}" target="_blank" rel="noopener noreferrer">WhatsApp us on {PHONE_FMT}</a>.</p></div><div><button class="kw-button" type="button" data-book>Check availability</button><a class="kw-final-wa" href="{e(wa_q)}" target="_blank" rel="noopener noreferrer">WhatsApp us ↗</a></div></section>
 <div class="kw-product-sticky"><div><span>From</span><strong>{money(low) if low else "On request"}</strong>{f"<small>{low_unit}</small>" if low else ""}</div><button class="kw-button" type="button" data-book>Check availability</button></div>
 <script type="application/json" id="kw-tour">{json.dumps(sheet_data, ensure_ascii=False).replace("</", "<\\/")}</script>'''
 
     product = {'@context': 'https://schema.org', '@type': 'Product', 'name': name, 'sku': tid, 'url': SITE + path,
-               'description': _plain(d.get('description') or quick, 300), 'image': photos, 'category': (cats[0] if cats else 'Tours & activities'),
+               'description': _plain(overview or quick, 300), 'image': photos, 'category': (cats[0] if cats else 'Tours & activities'),
                'brand': {'@type': 'Brand', 'name': 'KWIKAR'}}
     if priced:
         product['offers'] = {'@type': 'AggregateOffer', 'priceCurrency': 'AED', 'lowPrice': low, 'highPrice': high, 'offerCount': len(priced),
@@ -807,7 +856,7 @@ def build_product(t, d):
         {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in faqs + kfaqs]})
     page(path, title, desc, main, active='Cruises' if tf.matches_category(t, 'cruises', '') else 'Activities', full_title=True,
          og_image=photos[0] if photos and photos[0].startswith('https://') else '/assets/img/kwikar-share.webp',
-         noindex=not tf.visible(t), head_extra=lds, main_class='kw-wrap kw-detail kw-product-detail', main_attrs=' data-tour',
+         noindex=not tf.visible(t), head_extra=lds, og_title=x.get('og_title'), og_desc=x.get('og_description'), main_class='kw-wrap kw-detail kw-product-detail', main_attrs=' data-tour',
          crumbs=[('Home', '/'), ('Activities', '/activities'), ('More' if lid == 'other' else cname, city_link), (name, path)])
 
 
@@ -992,6 +1041,8 @@ def build_seo_files():
             lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ {p_} [R=301,L]', f'RewriteCond %{{QUERY_STRING}} (?:^|&)id={tid}(?:&|$)', f'RewriteRule ^tour\\.html$ {p_}? [R=301,L]']
         else:
             lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ - [G,L]', f'RewriteRule ^{p_.strip("/")}/?$ - [G,L]']
+    for old, new in sorted(SLUG_REDIRECTS.items()):
+        lines.append(f'RewriteRule ^{re.escape(old.strip("/"))}/?$ {new} [R=301,L]')
     # city lists that existed briefly at /activities/{city} now live on the destination pages
     for city in sorted({tf.city_of(t['loc']) for t in ALL_TOURS}):
         lines.append(f'RewriteRule ^activities/{city}/?$ /destinations/{"other" if city == "uae" else city} [R=301,L]')
