@@ -1,0 +1,5 @@
+# Only tours.php is public in this folder.
+Options -Indexes
+<FilesMatch "^(config\.php|config\.sample\.php|locations\.json)$">
+  Require all denied
+</FilesMatch>

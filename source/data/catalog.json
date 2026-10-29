@@ -1,0 +1,537 @@
+{
+  "locations": [
+    {
+      "id": "dubai",
+      "name": "Dubai",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "abu-dhabi",
+      "name": "Abu Dhabi",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "sharjah",
+      "name": "Sharjah",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "ras-al-khaimah",
+      "name": "Ras Al Khaimah",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "fujairah",
+      "name": "Fujairah",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "ajman",
+      "name": "Ajman",
+      "group": "uae",
+      "img": "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=600&q=70"
+    },
+    {
+      "id": "oman",
+      "name": "Oman (Musandam)",
+      "group": "intl"
+    },
+    {
+      "id": "singapore",
+      "name": "Singapore",
+      "group": "intl"
+    },
+    {
+      "id": "malaysia",
+      "name": "Malaysia",
+      "group": "intl"
+    },
+    {
+      "id": "thailand",
+      "name": "Thailand",
+      "group": "intl"
+    },
+    {
+      "id": "bali",
+      "name": "Bali",
+      "group": "intl"
+    },
+    {
+      "id": "vietnam",
+      "name": "Vietnam",
+      "group": "intl"
+    },
+    {
+      "id": "japan",
+      "name": "Japan",
+      "group": "intl"
+    },
+    {
+      "id": "south-korea",
+      "name": "South Korea",
+      "group": "intl"
+    },
+    {
+      "id": "australia",
+      "name": "Australia",
+      "group": "intl"
+    },
+    {
+      "id": "turkiye",
+      "name": "Türkiye",
+      "group": "intl"
+    },
+    {
+      "id": "greece",
+      "name": "Greece",
+      "group": "intl"
+    },
+    {
+      "id": "italy",
+      "name": "Italy",
+      "group": "intl"
+    },
+    {
+      "id": "spain",
+      "name": "Spain",
+      "group": "intl"
+    },
+    {
+      "id": "portugal",
+      "name": "Portugal",
+      "group": "intl"
+    },
+    {
+      "id": "france",
+      "name": "France",
+      "group": "intl"
+    },
+    {
+      "id": "germany",
+      "name": "Germany",
+      "group": "intl"
+    },
+    {
+      "id": "austria",
+      "name": "Austria",
+      "group": "intl"
+    },
+    {
+      "id": "belgium",
+      "name": "Belgium",
+      "group": "intl"
+    },
+    {
+      "id": "uk",
+      "name": "United Kingdom",
+      "group": "intl"
+    },
+    {
+      "id": "croatia",
+      "name": "Croatia",
+      "group": "intl"
+    },
+    {
+      "id": "poland",
+      "name": "Poland",
+      "group": "intl"
+    },
+    {
+      "id": "usa",
+      "name": "USA",
+      "group": "intl"
+    },
+    {
+      "id": "canada",
+      "name": "Canada",
+      "group": "intl"
+    },
+    {
+      "id": "other",
+      "name": "More",
+      "group": "intl"
+    }
+  ],
+  "holidays": [
+    {
+      "country": "UAE",
+      "name": "Dubai Summer Getaway",
+      "nights": 3,
+      "days": 4,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=70",
+      "tag": "Popular"
+    },
+    {
+      "country": "UAE",
+      "name": "Dubai Jain Comfort Getaway",
+      "nights": 4,
+      "days": 5,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "UAE",
+      "name": "Dubai New Year Celebration with Gala Dinner",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1546412414-e1885259563a?auto=format&fit=crop&w=800&q=70",
+      "tag": "Seasonal"
+    },
+    {
+      "country": "UAE",
+      "name": "Ultimate Dubai Explorer",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1512100356356-de1b84283e18?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "UAE",
+      "name": "Dubai Sky High Thrills Holiday",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=800&q=70",
+      "tag": "Luxury"
+    },
+    {
+      "country": "UAE",
+      "name": "Abu Dhabi Stay And Play Luxury Package",
+      "nights": 2,
+      "days": 3,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "UAE",
+      "name": "Abu Dhabi Grand Experiences with Dubai Day Tour",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1597659840241-37e2b9c2f55f?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "UAE",
+      "name": "Abu Dhabi Express Getaway",
+      "nights": 3,
+      "days": 4,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "UAE",
+      "name": "Abu Dhabi Explorer And Dubai Iconic Tour",
+      "nights": 4,
+      "days": 5,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Singapore",
+      "name": "Gardens to Galaxies: A Family Voyage in Singapore",
+      "nights": 3,
+      "days": 4,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=70",
+      "tag": "Family"
+    },
+    {
+      "country": "Singapore",
+      "name": "Sweet Escapes: Honeymoon Singapore Getaway",
+      "nights": 3,
+      "days": 4,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1565967511849-76a60a516170?auto=format&fit=crop&w=800&q=70",
+      "tag": "Honeymoon"
+    },
+    {
+      "country": "Singapore",
+      "name": "Ride, Slide, Explore: A Young Traveler's Trail",
+      "nights": 6,
+      "days": 7,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Singapore",
+      "name": "Cruise & Nightlife: The Ultimate Singapore Escape",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1565967511849-76a60a516170?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Singapore",
+      "name": "Love Across Borders: Singapore & Malaysia for Two",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Thailand",
+      "name": "Thailand Holiday Package (Bangkok & Pattaya)",
+      "nights": 4,
+      "days": 5,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Georgia",
+      "name": "Georgia Holiday Package (Tbilisi & Gudauri)",
+      "nights": 4,
+      "days": 5,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1565008576549-57569a49371d?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Saudi Arabia",
+      "name": "Saudi Arabia Discovery (Riyadh & AlUla)",
+      "nights": 4,
+      "days": 5,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "country": "Malaysia",
+      "name": "Malaysia Holiday Package (Kuala Lumpur & Langkawi)",
+      "nights": 5,
+      "days": 6,
+      "price": null,
+      "img": "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=70"
+    }
+  ],
+  "cars": [
+    {
+      "name": "Mercedes E-Class",
+      "type": "Business Sedan",
+      "pax": 3,
+      "trip": 120,
+      "hour": 170,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/Mar-E-cls.jpg"
+    },
+    {
+      "name": "Lexus ES 300h",
+      "type": "Business Sedan",
+      "pax": 3,
+      "trip": 130,
+      "hour": 170,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/Lexus-ES.webp"
+    },
+    {
+      "name": "Tesla Model Y",
+      "type": "Electric SUV",
+      "pax": 4,
+      "trip": 160,
+      "hour": 200,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/Tesla-Model-Y.jpg"
+    },
+    {
+      "name": "BYD Han Flagship",
+      "type": "Electric Sedan",
+      "pax": 3,
+      "trip": 170,
+      "hour": 220,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/BYD-Han-Flagship.jpg"
+    },
+    {
+      "name": "BMW 530i",
+      "type": "Business Sedan",
+      "pax": 3,
+      "trip": 180,
+      "hour": 230,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/bmw-530.jpg"
+    },
+    {
+      "name": "BYD Song+ Flagship",
+      "type": "Electric SUV",
+      "pax": 4,
+      "trip": 180,
+      "hour": 230,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/BYD-Song-Flagship-1.webp"
+    },
+    {
+      "name": "Exeed VX Flagship",
+      "type": "Premium SUV",
+      "pax": 6,
+      "trip": 180,
+      "hour": 270,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/Exeed-VX-Flagship.jpg"
+    },
+    {
+      "name": "BMW 7 Series",
+      "type": "Luxury Sedan",
+      "pax": 3,
+      "trip": 210,
+      "hour": 270,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/bmw-7s-1-scaled.jpg"
+    },
+    {
+      "name": "Mercedes S-Class",
+      "type": "Luxury Sedan",
+      "pax": 3,
+      "trip": 220,
+      "hour": 280,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/2026_mercedes-benz_s-class_sedan_amg-s-63-e-performance_fq_oem_1_815-1.jpg"
+    },
+    {
+      "name": "Mercedes V-Class",
+      "type": "Luxury Van",
+      "pax": 7,
+      "trip": 230,
+      "hour": 310,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/mercedes-marco-polo-front-driving.jpg.webp"
+    },
+    {
+      "name": "GMC Yukon XL",
+      "type": "Full-size SUV",
+      "pax": 7,
+      "trip": 250,
+      "hour": 350,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/GMC-Yukon-XL.webp"
+    },
+    {
+      "name": "Cadillac Escalade",
+      "type": "Luxury SUV",
+      "pax": 6,
+      "trip": 280,
+      "hour": 340,
+      "img": "https://teal-tiger-183550.hostingersite.com/wp-content/uploads/2026/08/Cadillac-Escalade-1.webp"
+    }
+  ],
+  "visas": [
+    {
+      "name": "14 Days UAE Tourist Visa (Single Entry)",
+      "stay": "14 days",
+      "processing": "3–4 working days",
+      "price": 400
+    },
+    {
+      "name": "30 Days UAE Tourist Visa (Single Entry)",
+      "stay": "30 days",
+      "processing": "3–4 working days",
+      "price": 450,
+      "tag": "Most popular"
+    },
+    {
+      "name": "30 Days UAE Tourist Visa (Multiple Entry)",
+      "stay": "30 days",
+      "processing": "3–4 working days",
+      "price": 850
+    },
+    {
+      "name": "60 Days UAE Tourist Visa (Single Entry)",
+      "stay": "60 days",
+      "processing": "3–4 working days",
+      "price": 800
+    },
+    {
+      "name": "60 Days UAE Tourist Visa (Multiple Entry)",
+      "stay": "60 days",
+      "processing": "3–4 working days",
+      "price": 1200
+    },
+    {
+      "name": "96 Hours UAE Transit Visa",
+      "stay": "96 hours",
+      "processing": "2–3 working days",
+      "price": null
+    },
+    {
+      "name": "Express / Urgent UAE Visa",
+      "stay": "14 / 30 / 60 days",
+      "processing": "24–48 hours",
+      "price": null,
+      "tag": "Fast"
+    },
+    {
+      "name": "Saudi Arabia Tourist e-Visa",
+      "stay": "Up to 90 days",
+      "processing": "2–5 working days",
+      "price": null
+    }
+  ],
+  "fallback": [
+    {
+      "name": "Burj Khalifa - At The Top",
+      "loc": "dubai",
+      "cats": [
+        "City Attractions & Live Shows"
+      ],
+      "img": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Alexandra Dhow Cruise in Dubai Marina",
+      "loc": "dubai",
+      "cats": [
+        "Water Based Activities"
+      ],
+      "price": 150,
+      "unit": "person",
+      "img": "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Morning Desert Safari Dubai",
+      "loc": "dubai",
+      "cats": [
+        "Desert Tours & Activities"
+      ],
+      "img": "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Madame Tussauds Dubai",
+      "loc": "dubai",
+      "cats": [
+        "Museums & Historical Sights"
+      ],
+      "img": "https://images.unsplash.com/photo-1546412414-e1885259563a?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Motion Gate Dubai Theme Park",
+      "loc": "dubai",
+      "cats": [
+        "Theme Parks & Water Parks"
+      ],
+      "img": "https://images.unsplash.com/photo-1513889961551-628c1e5e2ee9?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Aquaventure World Waterpark",
+      "loc": "dubai",
+      "cats": [
+        "Theme Parks & Water Parks"
+      ],
+      "img": "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Louvre Abu Dhabi",
+      "loc": "abu-dhabi",
+      "cats": [
+        "Museums & Historical Sights"
+      ],
+      "img": "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Abu Dhabi City Tour with English Speaking Guide",
+      "loc": "abu-dhabi",
+      "cats": [
+        "Sightseeing & City Tours"
+      ],
+      "img": "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=800&q=70"
+    },
+    {
+      "name": "Musandam Day Trip",
+      "loc": "oman",
+      "cats": [
+        "Water Based Activities"
+      ],
+      "img": "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=70"
+    }
+  ]
+}

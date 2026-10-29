@@ -1,0 +1,6 @@
+# Secret API key — never commit
+public_html/api/config.php
+# Saved tours feed (created on the server)
+public_html/api/cache/*.json
+__pycache__/
+.DS_Store

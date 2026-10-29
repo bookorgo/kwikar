@@ -1,0 +1,64 @@
+KWIKAR WEBSITE — HTML / CSS / JS
+=================================
+
+What is inside
+--------------
+public_html/   The complete website. Upload everything in this folder to Hostinger.
+source/        build.py + catalog.json, used to regenerate pages after content changes.
+               (Not needed on the server.)
+
+No admin panel, no online payment. Every booking and enquiry form opens
+WhatsApp (+971 50 559 9243) with the customer's details filled in.
+
+
+Upload to Hostinger (one time)
+------------------------------
+1. hPanel > Websites > kwikar.com > File Manager > open public_html.
+   (Back up / remove the old site files first.)
+2. Upload the CONTENTS of the public_html folder from this zip
+   (including the hidden .htaccess files in public_html, api/ and api/cache/).
+3. Live tours and prices (TravelDesk):
+   - In public_html/api/ copy  config.sample.php  to  config.php
+   - Open config.php and paste the TravelDesk API key between the quotes
+     ('KWIKAR_API_KEY' => 'your-key-here').
+   - Make sure the folder public_html/api/cache is writable (755 is normal).
+   - Test: open https://kwikar.com/api/tours.php — it should start with {"ok":true
+   Tours, prices, ratings and tour photos come ONLY from this API. Without the
+   key, tour sections show "Tours could not be loaded" with a WhatsApp button;
+   holidays, transfers, visas and all other pages work normally.
+4. Hostinger plan must have PHP (Premium has it). Only api/tours.php and
+   api/sitemap-tours.php use PHP; everything else is plain HTML.
+5. Google Search Console: submit https://kwikar.com/sitemap.xml and
+   https://kwikar.com/api/sitemap-tours.php
+
+
+Page addresses (same as the old site, so Google links keep working)
+-------------------------------------------------------------------
+/                     Home
+/attractions          All destinations
+/destinations/dubai   Destination pages (29)
+/activities           All activities;  /activities/cruises etc. (11 categories)
+/tour/12345           Tour detail (live from TravelDesk) + booking request
+/holidays /transfers /visa /contact /about
+/privacy /terms /booking-information /refund-policy
+/search?q=...
+Old addresses (/home.html, /tour.html?id=..., /bookings, /admin ...) redirect
+automatically (see public_html/.htaccess).
+
+
+Changing content (holidays, cars, visas, destinations)
+------------------------------------------------------
+Edit source/data/catalog.json, then run:   python3 source/build.py
+It rewrites the HTML pages in public_html. Upload the changed files.
+(Or simply ask Claude to make the change.)
+
+
+Please review
+-------------
+- Privacy, Terms, Refund and Booking information pages were rewritten for the
+  WhatsApp-only process (no Stripe / card authorisation). Check the wording.
+- Destination, holiday and page photos are stored in assets/img/u (no outside
+  image sites needed).
+- Car photos still load from teal-tiger-183550.hostingersite.com (your
+  WordPress uploads). If that site is removed, put the car photos in
+  assets/img and update the "img" values for cars in source/data/catalog.json.
