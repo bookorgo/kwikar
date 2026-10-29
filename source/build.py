@@ -1188,7 +1188,8 @@ def clean_output():
         full = os.path.join(OUT, name)
         if os.path.isdir(full) and name not in keep and not name.startswith('.'):
             shutil.rmtree(full)
-        elif os.path.isfile(full) and (name.endswith(('.html', '.xml')) or name in ('robots.txt', '.htaccess')):
+        elif os.path.isfile(full) and (name.endswith(('.html', '.xml')) or name in ('robots.txt', '.htaccess')) \
+                and not re.match(r'(google[0-9a-f]+\.html|BingSiteAuth\.xml)$', name):   # search-engine verification files stay
             os.remove(full)
     for old in ('assets/css/style.css', 'assets/js/site.js', 'assets/js/tours.js', 'assets/js/catalog.js'):
         try:
