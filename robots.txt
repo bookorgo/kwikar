@@ -1,6 +1,12 @@
+# Search engines and AI search (ChatGPT search = OAI-SearchBot) may crawl the site.
 User-agent: *
 Allow: /
 Disallow: /search
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /search
+Disallow: /api/
 
 Sitemap: https://kwikar.com/sitemap.xml
-Sitemap: https://kwikar.com/api/sitemap-tours.php
