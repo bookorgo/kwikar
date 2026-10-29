@@ -266,7 +266,7 @@ def section_head(title, view_href=None, carousel=False, kicker=None):
 
 
 def page_hero(kicker, title, subtitle, image, cta=True):
-    btn = f'<a class="btn wa mt" href="{e(wa(f"Hi KWIKAR, I would like to enquire about {title}"))}" target="_blank" rel="noopener">Plan with us on WhatsApp ↗</a>' if cta else ''
+    btn = f'<a class="btn mt" href="{e(wa(f"Hi KWIKAR, I would like to enquire about {title}"))}" target="_blank" rel="noopener">Plan with us ↗</a>' if cta else ''
     return f'''<section class="page-hero"><div class="container wide page-hero-grid">
   <div><span class="kicker">{e(kicker)}</span><h1>{e(title)}</h1><p>{e(subtitle)}</p>{btn}</div>
   <div class="photo"><img src="{e(image)}" alt="" fetchpriority="high"></div>
@@ -274,21 +274,20 @@ def page_hero(kicker, title, subtitle, image, cta=True):
 
 
 def holiday_card(h, extra_attr=''):
-    tag = f'<span class="badge">{e(h["tag"])}</span> ' if h.get('tag') else ''
     return f'''<article class="box-card hoverable"{extra_attr}>
   <div class="media tone-sea"><img src="{e(h["img"])}" alt="{e(h["name"])}" loading="lazy"></div>
-  <div class="box-body"><p class="tag">{tag}{e(h["country"])} · {h["nights"]} nights / {h["days"]} days</p><h3>{e(h["name"])}</h3>
-  <p class="muted">Get a tailored quote for your dates and preferred hotels.</p>
-  <div class="actions"><a class="link" href="{e(wa(f"Hi KWIKAR, please quote {h['name']} for my travel dates."))}" target="_blank" rel="noopener">Request a quote on WhatsApp ↗</a></div></div>
+  <div class="box-body"><p class="eyebrow-blue">{e(h["country"])} · {h["nights"]} nights / {h["days"]} days</p><h3>{e(h["name"])}</h3>
+  <p class="muted">Get a tailored quote for your dates.</p>
+  <div class="actions"><a class="link" href="{e(wa(f"Hi KWIKAR, please quote {h['name']} for my travel dates."))}" target="_blank" rel="noopener">Request a quote ↗</a></div></div>
 </article>'''
 
 
 def car_card(c, extra_attr=''):
     return f'''<article class="box-card hoverable"{extra_attr}>
-  <div class="media tone-car"><img src="{e(c["img"])}" alt="{e(c["name"])}" loading="lazy"></div>
-  <div class="box-body"><p class="tag">{e(c["type"])} · up to {c["pax"]} guests</p><h3>{e(c["name"])}</h3>
-  <p class="muted">Price depends on route and timing — see the estimator above or ask for a quote.</p>
-  <div class="actions"><a class="link" href="#transfer-enquiry" data-pick="{e(c["name"])}" data-pick-target="t-vehicle">Request this vehicle ↗</a><a class="link" href="tel:+{PHONE}">Call</a></div></div>
+  <div class="media car-media"><img src="{e(c["img"])}" alt="{e(c["name"])}" loading="lazy"></div>
+  <div class="box-body"><p class="eyebrow-blue">{e(c["type"])} · up to {c["pax"]} guests</p><h3>{e(c["name"])}</h3>
+  <p class="muted">Pricing depends on the route and booking details. See the standard journey estimator above.</p>
+  <div class="actions"><a class="link" href="#transfer-enquiry" data-pick="{e(c["name"])}" data-pick-target="t-vehicle">Request this vehicle ↗</a><span class="muted">·</span><a class="link" href="tel:+{PHONE}">Call</a></div></div>
 </article>'''
 
 
@@ -467,10 +466,6 @@ def build_listings():
     for l in LOCATIONS:
         uae = l['group'] == 'uae'
         img = l.get('img') or '/assets/img/hero-dubai-mobile.webp'
-        if l['id'] == 'abu-dhabi':
-            img = '/assets/img/hero-abu-dhabi.webp'
-        if l['id'] == 'dubai':
-            img = '/assets/img/hero-dubai.webp'
         main = f'''<section class="page-hero"><div class="container wide page-hero-grid">
   <div><nav class="breadcrumb" aria-label="Breadcrumb"><a href="/attractions">Destinations</a> / {e(l["name"])}</nav>
   <span class="kicker">{"United Arab Emirates" if uae else "Worldwide experiences"}</span>
@@ -608,11 +603,11 @@ def build_transfers():
 
 def build_visa():
     def vcard(v):
-        tag = f'<span class="badge">{e(v["tag"])}</span> ' if v.get('tag') else ''
+        tag = ''
         price = f'From {money(v["price"])} · final fee confirmed by our team' if v.get('price') else 'Fee on request'
         return f'''<article class="visa-card"><p class="eyebrow-blue">{tag}{e(v["stay"])} · Estimate {e(v["processing"])}</p><h3>{e(v["name"])}</h3>
           <p class="muted">{e(price)}</p><p class="actions" style="margin-top:14px"><a class="link" href="#visa-enquiry" data-pick="{e(v["name"])}" data-pick-target="v-type">Ask about this visa ↗</a></p></article>'''
-    groups = ''.join(f'<h2 class="group-title">{g}</h2><div class="grid-4">{"".join(vcard(v) for v in VISAS if ("UAE" in v["name"]) == (g == "UAE visas"))}</div>' for g in ('UAE visas', 'Other destinations'))
+    groups = ''.join(f'<h2 class="group-title">{g}</h2><div class="grid-3">{"".join(vcard(v) for v in VISAS if ("UAE" in v["name"]) == (g == "UAE visas"))}</div>' for g in ('UAE visas', 'Other destinations'))
     opts = ''.join(f'<option>{e(v["name"])}</option>' for v in VISAS)
     faqs = [('Is approval guaranteed?', 'No. Visa decisions are made by the issuing authority. We help you understand requirements and submit your application.'),
             ('How long does processing take?', 'Processing estimates vary by visa and application. We confirm the current expected timing before you apply.'),

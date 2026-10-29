@@ -8,7 +8,7 @@
   'use strict';
   var KW = window.KW, D = KW.data, esc = KW.esc;
   var FALLBACK_IMG = KW.u('/assets/img/hero-dubai-mobile.webp');
-  var placeName = function (id) { var l = D.locations.filter(function (x) { return x.id === id; })[0]; return l ? l.name : 'More destinations'; };
+  var placeName = function (id) { var l = D.locations.filter(function (x) { return x.id === id; })[0]; return l ? l.name : 'More'; };
   var place = function (id) { return D.locations.filter(function (x) { return x.id === id; })[0]; };
 
   /* ---------- feed ---------- */
@@ -59,14 +59,14 @@
     return live && t.id ? KW.u('/tour/' + t.id) : KW.whatsapp('Hi KWIKAR, I am interested in ' + t.name + '.');
   };
 
-  KW.tourCard = function (t, live) {
+  KW.tourCard = function (t, live, short) {
     var href = KW.tourHref(t, live), ext = href.indexOf('https://wa.me') === 0 ? ' target="_blank" rel="noopener"' : '';
     var cat = t.cats && t.cats.length ? ' · ' + (t.cats.filter(function (c) { return /desert/i.test(t.name) && /desert/i.test(c); })[0] || t.cats[0]) : '';
     var review = KW.reviewText(t.rating, t.reviews);
     var price = live && t.price ? 'From <strong>' + KW.money(t.price) + '</strong>' + (t.unit ? ' / ' + esc(t.unit) : '') : 'Price on request';
     return '<article class="exp-card">' +
       '<a href="' + esc(href) + '"' + ext + ' class="media tall" aria-label="' + esc(t.name) + '"><img src="' + esc(t.img || FALLBACK_IMG) + '" alt="' + esc(t.name) + '" loading="lazy"></a>' +
-      '<p class="tag">' + esc(placeName(t.loc)) + esc(cat) + '</p>' +
+      '<p class="tag">' + esc(placeName(t.loc)) + (short ? '' : esc(cat)) + '</p>' +
       '<h3><a href="' + esc(href) + '"' + ext + '>' + esc(t.name) + '</a></h3>' +
       (review ? '<p class="rating">' + esc(review) + '</p>' : '') +
       '<p class="price">' + price + '</p>' +
@@ -102,7 +102,7 @@
         .sort(function (a, b) { return (b.reviews || 0) - (a.reviews || 0); })
         .filter(function (t) { if (seen[t.img]) return false; seen[t.img] = 1; return true; }).slice(0, 12);
       if (list.length) {
-        best.innerHTML = list.map(function (t) { return KW.tourCard(t, true); }).join('');
+        best.innerHTML = list.map(function (t) { return KW.tourCard(t, true, true); }).join('');
         KW.watchImages(best);
       } else best.innerHTML = KW.unavailable('compact');
       document.querySelectorAll('[data-city]').forEach(function (el) {
@@ -327,7 +327,7 @@
       var ogT = document.querySelector('meta[property="og:title"]'); if (ogT) ogT.content = t.name;
       if (t.img) { var ogI = document.querySelector('meta[property="og:image"]'); if (ogI) ogI.content = t.img; }
       var fp = fromPrice(t);
-      var photos = [t.img].concat(t.photos || []).filter(Boolean).slice(0, 4);
+      var photos = [t.img].concat(t.photos || []).filter(Boolean).slice(0, 3);
       var review = KW.reviewText(t.rating, t.reviews);
       var cancel = (t.cancellation || []).filter(Boolean);
       var hours = null;
@@ -348,9 +348,9 @@
         '<div class="container wide tour-page">' +
         '<nav class="breadcrumb" aria-label="Breadcrumb"><a href="' + KW.u('/') + '">Home</a> / ' + (loc ? '<a href="' + KW.u('/destinations/' + loc.id) + '">' + esc(loc.name) + '</a> / ' : '<a href="' + KW.u('/activities') + '">Experiences</a> / ') + esc(t.name) + '</nav>' +
         '<h1>' + esc(t.name) + '</h1>' +
-        '<p class="tour-meta">' + esc(loc ? loc.name : '') + (t.categories && t.categories.length ? ' · ' + esc(t.categories.join(' · ')) : '') + (review ? ' · <span class="rating">' + esc(review) + '</span>' : '') + '</p>' +
+        '<p class="tour-meta">' + esc(loc ? loc.name : 'More') + (review ? ' · <span class="rating">' + esc(review) + '</span>' : '') + '</p>' +
         (photos.length ? '<div class="gallery n' + photos.length + '">' + photos.map(function (src, i) { return '<img src="' + esc(src) + '" alt="' + esc(t.name) + ' photo ' + (i + 1) + '"' + (i ? ' loading="lazy"' : '') + '>'; }).join('') + '</div>' : '') +
-        '<div class="badges">' + (hours ? '<span>Free cancellation up to ' + esc(hours) + ' hours before</span>' : '') + '<span>' + (pickup ? 'Transfer options available' : 'Meet at location') + '</span><span>Book on WhatsApp</span><span>No booking or card fees</span></div>' +
+        '<div class="badges">' + (hours ? '<span>Free cancellation up to ' + esc(hours) + ' hours before</span>' : '') + '<span>' + (pickup ? 'Transfer options available' : 'Meet at location') + '</span><span>Book on WhatsApp</span></div>' +
         '<div class="tour-grid"><div>' +
         (t.description ? '<section class="block"><h2>Overview</h2><div class="rich">' + t.description + '</div></section>' : '') +
         (t.offers.length ? '<section class="block"><h2>Available options</h2>' + offersHtml + '</section>' : '') +
@@ -358,7 +358,7 @@
         (t.faq && t.faq.length ? '<section class="block"><h2>Questions</h2>' + t.faq.map(function (f) { return '<details class="faq"><summary>' + esc(f.q) + '</summary><p>' + esc(f.a) + '</p></details>'; }).join('') + '</section>' : '') +
         (cancel.length ? '<section class="block"><h2>Cancellation policy</h2>' + cancel.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</section>' : '') +
         (t.terms ? '<section class="block"><h2>Terms</h2><div class="rich">' + t.terms + '</div></section>' : '') +
-        '</div><aside><div class="book-card"><span>From</span><strong>' + (fp ? KW.money(fp.amount) : 'Price on request') + '</strong><small>' + (fp ? fp.unit + ' · final price confirmed on WhatsApp' : 'Our team will confirm the price') + '</small>' +
+        '</div><aside><div class="book-card"><span>From</span><strong>' + (fp ? KW.money(fp.amount) : 'Price on request') + '</strong><small>' + (fp ? fp.unit + ' · no booking or card fees' : 'Our team will confirm the price') + '</small>' +
         '<button class="btn block" type="button" data-book>Check availability</button>' +
         '<a class="call" href="tel:+' + KW.phone + '">Need help? Call +971 50 559 9243</a></div></aside></div></div>' +
         '<div class="sticky-book"><div><span>From</span><strong>' + (fp ? KW.money(fp.amount) : 'On request') + '</strong></div><button class="btn" type="button" data-book>Check availability</button></div>';
