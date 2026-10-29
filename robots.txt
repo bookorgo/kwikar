@@ -9,4 +9,9 @@ Allow: /
 Disallow: /search
 Disallow: /api/
 
+User-agent: GPTBot
+Allow: /
+Disallow: /search
+Disallow: /api/
+
 Sitemap: https://kwikar.com/sitemap.xml
