@@ -135,7 +135,7 @@
     var grid = main.querySelector('[data-grid]'), countEl = main.querySelector('[data-count-title]');
     var sortSel = main.querySelector('[data-sort]'), destSel = main.querySelector('[data-dest-select]'), moreBtn = main.querySelector('[data-more]');
     var forms = main.querySelectorAll('[data-list-search]');
-    var PAGE = 24, visible = PAGE, sort = 'popular', selected = 'all', query = '', data = null;
+    var PAGE = 24, visible = PAGE, sort = 'popular', selected = 'all', query = '', data = null, lastCount = 0;
     if (kind === 'search') { query = (params.get('q') || '').slice(0, 100); selected = params.get('destination') || 'all'; }
     forms.forEach(function (f) { f.querySelector('input').value = query; });
 
@@ -161,6 +161,7 @@
         if (query || selected !== 'all') document.title = h.textContent + ' | KWIKAR';
       }
       render();
+      if (kind === 'search' && query) KW.track('site_search', { search_term: query, results: lastCount });
     }).catch(function () { /* keep the HTML cards */ });
 
     forms.forEach(function (f) {
@@ -170,14 +171,17 @@
         forms.forEach(function (o) { o.querySelector('input').value = query; });
         visible = PAGE;
         if (data) render();
+        if (query) KW.track('site_search', { search_term: query, results: lastCount, page_path: location.pathname });
         document.getElementById('kw-page-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
-    if (sortSel) sortSel.addEventListener('change', function () { sort = sortSel.value; if (data) render(); });
-    if (destSel) destSel.addEventListener('change', function () { selected = destSel.value; visible = PAGE; if (data) render(); });
+    var filterEvent = function (type, value) { KW.track('filter_apply', { filter_type: type, filter_value: value, page_path: location.pathname }); };
+    if (sortSel) sortSel.addEventListener('change', function () { sort = sortSel.value; if (data) render(); filterEvent('sort', sort); });
+    if (destSel) destSel.addEventListener('change', function () { selected = destSel.value; visible = PAGE; if (data) render(); filterEvent('destination', selected); });
     main.querySelectorAll('[data-place-id]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         selected = selected === btn.dataset.placeId ? 'all' : btn.dataset.placeId;
+        filterEvent('destination', selected);
         if (destSel) destSel.value = selected;
         visible = PAGE;
         if (data) render();
@@ -220,6 +224,7 @@
       main.querySelectorAll('[data-place-id]').forEach(function (b) { b.classList.toggle('selected', b.dataset.placeId === selected); });
       var sing = { yachts: 'yacht', cruises: 'cruise', events: 'event' }[slug] || 'experience';
       var plur = { yachts: 'yachts', cruises: 'cruises', events: 'events' }[slug] || 'experiences';
+      lastCount = list.length;
       countEl.textContent = list.length + ' ' + (list.length === 1 ? sing : plur);
       if (list.length) grid.innerHTML = list.slice(0, visible).map(card).join('');
       else {
@@ -341,6 +346,7 @@
   if (tourEl) {
     var tour = null;
     try { tour = JSON.parse(tourEl.textContent); } catch (e) { /* ignore */ }
+    if (tour) KW.track('product_view', { item_id: String(tour.id), item_name: tour.name, page_path: location.pathname });
     if (tour) document.querySelectorAll('[data-book]').forEach(function (b) {
       b.addEventListener('click', function () {
         KW.track('check_availability_click', { item_id: String(tour.id), item_name: tour.name });
