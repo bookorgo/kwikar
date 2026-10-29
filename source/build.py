@@ -2,12 +2,15 @@
 """
 KWIKAR static site generator.
 
-Reads data/catalog.json and writes plain HTML pages into ../kwikar-site/public_html.
-Run:  python3 build.py
-Edit holidays, cars, visas or destinations in data/catalog.json, then run again.
+Reads data/catalog.json (holidays, cars, visas, destinations) and the live tours
+API, and writes plain HTML pages into ../public_html.
+
+Run:  python3 build.py                 (loads tours from https://kwikar.com/api/tours.php)
+      python3 build.py --feed FILE.json (use a saved feed, for offline testing)
 """
-import json, html, os, re, datetime
+import json, html, os, re, sys, datetime
 from urllib.parse import quote
+import tours_feed as tf
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(ROOT, '..', 'public_html'))
@@ -15,11 +18,34 @@ SITE = 'https://kwikar.com'
 PHONE = '971505599243'
 PHONE_FMT = '+971 50 559 9243'
 EMAIL = 'info@kwikar.com'
-VERSION = datetime.datetime.now().strftime('%Y%m%d%H%M')
+def _asset_version():
+    import hashlib
+    h = hashlib.sha1()
+    for f in ('assets/css/style.css', 'assets/js/site.js', 'assets/js/tours.js'):
+        try:
+            h.update(open(os.path.join(OUT, f), 'rb').read())
+        except OSError:
+            pass
+    return h.hexdigest()[:10]
+
+
+VERSION = _asset_version()  # changes only when CSS/JS change
+TODAY = datetime.date.today().isoformat()
+
+# Optional: fill these in to switch on analytics / search-engine verification.
+CONFIG = {}
+try:
+    CONFIG = json.load(open(os.path.join(ROOT, 'data', 'site-config.json'), encoding='utf-8'))
+except Exception:
+    pass
+GA4_ID = CONFIG.get('ga4_id', '').strip()
+GOOGLE_VERIFY = CONFIG.get('google_site_verification', '').strip()
+BING_VERIFY = CONFIG.get('bing_site_verification', '').strip()
 
 cat = json.load(open(os.path.join(ROOT, 'data', 'catalog.json'), encoding='utf-8'))
-LOCATIONS = [l for l in cat['locations'] if l['id'] != 'other']
-HOLIDAYS, CARS, VISAS, FALLBACK = cat['holidays'], cat['cars'], cat['visas'], cat['fallback']
+LOCATIONS = cat['locations']  # includes 'other' (shown as "More")
+REAL_LOCATIONS = [l for l in LOCATIONS if l['id'] != 'other']
+HOLIDAYS, CARS, VISAS = cat['holidays'], cat['cars'], cat['visas']
 CATEGORIES = [
     {'slug': 'city-tours', 'name': 'City tours', 'term': 'city tour'},
     {'slug': 'theme-parks', 'name': 'Theme parks', 'term': 'theme park'},
@@ -33,6 +59,64 @@ CATEGORIES = [
     {'slug': 'yachts', 'name': 'Yachts', 'term': 'yacht'},
     {'slug': 'events', 'name': 'Events', 'term': 'event|concert|festival|performance|live show'},
 ]
+
+
+# ---------------------------------------------------------------- live tours
+def _load_tours():
+    if '--feed' in sys.argv:
+        data = json.load(open(sys.argv[sys.argv.index('--feed') + 1], encoding='utf-8'))
+        return data['items'], {int(k): v for k, v in data['details'].items()}, data.get('updated', '')
+    return tf.load_feed()
+
+
+ALL_TOURS, DETAILS, FEED_UPDATED = _load_tours()
+TOURS = tf.popular([t for t in ALL_TOURS if tf.visible(t)])      # what listings show
+if len(TOURS) < 10:
+    raise SystemExit(f'Only {len(TOURS)} tours loaded — refusing to build a site without tours.')
+SLUGS = tf.assign_slugs(ALL_TOURS)                                 # id -> /activities/{city}/{slug}
+LIVE_IDS = {str(t['id']) for t in ALL_TOURS}
+LIVE_LOCS = {t['loc'] for t in TOURS}
+CAT_COUNT = {c['slug']: sum(1 for t in TOURS if tf.matches_category(t, c['slug'], c['term'])) for c in CATEGORIES}
+LIVE_CATS = [c for c in CATEGORIES if CAT_COUNT[c['slug']]]
+try:
+    EXTRAS = {k: v for k, v in json.load(open(os.path.join(ROOT, 'data', 'tour-extras.json'), encoding='utf-8')).items() if not k.startswith('_')}
+except Exception:
+    EXTRAS = {}
+try:
+    CHECKED = datetime.datetime.fromisoformat(FEED_UPDATED.replace('Z', '+00:00')).strftime('%-d %b %Y')
+except Exception:
+    CHECKED = datetime.date.today().strftime('%-d %b %Y')
+
+
+def tour_href(t):
+    return SLUGS.get(str(t['id'])) or f"/tour/{t['id']}"
+
+
+def place_name(loc_id):
+    if loc_id in (None, '', 'other'):
+        return 'UAE'
+    l = next((x for x in LOCATIONS if x['id'] == loc_id), None)
+    return l['name'] if l else 'UAE'
+
+
+def tour_cards(tours, short=False):
+    return ''.join(tf.card(t, place_name(t['loc']), tour_href(t), short) for t in tours)
+
+
+# City hubs for tours: /activities/{city}. 'other' tours are UAE-wide.
+CITY_IDS = []
+for _t in TOURS:
+    _c = tf.city_of(_t['loc'])
+    if _c not in CITY_IDS:
+        CITY_IDS.append(_c)
+
+
+def city_tours(city):
+    return [t for t in TOURS if tf.city_of(t['loc']) == city]
+
+
+def city_label(city):
+    return 'the UAE' if city == 'uae' else place_name(city)
 
 
 def e(s):
@@ -92,13 +176,15 @@ def icon(name, cls='ico', color=None):
 
 
 # ---------------------------------------------------------------- navigation
-UAE = [l for l in LOCATIONS if l['group'] == 'uae']
+UAE = [l for l in REAL_LOCATIONS if l['group'] == 'uae']
 INTL_MENU = [loc(i) for i in ['singapore', 'bali', 'thailand', 'malaysia'] if loc(i)]
+LIVE_UAE = [l for l in UAE if l['id'] in LIVE_LOCS]
+LIVE_INTL_MENU = [l for l in INTL_MENU if l['id'] in LIVE_LOCS]
 EXPERIENCE_TERMS = [('City Tours', 'city tour'), ('Theme Parks', 'theme park'), ('Desert Adventures', 'desert'), ('Water Activities', 'water'),
                     ('Cultural Experiences', 'museum'), ('Family Activities', 'family'), ('Luxury Experiences', 'luxury'), ('Attraction Tickets', 'ticket')]
 
 NAV = [
-    ('Destinations', '/attractions', 'flag', '#ff6a21'),
+    ('Destinations', '/destinations', 'flag', '#ff6a21'),
     ('Activities', '/activities', 'mountain', '#08b9bb'),
     ('Holidays', '/holidays', 'plane', '#5969e9'),
     ('Visas', '/visa', 'doc', '#ff9516'),
@@ -106,14 +192,13 @@ NAV = [
     ('Transfers', '/transfers', 'car', '#2aba87'),
 ]
 MENUS = {
-    'Activities': [('Explore activities', [('City tours', '/activities/city-tours'), ('Desert adventures', '/activities/desert-adventures'), ('Theme parks', '/activities/theme-parks'), ('Water activities', '/activities/water-activities'), ('Events', '/activities/events')]),
-                   ('Popular choices', [('Burj Khalifa', '/search?q=Burj%20Khalifa'), ('Dubai desert safari', '/search?q=desert%20safari'), ('Abu Dhabi tours', '/destinations/abu-dhabi'), ('Yachts', '/activities/yachts')])],
+    'Activities': [('Explore activities', [('City tours', '/activities/city-tours'), ('Desert adventures', '/activities/desert-adventures'), ('Theme parks', '/activities/theme-parks'), ('Water activities', '/activities/water-activities')]),
+                   ('Popular choices', [('Burj Khalifa', '/search?q=Burj%20Khalifa'), ('Dubai safari', '/search?q=desert%20safari'), ('Abu Dhabi tours', '/destinations/abu-dhabi')])],
     'Holidays': [('Holiday destinations', [(c, f'/holidays?country={quote(c)}') for c in dict.fromkeys(h['country'] for h in HOLIDAYS)]),
                  ('Plan your trip', [('All holiday packages', '/holidays'), ('Request a tailored holiday', '/contact')])],
     'Visas': [('UAE visa options', [(v['name'], f"/visa?type={quote(v['name'])}#visa-enquiry") for v in VISAS if 'UAE' in v['name']]),
               ('Other visa assistance', [(v['name'], f"/visa?type={quote(v['name'])}#visa-enquiry") for v in VISAS if 'UAE' not in v['name']])],
-    'Cruises': [('Cruise experiences', [('All cruises', '/activities/cruises'), ('Dubai Marina cruises', '/search?q=marina%20cruise'), ('Dhow cruises', '/search?q=dhow%20cruise'), ('Dinner cruises', '/search?q=dinner%20cruise')]),
-                ('On the water', [('Yacht experiences', '/activities/yachts'), ('Water activities', '/activities/water-activities')])],
+    'Cruises': [('Cruise experiences', [('All cruises', '/activities/cruises'), ('Dubai Marina cruises', '/search?q=marina%20cruise'), ('Dhow cruises', '/search?q=dhow%20cruise'), ('Dinner cruises', '/search?q=dinner%20cruise')])],
     'Transfers': [('Your transfer', [('Airport transfers', '/transfers?service=Airport%20transfer#transfer-enquiry'), ('Point to point', '/transfers?service=Point%20to%20point#transfer-enquiry'), ('Hourly chauffeur', '/transfers?service=Hourly%20chauffeur#transfer-enquiry')]),
                   ('Browse vehicles', [(t, f'/transfers?type={quote(t)}') for t in dict.fromkeys(c['type'] for c in CARS)])],
 }
@@ -125,23 +210,23 @@ def mega(label, href):
         def dest(l):
             img = f'<img src="{e(l["img"])}" alt="" loading="lazy">' if l.get('img') else '<span class="thumb tone-city"></span>'
             sub = 'United Arab Emirates' if l['group'] == 'uae' else 'International experiences'
-            return f'<a class="mega-dest" href="/destinations/{l["id"]}">{img}<span><strong>{e(l["name"])}</strong><small>{sub}</small></span></a>'
-        cols = (f'<div class="mega-col"><h3>UAE destinations</h3>{"".join(dest(l) for l in UAE)}</div>'
-                f'<div class="mega-col"><h3>International</h3>{"".join(dest(l) for l in INTL_MENU)}<a href="/attractions">All destinations {arrow}</a></div>'
+            return f'<a class="mega-dest" href="/destinations/{l["id"]}" data-menu-loc="{l["id"]}">{img}<span><strong>{e(l["name"])}</strong><small>{sub}</small></span>{arrow}</a>'
+        cols = (f'<div class="mega-col"><h3>UAE destinations</h3>{"".join(dest(l) for l in LIVE_UAE) or "<a class=mega-empty href=/activities>Explore UAE experiences</a>"}</div>'
+                f'<div class="mega-col"><h3>International destinations</h3>{"".join(dest(l) for l in LIVE_INTL_MENU) or "<a class=mega-empty href=/contact>Ask about worldwide experiences</a>"}</div>'
                 f'<div class="mega-col"><h3>Experiences</h3>{"".join(f"<a href=\"/search?q={quote(q)}\">{e(n)} {arrow}</a>" for n, q in EXPERIENCE_TERMS)}</div>'
-                '<a class="mega-feature" href="/destinations/dubai"><small>ICONIC · MODERN · UNFORGETTABLE</small><strong>Explore Dubai</strong><p>Landmarks, desert adventures and memorable days in the city.</p></a>')
+                '<a class="mega-feature" href="/destinations/dubai"><small>ICONIC · MODERN · UNFORGETTABLE</small><strong>Explore Dubai</strong><p>Landmarks, desert adventures and memorable days in the city.</p><span class="mega-feature-btn">Explore Dubai →</span></a>')
     else:
         groups = ''.join(f'<div class="mega-col"><h3>{e(t)}</h3>{"".join(f"<a href=\"{e(h)}\">{e(n)} {arrow}</a>" for n, h in items)}</div>' for t, items in MENUS[label])
-        cols = (f'<div class="mega-col mega-intro"><span>Explore KWIKAR</span><h2>{label}</h2><p>Find your next experience or tell us what you have in mind.</p>'
+        cols = (f'<div class="mega-col mega-intro"><span class="kicker">Explore KWIKAR</span><h2>{label}</h2><p>Find your next experience or tell us what you have in mind.</p>'
                 f'<a class="link" href="{href}">View all {label.lower()} →</a></div>{groups}'
-                '<div class="mega-help"><strong>Need help planning?</strong><p>Share your dates and interests. Our team will confirm options and prices on WhatsApp.</p>'
+                '<div class="mega-help"><strong>Need help planning?</strong><p>Share your dates and interests. Our team will confirm options and prices.</p>'
                 '<a class="link" href="/contact">Contact KWIKAR →</a></div>')
     return f'<div class="mega" id="menu-{label.lower()}"><div class="mega-inner">{cols}</div></div>'
 
 
 def shortcuts(active):
     prim = [('Activities', '/activities', 'ferris'), ('Holidays', '/holidays', 'bag'), ('Transfers', '/transfers', 'car'), ('Visas', '/visa', 'id')]
-    more = [('Destinations', '/attractions'), ('Cruises', '/activities/cruises'), ('Events', '/activities/events')]
+    more = [(t, h) for t, h, slug in [('Destinations', '/destinations', None), ('Cruises', '/activities/cruises', 'cruises'), ('Events', '/activities/events', 'events')] if not slug or CAT_COUNT.get(slug)]
     items = ''.join(f'<a class="sc{" on" if active == t else ""}" href="{h}"><span><svg viewBox="0 0 24 24">{ICON[i]}</svg></span>{t}</a>' for t, h, i in prim)
     extra = ''.join(f'<a href="{h}">{t}<span aria-hidden="true">→</span></a>' for t, h in more)
     return (f'<nav class="shortcuts" aria-label="Travel services">{items}'
@@ -179,7 +264,7 @@ def header(active):
 {shortcuts(active)}'''
 
 
-FOOTER_LINKS = [('/attractions', 'Destinations'), ('/activities', 'Activities'), ('/destinations/dubai', 'Dubai'), ('/holidays', 'Holidays'),
+FOOTER_LINKS = [('/destinations', 'Destinations'), ('/activities', 'Activities'), ('/destinations/dubai', 'Dubai'), ('/holidays', 'Holidays'),
                 ('/transfers', 'Transfers'), ('/visa', 'Visa'), ('/contact', 'Contact'), ('/about', 'About'), ('/privacy', 'Privacy policy'),
                 ('/terms', 'Terms & conditions'), ('/booking-information', 'Booking information'), ('/refund-policy', 'Refund & cancellation')]
 
@@ -207,10 +292,38 @@ def footer(path):
 <a href="{e(wa("Hi KWIKAR, I would like help planning my trip."))}" class="wa-float" target="_blank" rel="noopener" aria-label="Chat with KWIKAR on WhatsApp">WhatsApp</a>'''
 
 
+ORG_LD = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {'@type': 'TravelAgency', '@id': SITE + '/#organization', 'name': 'KWIKAR', 'legalName': 'Kwikar LLC-FZ', 'url': SITE + '/',
+         'logo': SITE + '/assets/img/logo.webp', 'image': SITE + '/assets/img/kwikar-share.webp', 'telephone': '+' + PHONE,
+         'email': EMAIL, 'address': {'@type': 'PostalAddress', 'addressCountry': 'AE'}, 'areaServed': 'United Arab Emirates'},
+        {'@type': 'WebSite', '@id': SITE + '/#website', 'url': SITE + '/', 'name': 'KWIKAR', 'publisher': {'@id': SITE + '/#organization'}},
+    ],
+}
+
+
+def crumbs_ld(crumbs):
+    return {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+        {'@type': 'ListItem', 'position': i + 1, 'name': n, 'item': SITE + (u if u != '/' else '/')} for i, (n, u) in enumerate(crumbs)]}
+
+
+def ld(obj):
+    return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False).replace('</', '<\\/') + '</script>'
+
+
 def page(path, title, desc, main, active=None, scripts=('site',), noindex=False, body_class='', og_image='/assets/img/kwikar-share.webp',
-         full_title=False, head_extra='', canonical=True):
+         full_title=False, head_extra='', canonical=True, crumbs=None, og_type='website'):
     t = title if full_title else f'{title} | KWIKAR'
     url = SITE + (path if path != '/' else '/')
+    head_extra = ld(ORG_LD) + (ld(crumbs_ld(crumbs)) if crumbs else '') + head_extra
+    if GOOGLE_VERIFY:
+        head_extra += f'<meta name="google-site-verification" content="{e(GOOGLE_VERIFY)}">'
+    if BING_VERIFY:
+        head_extra += f'<meta name="msvalidate.01" content="{e(BING_VERIFY)}">'
+    if GA4_ID:
+        head_extra += (f'<script async src="https://www.googletagmanager.com/gtag/js?id={e(GA4_ID)}"></script>'
+                       f"<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}gtag('js',new Date());gtag('config','{e(GA4_ID)}');</script>")
     scripts_html = ''.join(f'<script src="/assets/js/{s}.js?v={VERSION}" defer></script>' for s in scripts)
     og = og_image if og_image.startswith('http') else SITE + og_image
     doc = f'''<!doctype html>
@@ -222,7 +335,7 @@ def page(path, title, desc, main, active=None, scripts=('site',), noindex=False,
 <meta name="description" content="{e(desc)}">
 {'<meta name="robots" content="noindex">' if noindex else ''}
 {f'<link rel="canonical" href="{url}">' if canonical else '<link rel="canonical" href="' + url + '">'}
-<meta property="og:type" content="website">
+<meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="KWIKAR">
 <meta property="og:title" content="{e(t)}">
 <meta property="og:description" content="{e(desc)}">
@@ -318,8 +431,14 @@ def build_home():
         <div class="media {tone}"><img src="{e(img)}" alt="{e(n)}" loading="lazy"></div>
         <div class="city-body"><p class="city-title">Things to do in <strong>{e(n)}</strong></p><p class="muted">{e(sub)}</p></div></a>''' for i, n, sub, img, tone in cities)
 
-    # best-sellers come only from the live tours feed (tours.js); placeholders while it loads
-    best = ''.join('<div class="exp-card skeleton" aria-hidden="true"><div class="media tall"></div><div class="line short"></div><div class="line"></div><div class="line short"></div></div>' for _ in range(4))
+    # best-sellers: most-booked tours with a price and photo, straight from the tours API
+    seen, best_list = set(), []
+    for t in TOURS:
+        if t.get('price') and t.get('img') and t['img'] not in seen:
+            seen.add(t['img'])
+            best_list.append(t)
+    best = tour_cards(best_list[:12], short=True)
+    cities = [c for c in cities if c[0] in LIVE_LOCS]
 
     hol = ''.join(f'''<a href="/holidays?country={quote(h["country"])}" class="box-card">
         <div class="media tone-sea"><img src="{e(h["img"])}" alt="{e(h["name"])}" loading="lazy"></div>
@@ -334,17 +453,17 @@ def build_home():
 <section class="hero" aria-label="Featured destinations">
   <div class="hero-track" data-hero>
     <article class="hero-slide tone-desert">
-      <img src="/assets/img/hero-desert.webp" alt="4x4 desert safari in the dunes at sunset">
+      <img src="/assets/img/hero-desert.webp" alt="4x4 desert safari in the dunes at sunset" width="1122" height="1402">
       <div class="hero-content"><span class="eyebrow">Desert</span><h2 class="hero-title">Desert Adventures</h2><p>Dunes, thrills and unforgettable moments</p>
       <a href="/activities/desert-adventures" class="btn-hero">Explore <span aria-hidden="true">→</span></a></div>
     </article>
     <article class="hero-slide tone-city">
-      <img src="/assets/img/hero-dubai.webp" srcset="/assets/img/hero-dubai-mobile.webp 820w, /assets/img/hero-dubai.webp 1672w" sizes="(max-width: 760px) 100vw, 65vw" alt="Dubai skyline and Burj Khalifa at night" fetchpriority="high">
+      <img src="/assets/img/hero-dubai.webp" srcset="/assets/img/hero-dubai-mobile.webp 820w, /assets/img/hero-dubai.webp 1672w" sizes="(max-width: 760px) 100vw, 65vw" alt="Dubai skyline and Burj Khalifa at night" fetchpriority="high" width="1672" height="941">
       <div class="hero-content"><span class="eyebrow">Dubai</span><h1 class="hero-title">Discover Dubai</h1><p>Iconic experiences, modern attractions and unforgettable moments with KWIKAR.</p>
       <a href="/destinations/dubai" class="btn-hero">Explore <span aria-hidden="true">→</span></a></div>
     </article>
     <article class="hero-slide tone-dusk">
-      <img src="/assets/img/hero-abu-dhabi.webp" alt="Sheikh Zayed Grand Mosque in Abu Dhabi at sunset">
+      <img src="/assets/img/hero-abu-dhabi.webp" alt="Sheikh Zayed Grand Mosque in Abu Dhabi at sunset" width="1122" height="1402">
       <div class="hero-content"><span class="eyebrow">Abu Dhabi</span><h2 class="hero-title">Abu Dhabi Awaits</h2><p>Culture, heritage and world-class attractions</p>
       <a href="/destinations/abu-dhabi" class="btn-hero">Explore <span aria-hidden="true">→</span></a></div>
     </article>
@@ -353,13 +472,13 @@ def build_home():
 </section>
 
 <section class="section" data-carousel><div class="container">
-  {section_head("Best cities to visit", "/attractions", True)}
+  {section_head("Best cities to visit", "/destinations", True)}
   <div class="track cols-3">{city_cards}</div>
 </div></section>
 
 <section class="section alt" data-carousel><div class="container">
   {section_head("Best-selling experiences", "/activities", True)}
-  <div class="track cols-4" data-home-best aria-live="polite">{best}</div>
+  <div class="track cols-4">{best}</div>
 </div></section>
 
 <section class="section" data-carousel><div class="container">
@@ -380,37 +499,40 @@ def build_home():
 <section class="section alt"><div class="container">
   {section_head("Why KWIKAR")}
   <div class="grid-4">
-    <div class="why-card"><h3>Clear choices</h3><p class="muted">Explore experiences and current supplier prices.</p></div>
+    <div class="why-card"><h3>Clear choices</h3><p class="muted">Compare options and current supplier prices on one page.</p></div>
     <div class="why-card"><h3>Book on WhatsApp</h3><p class="muted">Send your request in a minute — no account or online payment needed.</p></div>
     <div class="why-card"><h3>Confirmed before you pay</h3><p class="muted">Our team confirms availability and the final AED price first.</p></div>
     <div class="why-card"><h3>Local help</h3><p class="muted">Plan experiences and transfers across the UAE.</p></div>
   </div>
 </div></section>'''
-    ld = {'@context': 'https://schema.org', '@type': 'TravelAgency', 'name': 'KWIKAR', 'legalName': 'Kwikar LLC-FZ', 'url': SITE, 'logo': SITE + '/assets/img/logo.webp',
-          'image': SITE + '/assets/img/kwikar-share.webp', 'telephone': '+' + PHONE, 'email': EMAIL, 'address': {'@type': 'PostalAddress', 'addressCountry': 'AE'}}
     page('/', 'UAE Attractions, Tours & Holidays | KWIKAR', 'Explore UAE attractions, holiday packages, private transfers and visa assistance with KWIKAR. Book on WhatsApp.',
-         ('', main), active='Destinations', scripts=('site', 'catalog', 'tours'), full_title=True,
-         head_extra=f'<link rel="preload" as="image" href="/assets/img/hero-dubai.webp" media="(min-width: 761px)"><link rel="preload" as="image" href="/assets/img/hero-dubai-mobile.webp" media="(max-width: 760px)"><script type="application/ld+json">{json.dumps(ld)}</script>')
+         ('', main), active='Destinations', scripts=('site',), full_title=True,
+         head_extra='<link rel="preload" as="image" href="/assets/img/hero-dubai.webp" media="(min-width: 761px)"><link rel="preload" as="image" href="/assets/img/hero-dubai-mobile.webp" media="(max-width: 760px)">')
 
 
-def side_nav(location=None, current_cat=None):
-    cats = ''.join(f'<a href="/activities/{c["slug"]}" data-cat="{c["slug"]}"{" class=current" if c["slug"] == current_cat else ""}>{e(c["name"])}</a>' for c in CATEGORIES)
-    dests = ''.join(f'<a href="/destinations/{l["id"]}" data-dest="{l["id"]}"{" class=current" if l["id"] == location else ""}>{e(l["name"])}</a>' for l in LOCATIONS[:14])
-    allhref = f'/destinations/{location}' if location else '/activities'
+def side_nav(location=None, current_cat=None, city=None):
+    """Sidebar with only the categories and places that have tours."""
+    base = city_tours(city) if city else TOURS
+    cats = ''.join(f'<a href="/activities/{c["slug"]}"{" class=current" if c["slug"] == current_cat else ""}>{e(c["name"])}</a>'
+                   for c in CATEGORIES if any(tf.matches_category(t, c['slug'], c['term']) for t in base))
+    dests = ''.join(f'<a href="/activities/{c}"{" class=current" if c == city else ""}>{e(place_name(c) if c != "uae" else "More UAE")}</a>' for c in CITY_IDS)
+    allhref = f'/activities/{city}' if city else '/activities'
     return f'''<aside class="list-sidebar">
-  <h2>Explore</h2><nav data-side-cats aria-label="Activity types"><a href="{allhref}"{" class=current" if not current_cat else ""}>All experiences</a>{cats}</nav>
-  <h2>Destinations</h2><nav data-side-dests aria-label="Destinations">{dests}</nav>
+  <h2>Explore</h2><nav aria-label="Activity types"><a href="{allhref}"{" class=current" if not current_cat else ""}>All experiences</a>{cats}</nav>
+  <h2>Destinations</h2><nav aria-label="Destinations">{dests}</nav>
 </aside>'''
 
 
-def results_block(location=None, current_cat=None, dest_select=True):
+def results_block(items, location=None, current_cat=None, city=None, dest_select=True):
     sel = '<label>Destination<select data-dest-select><option value="all">All destinations</option></select></label>' if dest_select else ''
+    n = len(items)
+    word = 'experience' if n == 1 else 'experiences'
     return f'''<div class="container wide list-body" id="results">
-  {side_nav(location, current_cat)}
+  {side_nav(location, current_cat, city)}
   <section aria-live="polite">
-    <div class="list-controls"><div><h2 data-count-title>Loading experiences…</h2><p data-note>Loading current experiences…</p></div>
+    <div class="list-controls"><div><h2 data-count-title>{n} {word}</h2><p data-note>Supplier prices, last checked {CHECKED}. Final price and availability are confirmed on WhatsApp.</p></div>
       <div class="list-selects">{sel}<label>Sort by<select data-sort><option value="popular">Popular</option><option value="low">Price low to high</option><option value="high">Price high to low</option></select></label></div></div>
-    <div class="list-grid" data-grid></div>
+    <div class="list-grid" data-grid>{tour_cards(items) or '<div class="empty" style="grid-column:1/-1"><p>No experiences are listed here right now.</p><p style="margin-top:10px"><a href="/activities">Browse all experiences</a> or <a href="/contact">ask our team</a>.</p></div>'}</div>
     <button class="btn ghost more-btn is-hidden" type="button" data-more>Show more experiences →</button>
   </section>
 </div>'''
@@ -420,78 +542,120 @@ def search_form(placeholder='Search experiences'):
     return f'<form class="hero-search" role="search" data-list-search><input type="search" placeholder="{placeholder}" aria-label="Search experiences"><button type="submit">Search</button></form>'
 
 
+def related_links(links):
+    return ''.join(f'<a href="{h}">{e(t)} <small>{e(sub)}</small></a>' for t, h, sub in links)
+
+
 def build_listings():
     # all activities
-    main = f'''<section class="banner-hero" style="background-image:url('/assets/img/hero-dubai.webp')" data-hero-img><div class="container wide">
+    main = f'''<section class="banner-hero" style="background-image:url('/assets/img/hero-dubai.webp')"><div class="container wide">
   <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Activities</nav>
   <span class="kicker">Tours · tickets · experiences</span><h1>Activities &amp; attractions</h1>
-  <p>Discover tours, tickets and experiences across the UAE and beyond. Choose your favourite and book on WhatsApp.</p>{search_form()}
+  <p>Discover tours, tickets and experiences across the UAE and beyond. Compare the options, then send your request on WhatsApp.</p>{search_form()}
 </div></section>
-{results_block()}'''
+{results_block(TOURS)}'''
     page('/activities', 'Activities & Attractions', 'Browse KWIKAR experiences and attractions by destination, category and price.',
-         (' data-listing data-kind="standard"', main), active='Activities', scripts=('site', 'catalog', 'tours'))
+         (' data-listing data-kind="standard"', main), active='Activities', scripts=('site', 'catalog', 'tours'),
+         crumbs=[('Home', '/'), ('Activities', '/activities')])
 
-    # search
+    # search (not indexed)
     main = f'''<section class="banner-hero" style="background-image:url('/assets/img/hero-dubai.webp')"><div class="container wide">
   <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Search</nav>
   <h1>Search experiences</h1><p>Search tours, tickets and activities by name, destination or category.</p>{search_form("Tour, attraction or activity")}
 </div></section>
-{results_block()}'''
+{results_block(TOURS)}'''
     page('/search', 'Search Experiences', 'Search KWIKAR experiences and attractions.', (' data-listing data-kind="search"', main),
          scripts=('site', 'catalog', 'tours'), noindex=True)
 
-    # categories
+    # activity categories
     for c in CATEGORIES:
+        items = [t for t in TOURS if tf.matches_category(t, c['slug'], c['term'])]
         marine = c['slug'] in ('cruises', 'yachts')
-        img = U('1777231755912-109c409e760e', 1600) if c['slug'] == 'events' else ('/assets/img/hero-dubai.webp' if not marine else U('1518684079-3c830dcef090', 1600))
-        kicker = 'Experiences on the water' if marine else 'Explore by activity'
-        switch = ''
-        if marine:
-            switch = '<p style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' + ''.join(
-                f'<a class="chip{" selected" if s == c["slug"] else ""}" href="/activities/{s}"{" aria-current=page" if s == c["slug"] else ""}>Explore {s}</a>' for s in ('cruises', 'yachts')) + '</p>'
-        related = ''.join(f'<a href="/activities/{x["slug"]}" data-cat="{x["slug"]}">{e(x["name"])} <small>↗</small></a>' for x in CATEGORIES if x['slug'] != c['slug'])
-        main = f'''<section class="banner-hero" style="background-image:url('{e(img)}')" data-hero-img><div class="container wide">
-  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/activities">Activities</a> / {e(c["name"])}</nav>
-  <span class="kicker">{kicker}</span><h1>{e(c["name"])}</h1>
-  <p>Explore {e(c["name"].lower())} and enquire with our team on WhatsApp for current availability.</p>{switch}{search_form()}
-</div></section>
-<section class="section is-hidden" data-places style="padding-bottom:0"><div class="container wide"><div class="section-head"><h2>Explore {e(c["name"].lower())} by destination</h2></div><div class="place-row"></div></div></section>
-{results_block(current_cat=c["slug"])}
-<section class="section alt" data-related-cats><div class="container wide"><div class="section-head"><h2>Keep exploring</h2></div><div class="related-links">{related}</div></div></section>'''
-        page(f'/activities/{c["slug"]}', f'{c["name"]} Experiences', f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.',
+        photo = next((t['img'] for t in items if t.get('img')), None)
+        crumb = f'<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/activities">Activities</a> / {e(c["name"])}</nav>'
+        intro = f'Explore {e(c["name"].lower())} and send your request on WhatsApp. Our team confirms current availability and the final price.'
+        if marine or c['slug'] == 'events':
+            switch = ''
+            if marine:
+                switch = '<p style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' + ''.join(
+                    f'<a class="chip{" selected" if s == c["slug"] else ""}" href="/activities/{s}"{" aria-current=page" if s == c["slug"] else ""}>Explore {s}</a>'
+                    for s in ('cruises', 'yachts') if CAT_COUNT[s] or s == c['slug']) + '</p>'
+            bg = photo or U('1518684079-3c830dcef090', 1600)
+            hero = f'''<section class="banner-hero" style="background-image:url('{e(bg)}')"><div class="container wide">
+  {crumb}<span class="kicker">{"Experiences on the water" if marine else "Explore by activity"}</span><h1>{e(c["name"])}</h1>
+  <p>{intro}</p>{switch}{search_form()}
+</div></section>'''
+        else:
+            hero = f'''<section class="page-hero cat-hero"><div class="container wide page-hero-grid">
+  <div>{crumb}<span class="kicker">Explore by activity</span><h1>{e(c["name"])}</h1><p>{intro}</p>{search_form()}</div>
+  <div class="cat-photo">{f'<img src="{e(photo)}" alt="" fetchpriority="high">' if photo else ''}<span>{len(items)} experience{'s' if len(items) != 1 else ''} to explore</span></div>
+</div></section>'''
+        places = [l for l in CITY_IDS if any(tf.city_of(t['loc']) == l for t in items)]
+        place_row = ''
+        if len(places) > 1:
+            tiles = ''
+            for p_ in places:
+                lo = loc(p_)
+                img = (lo.get('img') if lo else None) or ('/assets/img/hero-dubai-mobile.webp' if p_ == 'uae' else None)
+                cnt = sum(1 for t in items if tf.city_of(t['loc']) == p_)
+                tiles += (f'<button type="button" class="place-btn" data-place-id="{p_}">' + (f'<img src="{e(img)}" alt="" loading="lazy">' if img else '<div class="thumb tone-city"></div>')
+                          + f'<span>{e(place_name(p_))}<small>{cnt} experience{"s" if cnt != 1 else ""}</small></span></button>')
+            place_row = f'<section class="section" style="padding-bottom:0"><div class="container wide"><div class="section-head"><h2>Explore {e(c["name"].lower())} by destination</h2></div><div class="place-row">{tiles}</div></div></section>'
+        rel = related_links([(x['name'], f'/activities/{x["slug"]}', '↗') for x in LIVE_CATS if x['slug'] != c['slug']])
+        main = f'''{hero}
+{place_row}
+{results_block(items, current_cat=c["slug"])}
+<section class="section alt"><div class="container wide"><div class="section-head"><h2>Keep exploring</h2></div><div class="related-links">{rel}</div></div></section>'''
+        page(f'/activities/{c["slug"]}', f'{c["name"]} Experiences', f'Browse {c["name"].lower()} experiences with KWIKAR. Compare options and prices, then enquire for current availability.',
              (f' data-listing data-kind="category" data-category="{c["slug"]}" data-term="{e(c["term"])}"', main),
-             active='Cruises' if c['slug'] == 'cruises' else 'Activities', scripts=('site', 'catalog', 'tours'))
+             active='Cruises' if c['slug'] == 'cruises' else 'Activities', scripts=('site', 'catalog', 'tours'), noindex=not items,
+             crumbs=[('Home', '/'), ('Activities', '/activities'), (c['name'], f'/activities/{c["slug"]}')])
 
-    # destinations
-    for l in LOCATIONS:
-        uae = l['group'] == 'uae'
-        img = l.get('img') or '/assets/img/hero-dubai-mobile.webp'
-        main = f'''<section class="page-hero"><div class="container wide page-hero-grid">
-  <div><nav class="breadcrumb" aria-label="Breadcrumb"><a href="/attractions">Destinations</a> / {e(l["name"])}</nav>
-  <span class="kicker">{"United Arab Emirates" if uae else "Worldwide experiences"}</span>
-  <h1>Things to do in {e(l["name"])}</h1>
-  <p>Explore experiences in {e(l["name"])}, compare options and send your request on WhatsApp for your preferred travel date.</p>
-  <p style="margin-top:16px"><a class="link" href="#results" data-hero-count>Browse experiences ↓</a></p>{search_form(f"Search {l['name']} experiences")}</div>
-  <div class="photo {"tone-city" if uae else "tone-sky"}" data-hero-img style="background-size:cover;background-position:center">{f'<img src="{e(img)}" alt="Explore {e(l["name"])}" fetchpriority="high">' if (uae or l.get("img")) else ''}</div>
+    # city category hubs: /activities/{city}
+    for city in CITY_IDS:
+        items = city_tours(city)
+        name = place_name(city)
+        h1 = 'More experiences in the UAE' if city == 'uae' else f'Activities in {name}'
+        lo = loc(city)
+        bg = (lo or {}).get('img') or next((t['img'] for t in items if t.get('img')), '/assets/img/hero-dubai.webp')
+        if city == 'dubai':
+            bg = '/assets/img/hero-dubai.webp'
+        crumb_name = 'More UAE' if city == 'uae' else name
+        main = f'''<section class="banner-hero" style="background-image:url('{e(bg)}')"><div class="container wide">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/activities">Activities</a> / {e(crumb_name)}</nav>
+  <span class="kicker">{len(items)} experience{"s" if len(items) != 1 else ""}</span><h1>{e(h1)}</h1>
+  <p>All {e("UAE " if city == "uae" else "")}tours, tickets and experiences{"" if city == "uae" else " in " + e(name)} that you can book with KWIKAR. Filter, compare prices and send your request on WhatsApp.</p>{search_form()}
 </div></section>
-<div class="container wide themes is-hidden" data-themes></div>
-{results_block(location=l["id"], dest_select=False)}
-<section class="section alt is-hidden" data-other-places><div class="container wide"><div class="section-head"><h2>Explore more destinations</h2></div><div class="related-links"></div></div></section>'''
-        page(f'/destinations/{l["id"]}', f'Things to Do in {l["name"]}', f'Explore {l["name"]} attractions and experiences with KWIKAR.',
-             (f' data-listing data-kind="destination" data-location="{l["id"]}"', main), active='Destinations', scripts=('site', 'catalog', 'tours'))
+{results_block(items, city=city, dest_select=False)}'''
+        page(f'/activities/{city}', h1, f'{h1}: compare {len(items)} tours, tickets and experiences with current supplier prices. Book with KWIKAR on WhatsApp.',
+             (f' data-listing data-kind="city" data-city="{city}"', main), active='Activities', scripts=('site', 'catalog', 'tours'),
+             crumbs=[('Home', '/'), ('Activities', '/activities'), (crumb_name, f'/activities/{city}')])
 
 
-def build_attractions():
-    uae_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in UAE)
-    intl_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in LOCATIONS if l['group'] != 'uae')
-    tiles = ''.join(f'''<a class="tile tone-city" href="/destinations/{l["id"]}" data-place>{f'<img src="{e(l["img"])}" alt="" loading="lazy">' if l.get("img") else ''}
-      <span><strong>{e(l["name"])}</strong><small data-count="{l["id"]}">Explore attractions ↗</small></span></a>''' for l in UAE)
-    world = ''.join(f'<a href="/destinations/{l["id"]}" data-place><strong>{e(l["name"])}</strong><small data-count="{l["id"]}">Explore ↗</small></a>' for l in LOCATIONS if l['group'] != 'uae')
+def build_destinations():
+    """/destinations hub and one city hub per destination."""
+    live_uae = [l for l in UAE if l['id'] in LIVE_LOCS]
+    live_world = [l for l in REAL_LOCATIONS if l['group'] != 'uae' and l['id'] in LIVE_LOCS]
+    uae_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in live_uae)
+    intl_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in live_world)
+
+    def count(lid):
+        n = sum(1 for t in TOURS if t['loc'] == lid)
+        return f'{n} experience{"s" if n != 1 else ""}'
+    tiles = ''.join(f'''<a class="tile tone-city" href="/destinations/{l["id"]}">{f'<img src="{e(l["img"])}" alt="" loading="lazy">' if l.get("img") else ''}
+      <span><strong>{e(l["name"])}</strong><small>{count(l["id"])} ↗</small></span></a>''' for l in live_uae)
+    world = ''.join(f'<a href="/destinations/{l["id"]}"><strong>{e(l["name"])}</strong><small>{count(l["id"])} ↗</small></a>' for l in live_world)
+    world_block = f'''<section class="section alt"><div class="container wide">
+  <div class="section-head"><div><span class="kicker">Travel further</span><h2>Worldwide destinations</h2></div></div>
+  <p class="section-intro">International experiences from our current catalogue. Ask our team about other countries.</p>
+  <div class="world-grid">{world}</div>
+</div></section>''' if world else ''
     main = f'''<section class="banner-hero" style="background-image:url('/assets/img/hero-dubai.webp')"><div class="container wide">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Destinations</nav>
   <span class="kicker">KWIKAR destinations</span><h1>Where would you like to explore?</h1>
   <p>Browse by city, then choose an experience or ask our team to plan your day.</p>
   <form class="discover-form" action="/search" role="search">
-    <label>Destination<select name="destination"><option value="">All destinations</option><optgroup label="United Arab Emirates">{uae_opts}</optgroup><optgroup label="Worldwide">{intl_opts}</optgroup></select></label>
+    <label>Destination<select name="destination"><option value="">All destinations</option><optgroup label="United Arab Emirates">{uae_opts}</optgroup>{f'<optgroup label="Worldwide">{intl_opts}</optgroup>' if intl_opts else ''}</select></label>
     <label>What would you like to do?<input type="search" name="q" placeholder="Tour, attraction or activity" autocomplete="off"></label>
     <button type="submit">Find experiences →</button>
   </form>
@@ -500,23 +664,295 @@ def build_attractions():
   <div class="section-head"><div><span class="kicker">Explore the Emirates</span><h2>United Arab Emirates</h2></div><a class="view-all" href="/activities">Browse by activity <svg viewBox="0 0 24 24">{ICON["out"]}</svg></a></div>
   <div class="tile-grid">{tiles}</div>
 </div></section>
-<section class="section alt"><div class="container wide">
-  <div class="section-head"><div><span class="kicker">Travel further</span><h2>Worldwide destinations</h2></div></div>
-  <p class="section-intro">Explore international experiences from our current catalogue.</p>
-  <div class="world-grid">{world}</div>
-</div></section>'''
-    page('/attractions', 'Destinations', 'Browse KWIKAR experiences by UAE city and worldwide destination.', (' data-hub', main),
-         active='Destinations', scripts=('site', 'catalog', 'tours'))
+{world_block}'''
+    page('/destinations', 'Destinations', 'Browse KWIKAR experiences by UAE city and worldwide destination.', ('', main),
+         active='Destinations', crumbs=[('Home', '/'), ('Destinations', '/destinations')])
+
+    for l in REAL_LOCATIONS:
+        lid, name = l['id'], l['name']
+        items = [t for t in TOURS if t['loc'] == lid]
+        uae = l['group'] == 'uae'
+        img = '/assets/img/hero-dubai.webp' if lid == 'dubai' else (l.get('img') or (items[0].get('img') if items else None))
+        crumbs_html = f'<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/destinations">Destinations</a> / {e(name)}</nav>'
+        if not items:
+            main = f'''<section class="page-hero"><div class="container wide"><div style="padding:56px 0">{crumbs_html}
+  <h1>Things to do in {e(name)}</h1><p>We don't have {e(name)} experiences listed right now. Tell us your dates and what you'd like to do, and our team will check options for you.</p>
+  <p style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="{e(wa(f"Hi KWIKAR, I am looking for experiences in {name}."))}" target="_blank" rel="noopener">Ask on WhatsApp ↗</a><a class="btn ghost" href="/destinations">All destinations</a></p></div></div></section>'''
+            page(f'/destinations/{lid}', f'Things to Do in {name}', f'Ask KWIKAR about experiences in {name}.', ('', main), active='Destinations', noindex=True)
+            continue
+        top = items[:8]
+        cats = [(c['name'], f'/activities/{c["slug"]}', f'{sum(1 for t in items if tf.matches_category(t, c["slug"], c["term"]))} in {name}')
+                for c in LIVE_CATS if any(tf.matches_category(t, c['slug'], c['term']) for t in items)]
+        city = tf.city_of(lid)
+        others = [(x['name'], f'/destinations/{x["id"]}', 'See experiences ↗') for x in REAL_LOCATIONS if x['id'] != lid and x['id'] in LIVE_LOCS and x['group'] == l['group']][:4]
+        plan = ''
+        if uae:
+            plan = f'''<section class="section"><div class="container wide"><div class="section-head"><h2>Plan the rest of your trip</h2></div>
+  <div class="related-links">{related_links([("Holiday packages", "/holidays?country=UAE", "Hotels, tours and transfers in one quote"), ("Private transfers", "/transfers", "Airport pickups and chauffeur service"), ("UAE tourist visas", "/visa", "14, 30 and 60 day visas")])}</div></div></section>'''
+        main = f'''<section class="page-hero"><div class="container wide page-hero-grid">
+  <div>{crumbs_html}
+  <span class="kicker">{"United Arab Emirates" if uae else "Worldwide experiences"}</span>
+  <h1>Things to do in {e(name)}</h1>
+  <p>Compare {len(items)} tours, tickets and experiences in {e(name)} with current supplier prices. Choose your favourite and send your request on WhatsApp; our team confirms availability and the final price.</p>
+  <p style="margin-top:20px"><a class="btn" href="/activities/{city}">See all {len(items)} experiences →</a></p></div>
+  <div class="photo" data-hero-img>{f'<img src="{e(img)}" alt="Explore {e(name)}" fetchpriority="high">' if img else ''}</div>
+</div></section>
+<section class="section"><div class="container wide">
+  {section_head(f"Popular things to do in {name}", f"/activities/{city}")}
+  <div class="list-grid grid-cards-4">{tour_cards(top)}</div>
+</div></section>
+{f'''<section class="section alt"><div class="container wide"><div class="section-head"><h2>Browse {e(name)} by activity</h2></div><div class="related-links">{related_links(cats)}</div></div></section>''' if cats else ''}
+{plan}
+{f'''<section class="section alt"><div class="container wide"><div class="section-head"><h2>Explore more destinations</h2></div><div class="related-links">{related_links(others)}</div></div></section>''' if others else ''}'''
+        page(f'/destinations/{lid}', f'Things to Do in {name}', f'Things to do in {name}: compare {len(items)} tours, attraction tickets and experiences with current prices. Book with KWIKAR on WhatsApp.',
+             ('', main), active='Destinations', crumbs=[('Home', '/'), ('Destinations', '/destinations'), (name, f'/destinations/{lid}')])
 
 
-def build_tour():
-    main = '''<div class="container wide tour-page" aria-busy="true">
-  <div class="skeleton"><div class="line short"></div><div class="line" style="height:30px;width:70%"></div><div class="line short"></div>
-  <div class="media" style="margin-top:20px;aspect-ratio:21/8;border-radius:14px"></div><div class="line"></div><div class="line"></div><div class="line short"></div></div>
+# ---------------------------------------------------------------- product pages
+DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+
+def _plain(htmltext, n=None):
+    t = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', html.unescape(htmltext or ''))).strip()
+    return t[:n].rsplit(' ', 1)[0] + '…' if n and len(t) > n else t
+
+
+def _hours(o):
+    h = o.get('hours')
+    if not h:
+        return ''
+    h = float(h)
+    h = int(h) if h.is_integer() else h
+    return f'{h} hour' + ('' if h == 1 else 's')
+
+
+def _opt_price(o):
+    if not o.get('price'):
+        return 'On request'
+    unit = 'booking' if o.get('unit') == 'trip' else (o.get('unit') or 'person')
+    s = f'From {money(o["price"])} / {unit}'
+    if o.get('tripFee') and o.get('adultBase'):
+        s += f' + {money(o["tripFee"])} / booking'
+    return s
+
+
+def _transfer(o):
+    k = o.get('transferKind')
+    return {'private': 'Private transfer', 'sharing': 'Sharing transfer', 'meet_at_location': 'Meet at the venue'}.get(k, '—')
+
+
+def build_product(t, d):
+    tid = str(t['id'])
+    x = EXTRAS.get(tid, {})
+    path = tour_href(t)
+    city = tf.city_of(t['loc'])
+    cname = place_name(t['loc'])
+    name = d.get('name') or t['name']
+    offers = d.get('offers') or []
+    priced = [o for o in offers if o.get('price')]
+    low = min((o['price'] for o in priced), default=t.get('price'))
+    high = max((o['price'] for o in priced), default=t.get('price'))
+    low_unit = 'per booking' if (min(priced, key=lambda o: o['price']).get('unit') if priced else t.get('unit')) == 'trip' else 'per person'
+    cats = d.get('categories') or t.get('cats') or []
+    photos = [p for p in [d.get('img') or t.get('img')] + (d.get('photos') or []) if p][:3]
+    faqs = [(f['q'], f['a']) for f in (d.get('faq') or []) if f.get('q') and f.get('a')]
+    faqs += [tuple(f) for f in x.get('faqs', [])]
+    kfaqs = [('How do I book this with KWIKAR?', f'Tap Check availability, choose your date, guests and option, and send the request on WhatsApp. Our team checks availability with the supplier and replies with the final AED price before you pay.'),
+             ('Are there booking or card fees?', 'No. The price our team confirms on WhatsApp is the total you pay. KWIKAR does not add a separate booking or card fee.'),
+             ('Can I cancel or change my booking?', 'Changes and refunds follow the supplier\'s rules for this experience, shown in the cancellation policy on this page. Contact us as soon as possible and we will check what applies to your booking.')]
+    cancel = [c for c in (d.get('cancellation') or []) if c]
+    h1 = x.get('h1') or name
+    first_cat = next(iter(cats), '')
+
+    # ---- head
+    title = x.get('title')
+    if not title:
+        title = f'{name} – From {money(low)} | KWIKAR' if low else f'{name} | KWIKAR'
+        if len(title) > 60:
+            title = f'{name} | KWIKAR'
+        if len(title) > 60:
+            title = name[:60 - 10].rsplit(' ', 1)[0] + ' | KWIKAR'
+    desc = x.get('description')
+    if not desc:
+        head_ = f'Book {name} in {cname}' + (f' from {money(low)} {low_unit}' if low else '') + '.'
+        tails = [' Confirm availability and the final price with KWIKAR on WhatsApp.', ' Book with KWIKAR on WhatsApp.', '']
+        opts = []
+        if len(offers) > 1:
+            n1, n2 = offers[0]['name'], offers[1]['name']
+            opts = [f' {len(offers)} options, including {n1} and {n2}.', f' {len(offers)} options, including {n1}.', f' {len(offers)} options to choose from.']
+        desc = None
+        for o_ in opts + ['']:
+            for t_ in tails:
+                if len(head_ + o_ + t_) <= 160:
+                    desc = head_ + o_ + t_
+                    break
+            if desc:
+                break
+        desc = desc or head_[:157] + '…'
+
+    # ---- 3. quick answer + at a glance
+    quick = x.get('quick_answer') or (
+        f'You can book {name} in {cname} with KWIKAR' + (f' from {money(low)} {low_unit}' if low else '') + '. '
+        + (f'There are {len(offers)} options to choose from. ' if len(offers) > 1 else '')
+        + 'Send your preferred date and number of guests on WhatsApp; our team confirms availability and the final price before you pay.')
+    glance = [('Location', cname)]
+    hrs = sorted({float(o['hours']) for o in offers if o.get('hours')})
+    if hrs:
+        f_ = lambda h: str(int(h)) if h.is_integer() else str(h)
+        glance.append(('Duration', f'{f_(hrs[0])} hour{"s" if hrs[0] != 1 else ""}' if len(hrs) == 1 else f'{f_(hrs[0])}–{f_(hrs[-1])} hours'))
+    if low:
+        glance.append(('Price', f'From {money(low)} {low_unit}' + (f' (up to {money(high)})' if high and high != low else '')))
+    if len(offers) > 1:
+        glance.append(('Options', f'{len(offers)} ticket or tour options'))
+    if any(o.get('pickupRequired') for o in offers):
+        glance.append(('Transfers', 'Hotel pickup options available'))
+    elif offers and all(o.get('transferKind') == 'meet_at_location' for o in offers):
+        glance.append(('Getting there', 'Meet at the venue (no transfer)'))
+    if any(o.get('child') for o in offers):
+        glance.append(('Children', 'Child prices available on some options'))
+    days = set()
+    for o in offers:
+        days.update(o.get('daysOffered') or [])
+    if days and len(days) < 7:
+        glance.append(('Runs on', ', '.join(dd[:3].title() for dd in DAYS if dd in days)))
+    elif days:
+        glance.append(('Runs on', 'Every day'))
+    if cancel:
+        glance.append(('Cancellation', _plain(cancel[0], 110)))
+    glance += [tuple(g) for g in x.get('at_a_glance', [])]
+    glance_html = ''.join(f'<li><span>{e(k)}</span><strong>{e(v)}</strong></li>' for k, v in glance)
+
+    # ---- 6. options table + which to choose
+    rows = ''.join(f'<tr><th scope="row">{e(o["name"])}</th><td>{e(_hours(o) or "—")}</td><td>{e(_transfer(o))}</td><td class="num">{e(_opt_price(o))}</td></tr>' for o in offers)
+    choose = []
+    if len(priced) >= 2:
+        cheap = min(priced, key=lambda o: o['price'])
+        choose.append(('Lowest price', f'{cheap["name"]} ({_opt_price(cheap)})'))
+        tr = [o for o in priced if o.get('pickupRequired')]
+        if tr:
+            tc = min(tr, key=lambda o: o['price'])
+            if tc is not cheap:
+                choose.append(('With hotel transfer', f'{tc["name"]} ({_opt_price(tc)})'))
+        top_ = max(priced, key=lambda o: o['price'])
+        if top_ is not cheap:
+            choose.append(('Most premium', f'{top_["name"]} ({_opt_price(top_)})'))
+    details = ''.join(f'<details class="opt-detail"><summary>{e(o["name"])}: details and inclusions</summary><div class="rich">{o["desc"]}</div></details>' for o in offers if o.get('desc'))
+    options_html = ''
+    if offers:
+        options_html = f'''<section class="block" id="options"><h2>Compare the options</h2>
+  <div class="table-wrap"><table class="opt-table"><thead><tr><th scope="col">Option</th><th scope="col">Duration</th><th scope="col">Transfer</th><th scope="col" class="num">Price</th></tr></thead><tbody>{rows}</tbody></table></div>
+  {f'''<div class="choose"><h3>Which should I choose?</h3><ul>{"".join(f"<li><strong>{e(k)}:</strong> {e(v)}</li>" for k, v in choose)}</ul><p class="muted">Not sure? Ask our team on WhatsApp and we will suggest the right option for your group.</p></div>''' if choose else ''}
+  {details}
+</section>'''
+
+    # ---- 7/8. included, visitor info (hand-written only)
+    inc = ''
+    if x.get('included') or x.get('not_included'):
+        inc = '<section class="block"><h2>What\'s included</h2><div class="inc-grid">' + \
+              (f'<div><h3>Included</h3><ul class="ticks">{"".join(f"<li>{e(i)}</li>" for i in x.get("included", []))}</ul></div>' if x.get('included') else '') + \
+              (f'<div><h3>Not included</h3><ul class="crosses">{"".join(f"<li>{e(i)}</li>" for i in x.get("not_included", []))}</ul></div>' if x.get('not_included') else '') + '</div></section>'
+    vis = ''
+    if x.get('visitor_info'):
+        vis = '<section class="block"><h2>Visitor information</h2><dl class="visitor">' + ''.join(f'<dt>{e(k)}</dt><dd>{e(v)}</dd>' for k, v in x['visitor_info']) + '</dl></section>'
+    best_for = f'<h3>Best for</h3><ul>{"".join(f"<li>{e(b)}</li>" for b in x["best_for"])}</ul>' if x.get('best_for') else ''
+    tip = f'<aside class="kw-tip"><strong>KWIKAR tip</strong><p>{e(x["tip"])}</p></aside>' if x.get('tip') else ''
+
+    # ---- 9. how it works
+    itin = d.get('itinerary') or []
+    if itin:
+        how = '<section class="block"><h2>How it works</h2><ol class="steps">' + ''.join(f'<li><strong>{e(s_["name"])}</strong>{f"<p>{e(s_.get("desc"))}</p>" if s_.get("desc") else ""}</li>' for s_ in itin if s_.get('name')) + '</ol></section>'
+    else:
+        how = '''<section class="block"><h2>How booking works</h2><ol class="steps">
+  <li><strong>Choose your option and date</strong><p>Compare the options above and pick a preferred date.</p></li>
+  <li><strong>Send your request on WhatsApp</strong><p>Tap Check availability. Your request opens in WhatsApp so you can review and send it.</p></li>
+  <li><strong>We confirm availability and price</strong><p>Our team checks with the supplier and replies with the final AED price.</p></li>
+  <li><strong>Pay and get your confirmation</strong><p>Pay as agreed with our team and receive your booking details.</p></li></ol></section>'''
+
+    faq_html = ''
+    if faqs:
+        faq_html += '<h3 class="faq-group">About this experience</h3>' + ''.join(f'<details class="faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in faqs)
+    faq_html += '<h3 class="faq-group">Booking with KWIKAR</h3>' + ''.join(f'<details class="faq"><summary>{e(q)}</summary><p>{e(a)}</p></details>' for q, a in kfaqs)
+
+    terms = ''
+    if cancel or d.get('terms'):
+        terms = '<section class="block" id="terms"><h2>Cancellation and terms</h2>' + \
+                (f'<h3>Cancellation policy</h3>{"".join(f"<p>{e(_plain(c))}</p>" for c in cancel)}' if cancel else '') + \
+                (f'<h3>Supplier terms</h3><div class="rich">{d["terms"]}</div>' if d.get('terms') else '') + \
+                '<p class="muted" style="margin-top:12px">Also read our <a href="/booking-information">booking information</a> and <a href="/refund-policy">refund and cancellation policy</a>.</p></section>'
+
+    rel = [r for r in TOURS if r['id'] != t['id'] and tf.city_of(r['loc']) == city and set(r.get('cats') or []) & set(cats)]
+    rel += [r for r in TOURS if r['id'] != t['id'] and tf.city_of(r['loc']) == city and r not in rel]
+    rel = rel[:8]
+    cat_links = [(c['name'], f'/activities/{c["slug"]}') for c in LIVE_CATS if tf.matches_category(t, c['slug'], c['term'])]
+    hub_links = ''.join(f'<a class="chip" href="{h}">{e(n)} ↗</a>' for n, h in [(f'All experiences in {city_label(city)}', f'/activities/{city}')] + cat_links)
+    checked = x.get('last_checked')
+    checked_txt = (f'Details checked by our team on {datetime.date.fromisoformat(checked).strftime("%-d %b %Y")}. ' if checked else '') + f'Prices and options from the supplier, last checked {CHECKED}.'
+    wa_q = wa(f'Hi KWIKAR, I would like to book {name}. Please share availability.')
+    gallery = ''.join(f'<img src="{e(p)}" alt="{e(name)}{"" if i == 0 else f" – photo {i + 1}"}"{" fetchpriority=high" if i == 0 else " loading=lazy"} width="{800 if i == 0 else 400}" height="{600 if i == 0 else 300}">' for i, p in enumerate(photos))
+    price_box = f'''<div class="book-card"><span>From</span><strong>{money(low) if low else "Price on request"}</strong><small>{low_unit + " · no booking or card fees" if low else "Our team will confirm the price"}</small>
+  <button class="btn block" type="button" data-book>Check availability</button>
+  <a class="btn ghost block wa-link" href="{e(wa_q)}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+  <a class="call" href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a>
+  <p class="seller">Booking handled by Kwikar LLC-FZ, United Arab Emirates. Availability and final price confirmed before you pay.</p></div>'''
+
+    main = f'''<div class="container wide tour-page">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/activities">Activities</a> / <a href="/activities/{city}">{e("More UAE" if city == "uae" else cname)}</a> / {e(name)}</nav>
+  <h1>{e(h1)}</h1>
+  <p class="tour-meta">{e(cname)}{f" · {e(first_cat)}" if first_cat else ""}</p>
+  {f'<div class="gallery n{len(photos)}">{gallery}</div>' if photos else ''}
+  <div class="tour-grid"><div>
+    <section class="quick" aria-label="Quick answer"><p class="quick-answer">{e(quick)}</p><ul class="glance">{glance_html}</ul></section>
+    {f'''<section class="block"><h2>Overview</h2><div class="rich">{d["description"]}</div>{best_for}</section>''' if d.get("description") or best_for else ''}
+    {tip}
+    {options_html}
+    {inc}{vis}
+    {how}
+    <section class="block" id="faq"><h2>Questions</h2>{faq_html}</section>
+    {terms}
+    <p class="checked">{e(checked_txt)}</p>
+  </div><aside>{price_box}</aside></div>
 </div>
-<noscript><div class="status-page"><h1>Please enable JavaScript</h1><p>Or message us on WhatsApp and we will share the tour details.</p></div></noscript>'''
-    page('/tour', 'Experience', 'Explore this experience with KWIKAR and book on WhatsApp.', (' data-tour', main), active='Activities',
-         scripts=('site', 'catalog', 'tours'), body_class='tour-body')
+{f'''<section class="section alt"><div class="container wide">{section_head(f"More things to do in {city_label(city)}", f"/activities/{city}")}<div class="list-grid grid-cards-4">{tour_cards(rel)}</div><div class="chips" style="margin:24px 0 0">{hub_links}</div></div></section>''' if rel else ''}
+<section class="final-cta"><div class="container wide"><div><h2>Ready to book {e(name)}?</h2><p>Send your date and guests. Our team replies on WhatsApp with availability and the final price.</p></div>
+  <div class="final-cta-btns"><button class="btn" type="button" data-book>Check availability</button><a class="btn ghost" href="{e(wa_q)}" target="_blank" rel="noopener">WhatsApp us</a></div></div></section>
+<div class="sticky-book"><div><span>From</span><strong>{money(low) if low else "On request"}</strong></div><button class="btn" type="button" data-book>Check availability</button></div>
+<script type="application/json" id="kw-tour">{json.dumps({"id": t["id"], "name": name, "url": SITE + path, "offers": [{k: o.get(k) for k in ("name", "hours", "price", "unit", "child", "tripFee", "adultBase", "daysOffered", "pricingPeriods", "transferKind", "pickupRequired")} for o in offers]}, ensure_ascii=False).replace("</", "<\\/")}</script>'''
+
+    # ---- structured data (matches what the page shows; no borrowed ratings)
+    lds = ''
+    product = {'@context': 'https://schema.org', '@type': 'Product', 'name': name, 'sku': tid, 'url': SITE + path,
+               'description': _plain(d.get('description') or quick, 300), 'image': photos, 'category': first_cat or 'Tours & activities',
+               'brand': {'@type': 'Brand', 'name': 'KWIKAR'}}
+    if priced:
+        product['offers'] = {'@type': 'AggregateOffer', 'priceCurrency': 'AED', 'lowPrice': low, 'highPrice': high, 'offerCount': len(priced),
+                             'availability': 'https://schema.org/InStock', 'url': SITE + path, 'seller': {'@id': SITE + '/#organization'}}
+    lds += ld(product)
+    lds += ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+        {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in faqs + kfaqs]})
+    page(path, title, desc, (' data-tour', main), active='Cruises' if tf.matches_category(t, 'cruises', '') else 'Activities',
+         scripts=('site', 'catalog', 'tours'), body_class='tour-body', full_title=True, og_image=photos[0] if photos and photos[0].startswith('https://') else '/assets/img/kwikar-share.webp',
+         noindex=not tf.visible(t), head_extra=lds,
+         crumbs=[('Home', '/'), ('Activities', '/activities'), ('More UAE' if city == 'uae' else cname, f'/activities/{city}'), (name, path)])
+
+
+def build_products():
+    for t in ALL_TOURS:
+        build_product(t, DETAILS.get(t['id']) or DETAILS.get(str(t['id'])) or {})
+
+
+def build_gone():
+    main = f'''<div class="status-page"><h1>This experience is no longer available</h1><p>The supplier has stopped offering it. Browse similar experiences or ask our team for an alternative.</p>
+<div class="btns"><a class="btn" href="/activities">Browse experiences</a><a class="btn ghost" href="{e(wa("Hi KWIKAR, the experience I was looking for is no longer available. Can you suggest an alternative?"))}" target="_blank" rel="noopener">Ask on WhatsApp</a></div></div>'''
+    page('/410.html', 'No longer available', 'This experience is no longer available.', ('', main), noindex=True)
+
+
+def write_tours_json():
+    """Same tours as the HTML, for filters and search in the browser."""
+    items = [{'id': t['id'], 'name': t['name'], 'img': t.get('img'), 'cats': t.get('cats') or [], 'price': t.get('price'),
+              'unit': t.get('unit'), 'loc': t['loc'], 'url': tour_href(t)} for t in TOURS]
+    os.makedirs(os.path.join(OUT, 'assets', 'data'), exist_ok=True)
+    json.dump({'checked': CHECKED, 'items': items}, open(os.path.join(OUT, 'assets', 'data', 'tours.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+
 
 
 def build_holidays():
@@ -728,27 +1164,67 @@ def build_404():
 
 
 def build_seo_files():
-    core = ['/', '/attractions', '/activities', '/holidays', '/transfers', '/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy']
-    urls = core + [f'/destinations/{l["id"]}' for l in LOCATIONS] + [f'/activities/{c["slug"]}' for c in CATEGORIES]
+    """Split sitemaps (pages / hubs / products), robots.txt and the .htaccess tour redirects."""
     today = datetime.date.today().isoformat()
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(
-        f'  <url><loc>{SITE}{"" if u == "/" else u}{"/" if u == "/" else ""}</loc><lastmod>{today}</lastmod></url>\n' for u in urls) + '</urlset>\n'
-    open(os.path.join(OUT, 'sitemap.xml'), 'w').write(xml)
-    open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nDisallow: /search\n\nSitemap: {SITE}/sitemap.xml\nSitemap: {SITE}/api/sitemap-tours.php\n')
+
+    def urlset(paths):
+        return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                + ''.join(f'  <url><loc>{SITE}{p_}</loc><lastmod>{today}</lastmod></url>\n' for p_ in paths) + '</urlset>\n')
+    pages = ['/', '/holidays', '/transfers', '/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy']
+    hubs = (['/destinations', '/activities'] + [f'/destinations/{l["id"]}' for l in REAL_LOCATIONS if l['id'] in LIVE_LOCS]
+            + [f'/activities/{c}' for c in CITY_IDS] + [f'/activities/{c["slug"]}' for c in LIVE_CATS])
+    products = [tour_href(t) for t in ALL_TOURS if tf.visible(t)]
+    for name, paths in (('pages', pages), ('hubs', hubs), ('products', products)):
+        open(os.path.join(OUT, f'sitemap-{name}.xml'), 'w').write(urlset(paths))
+    open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + ''.join(f'  <sitemap><loc>{SITE}/sitemap-{n}.xml</loc><lastmod>{today}</lastmod></sitemap>\n' for n in ('pages', 'hubs', 'products'))
+        + '</sitemapindex>\n')
+    rules = 'Disallow: /search\nDisallow: /api/\n'
+    open(os.path.join(OUT, 'robots.txt'), 'w').write(
+        f'# Search engines and AI search (ChatGPT search = OAI-SearchBot) may crawl the site.\n'
+        f'User-agent: *\nAllow: /\n{rules}\nUser-agent: OAI-SearchBot\nAllow: /\n{rules}\nSitemap: {SITE}/sitemap.xml\n')
+
+    # .htaccess: old /tour/{id} and /tour.html?id= addresses -> new address (one hop); removed tours -> 410 Gone
+    lines = []
+    for tid, path in sorted(SLUGS.items(), key=lambda kv: int(kv[0])):
+        if tid in LIVE_IDS:
+            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ {path} [R=301,L]',
+                      f'RewriteCond %{{QUERY_STRING}} (?:^|&)id={tid}(?:&|$)',
+                      f'RewriteRule ^tour\\.html$ {path}? [R=301,L]']
+        else:
+            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ - [G,L]', f'RewriteRule ^{path.strip("/")}/?$ - [G,L]']
+    tpl = open(os.path.join(ROOT, 'htaccess.template'), encoding='utf-8').read()
+    open(os.path.join(OUT, '.htaccess'), 'w', encoding='utf-8').write(tpl.replace('# {{TOUR_RULES}}', '\n'.join(lines)))
+
+
+def clean_output():
+    """Remove previously generated pages so renamed or removed pages don't linger."""
+    import shutil
+    keep = {'assets', 'api'}
+    for name in os.listdir(OUT):
+        full = os.path.join(OUT, name)
+        if os.path.isdir(full) and name not in keep and not name.startswith('.'):
+            shutil.rmtree(full)
+        elif os.path.isfile(full) and (name.endswith(('.html', '.xml')) or name in ('robots.txt', '.htaccess')):
+            os.remove(full)
 
 
 if __name__ == '__main__':
+    clean_output()
     write_catalog_js()
+    write_tours_json()
     build_home()
     build_listings()
-    build_attractions()
-    build_tour()
+    build_destinations()
+    build_products()
     build_holidays()
     build_transfers()
     build_visa()
     build_contact()
     build_info_pages()
     build_404()
+    build_gone()
     build_seo_files()
     n = sum(len([f for f in fs if f.endswith('.html')]) for _, _, fs in os.walk(OUT))
-    print(f'Built {n} HTML pages into {OUT}')
+    print(f'Built {n} HTML pages ({len(ALL_TOURS)} tour pages) into {OUT}')

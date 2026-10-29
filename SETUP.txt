@@ -62,3 +62,18 @@ Please review
 - Car photos still load from teal-tiger-183550.hostingersite.com (your
   WordPress uploads). If that site is removed, put the car photos in
   assets/img and update the "img" values for cars in source/data/catalog.json.
+
+
+How tours work now (SEO update, 29 Oct 2026)
+--------------------------------------------
+- source/build.py reads the tours API (https://kwikar.com/api/tours.php, which
+  reads TravelDesk) and writes every tour page, listing and sitemap as HTML, so
+  Google, Bing and AI tools can read prices, options, FAQs and terms.
+- Tour pages live at /activities/{city}/{slug}; old /tour/{id} links 301 to them.
+  Slugs are saved in source/data/tour-slugs.json so a URL never changes.
+  Removed tours return 410 Gone.
+- GitHub Action "Refresh tours" rebuilds every 3 hours and deploys if anything
+  changed. Run it by hand from the Actions tab after big price changes.
+- Optional hand-written content per tour (quick answer, visitor info, KWIKAR
+  tip, extra FAQs, custom title/slug, last-checked date): source/data/tour-extras.json
+- Analytics / Search Console / Bing: put the IDs in source/data/site-config.json.

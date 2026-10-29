@@ -1,0 +1,19 @@
+{
+  "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden on the page.",
+  "_example_136": {
+    "slug": "burj-khalifa-at-the-top-tickets",
+    "title": "Burj Khalifa At the Top Tickets – Levels 124, 125, 148 | KWIKAR",
+    "description": "Book Burj Khalifa At the Top tickets from AED 189: Non-Prime, Prime, Fast Track and Level 148 options. Confirm your time slot on WhatsApp.",
+    "h1": "Burj Khalifa At the Top Tickets",
+    "quick_answer": "",
+    "at_a_glance": [["Best time", "..."]],
+    "best_for": ["..."],
+    "included": ["..."],
+    "not_included": ["..."],
+    "visitor_info": [["Getting there", "..."]],
+    "tip": "One first-hand tip from the KWIKAR team.",
+    "faqs": [["Question?", "Answer in 25–50 words."]],
+    "last_checked": "2026-10-29",
+    "sources": ["https://..."]
+  }
+}

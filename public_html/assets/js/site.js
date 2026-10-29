@@ -29,6 +29,22 @@
     else location.href = url;
   };
 
+  /* ---------- Analytics events (GA4 when configured; otherwise does nothing) ---------- */
+  KW.track = function (name, params) {
+    try {
+      window.dataLayer = window.dataLayer || [];
+      if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+      else window.dataLayer.push(Object.assign({ event: name }, params || {}));
+    } catch (e) { /* never break the page for analytics */ }
+  };
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (href.indexOf('https://wa.me/') === 0) KW.track('whatsapp_click', { page_path: location.pathname, link_text: (a.textContent || '').trim().slice(0, 60) });
+    else if (href.indexOf('tel:') === 0) KW.track('call_click', { page_path: location.pathname });
+  });
+
   /* ---------- Images that fail to load: show the gradient behind them ---------- */
   KW.watchImages = function (root) {
     (root || document).querySelectorAll('img').forEach(function (img) {
@@ -217,6 +233,7 @@
     }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      KW.track('generate_lead', { form: form.dataset.wa, page_path: location.pathname });
       KW.openWA(KW.whatsapp(message()));
     });
     var mail = form.querySelector('[data-mail]');
