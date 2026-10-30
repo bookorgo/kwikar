@@ -64,6 +64,9 @@ def _load_tours():
 
 
 ALL_TOURS, DETAILS, FEED_UPDATED = _load_tours()
+if '--save-feed' in sys.argv:   # the GitHub Action keeps a copy so scheduled SEO runs can build offline
+    json.dump({'items': ALL_TOURS, 'details': {str(k): v for k, v in DETAILS.items()}, 'updated': FEED_UPDATED},
+              open(sys.argv[sys.argv.index('--save-feed') + 1], 'w', encoding='utf-8'), ensure_ascii=False)
 TOURS = tf.popular([t for t in ALL_TOURS if tf.visible(t)])      # what listings show (most reviewed first)
 if len(TOURS) < 10:
     raise SystemExit(f'Only {len(TOURS)} tours loaded — refusing to build a site without tours.')

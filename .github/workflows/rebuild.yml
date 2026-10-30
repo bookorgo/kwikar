@@ -27,7 +27,13 @@ jobs:
           pip install --quiet pillow
           python3 source/fetch_images.py
       - name: Build from the tours API
-        run: python3 source/build.py
+        run: python3 source/build.py --save-feed /tmp/tours-feed.json
+      - name: Keep the tours feed for scheduled SEO runs
+        uses: actions/upload-artifact@v4
+        with:
+          name: tours-feed
+          path: /tmp/tours-feed.json
+          retention-days: 3
       - name: Commit and deploy if anything changed
         run: |
           git config user.name "github-actions"
