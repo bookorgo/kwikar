@@ -36,6 +36,10 @@ cat = json.load(open(os.path.join(ROOT, 'data', 'catalog.json'), encoding='utf-8
 LOCATIONS = cat['locations']                       # includes 'other' (shown as "More")
 REAL_LOCATIONS = [l for l in LOCATIONS if l['id'] != 'other']
 HOLIDAYS, CARS, VISAS = cat['holidays'], cat['cars'], cat['visas']
+for _c in CARS:   # use the local copy made by fetch_images.py when it exists
+    _local = 'assets/img/cars/' + re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-') + '.webp'
+    if os.path.exists(os.path.join(OUT, _local)):
+        _c['img'] = '/' + _local
 CATEGORIES = [
     {'slug': 'city-tours', 'name': 'City tours', 'term': 'city tour'},
     {'slug': 'theme-parks', 'name': 'Theme parks', 'term': 'theme park'},
