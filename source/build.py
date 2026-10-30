@@ -1264,11 +1264,19 @@ def build_blog():
         body = a['body'].replace('{tour}', tour_href(tour) if tour else '/activities')
         aq = tour_by_id(144)
         body = body.replace('{aquarium}', tour_href(aq) if aq else '/search?q=aquarium')
+        def _price(m):
+            t_ = tour_by_id(int(m.group(1)))
+            return money(t_['price']) if t_ and t_.get('price') else 'the price our team confirms'
+        def _link(m):
+            t_ = tour_by_id(int(m.group(1)))
+            return tour_href(t_) if t_ else '/activities'
+        body = re.sub(r'\{price:(\d+)\}', _price, re.sub(r'\{link:(\d+)\}', _link, body))
+        a = dict(a, summary=re.sub(r'\{price:(\d+)\}', _price, a['summary']), faqs=[[q, re.sub(r'\{price:(\d+)\}', _price, x)] for q, x in a.get('faqs', [])])
         img = (DETAILS.get(a.get('tour_id')) or {}).get('img') or (tour or {}).get('img') or '/assets/img/hero-dubai.webp'
         glance = ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in a.get('glance', []))
         faqs = faq_cards(a.get('faqs', []), open_all=True) if a.get('faqs') else ''
         rel = [r for r in (tour_by_id(i) for i in a.get('related', [])) if r]
-        others = [b for b in POSTS if b is not a]
+        others = [b for b in POSTS if b["slug"] != a["slug"]]
         sources = ''.join(f'<li><a href="{e(u)}" target="_blank" rel="noopener noreferrer">{e(n)}</a></li>' for n, u in a.get('sources', []))
         cta = ''
         if tour:
