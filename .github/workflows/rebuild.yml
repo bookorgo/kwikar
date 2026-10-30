@@ -28,12 +28,14 @@ jobs:
           python3 source/fetch_images.py
       - name: Build from the tours API
         run: python3 source/build.py --save-feed /tmp/tours-feed.json
-      - name: Keep the tours feed for scheduled SEO runs
-        uses: actions/upload-artifact@v4
-        with:
-          name: tours-feed
-          path: /tmp/tours-feed.json
-          retention-days: 3
+      - name: Keep the tours feed for scheduled SEO runs (branch "feed")
+        run: |
+          mkdir -p /tmp/feedrepo && cd /tmp/feedrepo
+          git init -q -b feed
+          cp /tmp/tours-feed.json .
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add tours-feed.json
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Tours feed snapshot"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" feed:feed
       - name: Commit and deploy if anything changed
         run: |
           git config user.name "github-actions"
