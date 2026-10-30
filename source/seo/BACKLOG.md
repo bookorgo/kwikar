@@ -4,7 +4,6 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Open
 
-- [ ] Aquarium and Underwater Zoo at The Dubai Mall (tour 144): full tour-extras content. Target: "dubai aquarium tickets"
 - [ ] Guide: "3 days in Dubai: a first-timer's itinerary" (links to Burj Khalifa, desert safari, dhow cruise, Dubai Frame)
 - [ ] Aquaventure World Waterpark (tour 142): full tour-extras content. Target: "aquaventure tickets"
 - [ ] Ferrari World Abu Dhabi (tour 161): full tour-extras content. Target: "ferrari world tickets"
@@ -21,6 +20,7 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 - [ ] Guide: "Ferrari World vs Warner Bros. World vs Yas Waterworld"
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
+- [ ] Tour pages: option cards show supplier "hours" as-is (Aquarium All Access shows "22 hours"); add a per-offer override or hide the hours line when it is clearly wrong
 - [ ] Technical: add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
 
 ## Needs approval (Irfan)
@@ -30,6 +30,7 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Done
 
+- [x] Dubai Aquarium & Underwater Zoo (tour 144) full content (30 Oct 2026). Opening hours and tunnel length left out: sources disagree (10pm vs 11pm close; 48 m vs 50 m). Photo alt text still to do
 - [x] Dubai Frame (tour 175) full content (30 Oct 2026). Photo alt text not written: supplier images could not be opened from the run sandbox
 - [x] Global Village (tour 102) full content; fixed wrong opening-hours row (30 Oct 2026). Still to add when the official site can be checked: season end date, free-entry age rules, location/transport
 

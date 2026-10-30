@@ -12,3 +12,5 @@ Short, factual notes that later runs should follow.
 - Earlier hand-written glance rows can be wrong (Global Village hours said Mon–Thu/weekends; real split is Sun–Wed / Thu–Sat). Re-check old rows when you fill a page.
 - dubaiframe.ae/en/plan-your-visit and emirates.com (Dubai Experience pages) could be fetched in unattended runs; the TravelDesk image CDN is blocked from the sandbox, so alt text needs a run that can view the photos. Supplier FAQs can contradict supplier offer notes (Dubai Frame 9am vs 8am): use the official page.
 - qa.py passed a 171-char meta description; check the rendered length yourself.
+- Run of 30 Oct 16:30 UTC: thedubaiaquarium.com could not be fetched (permission prompt unanswered); uae.emaar.com and emirates.com/bh/... Dubai Experience pages worked. When sources disagree on hours (Aquarium 10pm vs 11pm), say "open every day, our team confirms the time" instead of a time.
+- Screenshot via a local server (`python3 -m http.server` in public_html); file:// loses the CSS because asset paths are absolute.
