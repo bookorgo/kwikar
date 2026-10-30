@@ -4,7 +4,6 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Open
 
-- [ ] Global Village (tour 102): full tour-extras content (quick answer, glance, overview, visitor info, steps, 10 FAQs). Target: "global village tickets"
 - [ ] Dubai Frame (tour 175): full tour-extras content. Target: "dubai frame tickets"
 - [ ] Aquarium and Underwater Zoo at The Dubai Mall (tour 144): full tour-extras content. Target: "dubai aquarium tickets"
 - [ ] Guide: "3 days in Dubai: a first-timer's itinerary" (links to Burj Khalifa, desert safari, dhow cruise, Dubai Frame)
@@ -31,6 +30,8 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 - GA4 measurement ID (events are already in the code)
 
 ## Done
+
+- [x] Global Village (tour 102) full content; fixed wrong opening-hours row (30 Oct 2026). Still to add when the official site can be checked: season end date, free-entry age rules, location/transport
 
 - [x] Burj Khalifa page content (30 Oct 2026)
 - [x] Desert safari (Noble camp), Alexandra dhow, shared yacht, visa page content (30 Oct 2026)
