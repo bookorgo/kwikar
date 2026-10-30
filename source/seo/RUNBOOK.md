@@ -9,7 +9,7 @@ there is no online payment, no admin panel and no affiliate links.
    - Clone `bookorgo/kwikar` (attach it with the add_repo tool, access "push", if it is not in the session).
    - `pip install --break-system-packages pillow` only if a task needs images.
    - Get the latest tours feed (saved by every "Refresh tours" run on the `feed` branch):
-     `mkdir -p /tmp/feed && git -C <repo> fetch origin feed && git -C <repo> show origin/feed:tours-feed.json > /tmp/feed/tours-feed.json`.
+     `mkdir -p /tmp/feed && git -C <repo> fetch origin feed:refs/remotes/origin/feed && git -C <repo> show origin/feed:tours-feed.json > /tmp/feed/tours-feed.json`.
      Build with
      `cd source && python3 build.py --feed /tmp/feed/tours-feed.json && python3 qa.py`.
 2. **Pick the task**: the first unchecked item in `source/seo/BACKLOG.md` that is not marked
