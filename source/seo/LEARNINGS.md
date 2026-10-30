@@ -14,3 +14,4 @@ Short, factual notes that later runs should follow.
 - qa.py passed a 171-char meta description; check the rendered length yourself.
 - Run of 30 Oct 16:30 UTC: thedubaiaquarium.com could not be fetched (permission prompt unanswered); uae.emaar.com and emirates.com/bh/... Dubai Experience pages worked. When sources disagree on hours (Aquarium 10pm vs 11pm), say "open every day, our team confirms the time" instead of a time.
 - Screenshot via a local server (`python3 -m http.server` in public_html); file:// loses the CSS because asset paths are absolute.
+- Run of 30 Oct 17:10 UTC: every WebFetch (dubaiframe.ae, uae.emaar.com, atthetop.ae) was blocked by an unanswered permission prompt. Itinerary-style guides can still ship by reusing only facts already checked and sourced in tour-extras.json; leave out anything new (e.g. Dubai Fountain times).
