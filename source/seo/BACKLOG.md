@@ -4,7 +4,6 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Open
 
-- [ ] Aquaventure World Waterpark (tour 142): full tour-extras content. Target: "aquaventure tickets"
 - [ ] Ferrari World Abu Dhabi (tour 161): full tour-extras content. Target: "ferrari world tickets"
 - [ ] Guide: "Dubai with kids: indoor and outdoor things to do by age"
 - [ ] Louvre Abu Dhabi (tour 157): full tour-extras content. Target: "louvre abu dhabi tickets"
@@ -29,6 +28,7 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Done
 
+- [x] Aquaventure World Waterpark (tour 142) full content (30 Oct 2026). atlantis.com and visitdubai.com blocked; facts from the Dubai Pass (Dubai Tourism) page + supplier notes. Left out (sources disagree): free-entry age (under 2 vs under 3), child age bands, outside water allowance, park size, monorail/taxi details, wheelchair access, tower names. Photo alt text still to do
 - [x] Guide: "3 Days in Dubai: A First-Timer's Itinerary" /blog/dubai/3-days-in-dubai-itinerary (30 Oct 2026). Only reuses facts already checked on tour pages; official sites could not be fetched this run. Dubai Fountain left out (show times not checked)
 - [x] Dubai Aquarium & Underwater Zoo (tour 144) full content (30 Oct 2026). Opening hours and tunnel length left out: sources disagree (10pm vs 11pm close; 48 m vs 50 m). Photo alt text still to do
 - [x] Dubai Frame (tour 175) full content (30 Oct 2026). Photo alt text not written: supplier images could not be opened from the run sandbox
