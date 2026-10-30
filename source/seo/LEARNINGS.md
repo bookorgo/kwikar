@@ -10,3 +10,5 @@ Short, factual notes that later runs should follow.
 - Browsers may show a cached page after a deploy; HTML is now served with Cache-Control: no-cache.
 - In unattended runs WebFetch to globalvillage.ae, visitdubai.com and mediaoffice.ae was blocked (permission prompt unanswered); arabianbusiness.com worked. Cross-check news facts with the supplier offer notes in the feed (`details.<id>.offers[].desc`) and leave out anything only one unofficial source states.
 - Earlier hand-written glance rows can be wrong (Global Village hours said Mon–Thu/weekends; real split is Sun–Wed / Thu–Sat). Re-check old rows when you fill a page.
+- dubaiframe.ae/en/plan-your-visit and emirates.com (Dubai Experience pages) could be fetched in unattended runs; the TravelDesk image CDN is blocked from the sandbox, so alt text needs a run that can view the photos. Supplier FAQs can contradict supplier offer notes (Dubai Frame 9am vs 8am): use the official page.
+- qa.py passed a 171-char meta description; check the rendered length yourself.

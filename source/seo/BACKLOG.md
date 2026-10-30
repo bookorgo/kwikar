@@ -4,7 +4,6 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Open
 
-- [ ] Dubai Frame (tour 175): full tour-extras content. Target: "dubai frame tickets"
 - [ ] Aquarium and Underwater Zoo at The Dubai Mall (tour 144): full tour-extras content. Target: "dubai aquarium tickets"
 - [ ] Guide: "3 days in Dubai: a first-timer's itinerary" (links to Burj Khalifa, desert safari, dhow cruise, Dubai Frame)
 - [ ] Aquaventure World Waterpark (tour 142): full tour-extras content. Target: "aquaventure tickets"
@@ -31,6 +30,7 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 
 ## Done
 
+- [x] Dubai Frame (tour 175) full content (30 Oct 2026). Photo alt text not written: supplier images could not be opened from the run sandbox
 - [x] Global Village (tour 102) full content; fixed wrong opening-hours row (30 Oct 2026). Still to add when the official site can be checked: season end date, free-entry age rules, location/transport
 
 - [x] Burj Khalifa page content (30 Oct 2026)
