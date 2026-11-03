@@ -2,7 +2,7 @@
  "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301).",
  "136": {
   "slug": "burj-khalifa-at-the-top-tickets",
-  "title": "Burj Khalifa Tickets – At the Top Levels 124, 125 & 148 | KWIKAR",
+  "title": "Burj Khalifa Tickets – At the Top 124, 125 & 148 | KWIKAR",
   "description": "Book Burj Khalifa At the Top tickets from {from}. Compare Silver, Gold and Platinum levels and Prime or Non-Prime times, then confirm on WhatsApp.",
   "og_title": "Burj Khalifa At the Top Tickets – KWIKAR",
   "og_description": "Choose your level and time slot. Silver tickets from {from} per person.",

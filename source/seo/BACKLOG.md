@@ -21,8 +21,11 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] [tech] Tour pages: option cards show supplier "hours" as-is (Aquarium All Access shows "22 hours"); add a per-offer override or hide the hours line when it is clearly wrong
 - [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
 
+- [ ] [tech] qa.py does not fail on long titles or short meta descriptions (Editor 3 Nov found 4 titles of 62–65 chars on hand-written pages). Make qa.py check rendered <title> ≤ 60 and meta 120–160 for pages with hand-written content
+- [ ] [tech] Meta descriptions under 120 chars on template pages: /activities/ and all category hubs (72–86), /destinations/ and every country page (36–64), /contact, /about, /terms, /privacy, /refund-policy, /booking-information, /search, /holidays, /transfers; supplier-text metas 118–119 on kidzania-dubai, house-of-hype, the-palm-monorail. Write proper 120–160 char descriptions (templates or hub-intros)
+- [ ] [tech] Supplier descriptions shown verbatim contain banned wording: "Book now" (hot-air-ballon-flight-in-dubai), "during checkout" (the-view-palm-jumeirah terms). Filter these phrases in build.py or override the text in tour-extras
 - [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144) and Aquaventure (142) photos (earlier runs could not open the supplier images)
-- [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched
+- [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read
 
 ## Needs approval (Irfan)
 
