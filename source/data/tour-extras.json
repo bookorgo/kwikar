@@ -1,5 +1,5 @@
 {
- "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301).",
+ "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301). offer_hours: {part of an option name: hours, or null to hide} fixes clearly wrong supplier durations on option cards.",
  "136": {
   "slug": "burj-khalifa-at-the-top-tickets",
   "title": "Burj Khalifa Tickets – At the Top 124, 125 & 148 | KWIKAR",
@@ -1700,7 +1700,10 @@
    "https://uae.emaar.com/en/dubai-aquarium-and-underwater-zoo",
    "https://www.emirates.com/bh/english/dubai-experience/activities/2231/dubai-aquarium-and-underwater-zoo/",
    "TravelDesk supplier notes for offers 1870, 1174, 1553 and 1175 (Dubai Aquarium and Underwater Zoo)"
-  ]
+  ],
+  "offer_hours": {
+   "All Access Pass - Platinum": null
+  }
  },
  "142": {
   "title": "Aquaventure Tickets – Atlantis The Palm Waterpark | KWIKAR",
@@ -1937,5 +1940,9 @@
    "https://dubaipass.visitdubai.com/za/dubaipass/attractions/theme-parks/aquaventure-water-park-atlantis-day-pass/",
    "TravelDesk supplier notes and FAQs for offers 1166 and 1604 (Aquaventure World Waterpark)"
   ]
+ },
+ "289": {
+  "title": "Alexandra New Year's Eve Gala Dinner, Dubai | KWIKAR",
+  "description": "New Year's Eve gala dinner on the Alexandra dhow or Alexandra Sea Lounge in Dubai: upper or lower deck, with or without sharing transfers. Ask us on WhatsApp."
  }
 }

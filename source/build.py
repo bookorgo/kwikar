@@ -40,6 +40,19 @@ for _c in CARS:   # use the local copy made by fetch_images.py when it exists
     _local = 'assets/img/cars/' + re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-') + '.webp'
     if os.path.exists(os.path.join(OUT, _local)):
         _c['img'] = '/' + _local
+CAT_DESC = {   # meta descriptions for category hubs (120–160 chars)
+    'city-tours': 'City tours of Dubai, Abu Dhabi, Ras Al Khaimah and Fujairah, with guided day tours and private options. Compare current prices and ask us on WhatsApp.',
+    'theme-parks': 'Theme park tickets for Dubai and Abu Dhabi, including Yas Island parks and waterparks. Compare current prices and send your request on WhatsApp.',
+    'desert-adventures': 'Desert safaris from Dubai, Abu Dhabi and Ras Al Khaimah: morning, evening, overnight and heritage safaris. Compare options and current prices on KWIKAR.',
+    'water-activities': 'Water activities in Dubai and the UAE: waterparks, speed boat tours, dolphin experiences, fishing trips and cruises. Compare current prices on KWIKAR.',
+    'cultural-experiences': 'Museums, palaces and cultural experiences in Dubai and Abu Dhabi, including Louvre Abu Dhabi and Qasr Al Watan. Compare current prices and ask us on WhatsApp.',
+    'family-activities': 'Family activities in Dubai and the UAE for all ages, from aquariums to theme parks. Compare current prices and send your request on WhatsApp.',
+    'luxury-experiences': 'Luxury experiences in Dubai and the UAE, including yacht tours. Compare options and current prices, then send your request to our team on WhatsApp.',
+    'attraction-tickets': 'Attraction tickets for Dubai, Abu Dhabi and the UAE. Compare ticket options and current prices, then send your request to our team on WhatsApp.',
+    'cruises': 'Dhow cruises and dinner cruises in Dubai, from Dubai Marina to the Dubai Water Canal. Compare cruises and current prices, then send your request on WhatsApp.',
+    'yachts': 'Shared and private yacht tours in Dubai. Compare yachts, what each trip includes and current prices, then send your request to our team on WhatsApp.',
+    'events': 'Events, concerts and live shows in Dubai and the UAE. Compare dates, tickets and current prices, then send your request to our team on WhatsApp.',
+}
 CATEGORIES = [
     {'slug': 'city-tours', 'name': 'City tours', 'term': 'city tour'},
     {'slug': 'theme-parks', 'name': 'Theme parks', 'term': 'theme park'},
@@ -710,7 +723,7 @@ def build_listings():
             f'<nav class="kw-list-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Activities &amp; attractions</nav><h1>Activities &amp; attractions</h1>'
             f'<p>Discover tours, tickets and experiences across the UAE and beyond.</p>{list_search()}</div></section>'
             f'{list_body(TOURS)}{hub_intro("page:activities", "Activities and attractions across the UAE", TOURS, eyebrow="ABOUT KWIKAR ACTIVITIES")}')
-    page('/activities', 'Activities & Attractions', 'Browse KWIKAR experiences and attractions by destination, category and price.', main,
+    page('/activities', 'Activities & Attractions', 'Browse tours, attraction tickets, desert safaris, cruises and theme parks in Dubai, Abu Dhabi and the UAE, with prices our team keeps up to date.', main,
          active='Activities', main_class='kw-list-page kw-list-standard', main_attrs=' data-listing data-kind="standard"',
          crumbs=[('Home', '/'), ('Activities', '/activities')])
 
@@ -747,7 +760,7 @@ def build_listings():
         related = ''.join(f'<a href="/activities/{x["slug"]}">{e(x["name"])}<span>↗</span></a>' for x in LIVE_CATS if x['slug'] != slug)[:100000]
         rel_html = f'<section class="kw-related-categories"><div class="kw-market-wrap"><h2>Keep exploring</h2><div>{related}</div></div></section>'
         main = lead + places_html + list_body(items, category=slug, kind=kind) + hub_intro(f'cat:{slug}', f'{c["name"]} in the UAE', items, eyebrow='GOOD TO KNOW') + rel_html
-        page(f'/activities/{slug}', f'{c["name"]} Experiences', f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
+        page(f'/activities/{slug}', f'{c["name"]} Experiences', CAT_DESC.get(slug) or f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
              active='Cruises' if slug == 'cruises' else 'Activities', noindex=not items,
              main_class=f'kw-list-page kw-list-{kind} kw-category-{slug}',
              main_attrs=f' data-listing data-kind="{kind}" data-category="{slug}" data-term="{e(c["term"])}"',
@@ -774,7 +787,7 @@ def build_destinations():
             f'<section class="kw-market-section"><div class="kw-market-wrap"><div class="kw-section-head"><div><span class="kw-eyebrow">EXPLORE THE EMIRATES</span><h2>United Arab Emirates</h2></div><a class="kw-text-link" href="/activities">Browse by activity ↗</a></div><div class="kw-attractions-grid">{tiles}</div></div></section>'
             + hub_intro('page:destinations', 'Choosing where to go', TOURS, eyebrow='PLANNING')
             + (f'<section class="kw-market-section kw-market-alt"><div class="kw-market-wrap"><span class="kw-eyebrow">TRAVEL FURTHER</span><h2>Worldwide destinations</h2><p class="kw-market-subtitle">Explore international experiences from the current catalogue.</p><div class="kw-attractions-world">{wl}</div></div></section>' if wl else ''))
-    page('/destinations', 'Destinations', 'Browse KWIKAR experiences by UAE city and worldwide destination.', main, active='Destinations',
+    page('/destinations', 'Destinations', 'Browse tours and activities by destination: Dubai, Abu Dhabi, Ras Al Khaimah and more. Compare current prices and send your request on WhatsApp.', main, active='Destinations',
          main_class='kw-attractions-hub', crumbs=[('Home', '/'), ('Destinations', '/destinations')])
 
     # /destinations/{id}: city hub with every experience (same layout as the previous site)
@@ -899,11 +912,11 @@ def build_product(t, d):
         opts = []
         if len(offers) > 1:
             opts = [f' {len(offers)} options, including {offers[0]["name"]} and {offers[1]["name"]}.', f' {len(offers)} options, including {offers[0]["name"]}.', f' {len(offers)} options to choose from.']
-        for o_ in opts + ['']:
-            for t_ in (' Confirm availability and the final price with KWIKAR on WhatsApp.', ' Book with KWIKAR on WhatsApp.', ''):
-                if len(head_ + o_ + t_) <= 160 and not desc:
-                    desc = head_ + o_ + t_
-        desc = desc or head_[:157] + '…'
+        tails = (' Confirm availability and the final price with KWIKAR on WhatsApp.',
+                 ' Send your date on WhatsApp and our team confirms availability and the final price.',
+                 ' Book with KWIKAR on WhatsApp.', '')
+        fits = [head_ + o_ + t_ for o_ in opts + [''] for t_ in tails if len(head_ + o_ + t_) <= 160]
+        desc = next((c_ for c_ in fits if len(c_) >= 120), fits[0] if fits else head_[:157] + '…')
 
     # ---- quick answer + at a glance (facts from the API only)
     quick = x.get('quick_answer') or (
@@ -1076,9 +1089,45 @@ def build_product(t, d):
          crumbs=[('Home', '/'), ('Activities', '/activities'), ('More' if lid == 'other' else cname, city_link), (name, path)])
 
 
+# Supplier text sometimes uses online-checkout wording that does not fit our WhatsApp flow (hard rule).
+_SUPPLIER_FIXES = [
+    (re.compile(r'\s*\bBook now\b[^.!?<]*[.!?]?', re.I), ''),
+    (re.compile(r'\b(?:selected|chosen) during checkout\b', re.I), 'chosen when booking'),
+    (re.compile(r'\b(?:during|at) (?:the )?checkout\b', re.I), 'when booking'),
+    (re.compile(r'\binstant confirmation\b', re.I), 'confirmation from our team'),
+]
+
+
+def _clean_supplier(v):
+    if isinstance(v, str):
+        for rx, rep in _SUPPLIER_FIXES:
+            v = rx.sub(rep, v)
+        return v
+    if isinstance(v, list):
+        return [_clean_supplier(i) for i in v]
+    if isinstance(v, dict):
+        return {k: _clean_supplier(i) for k, i in v.items()}
+    return v
+
+
+def _fix_offer_hours(d, x):
+    """tour-extras `offer_hours`: {part of an option name: hours, or null to hide} for clearly wrong supplier durations."""
+    fixes = {k.lower(): v for k, v in (x.get('offer_hours') or {}).items()}
+    if not fixes or not d.get('offers'):
+        return d
+    offers = []
+    for o in d['offers']:
+        for part, hrs in fixes.items():
+            if part in (o.get('name') or '').lower():
+                o = dict(o, hours=hrs or None)
+        offers.append(o)
+    return dict(d, offers=offers)
+
+
 def build_products():
     for t in ALL_TOURS:
-        build_product(t, DETAILS.get(t['id']) or DETAILS.get(str(t['id'])) or {})
+        d = DETAILS.get(t['id']) or DETAILS.get(str(t['id'])) or {}
+        build_product(t, _fix_offer_hours(_clean_supplier(d), EXTRAS.get(str(t['id']), {})))
 
 
 # ================================================================= service pages (same markup as before)
@@ -1093,7 +1142,7 @@ def build_holidays():
     main = (page_hero('TAILORED GETAWAYS', 'Holidays designed around you.', 'Discover destinations and let us help put together the right hotel, activities and transfers for your journey.', photo('1525625293386-3f8f99389edd', 1600))
             + f'<section class="kw-section"><div class="kw-wrap" data-holidays>{section_head("Explore holiday ideas", "WHERE TO NEXT")}<p class="kw-section-intro">Holiday prices will be confirmed by our team for your dates and preferred hotels.</p>'
             f'<div class="kw-holiday-destinations" aria-label="Holiday destinations">{tiles}</div><div class="kw-filter-row">{filt}</div>{groups}</div></section>')
-    page('/holidays', 'Holiday Packages', 'Explore KWIKAR holiday ideas in the UAE, Singapore, Thailand and beyond. Enquire for a tailored travel quote.', main,
+    page('/holidays', 'Holiday Packages', 'Holiday package ideas for the UAE, Singapore, Thailand and beyond. Tell us your dates and budget on WhatsApp and our team sends a tailored quote.', main,
          active='Holidays', main_class='kw-category-service kw-holiday-service', crumbs=[('Home', '/'), ('Holidays', '/holidays')])
 
 
@@ -1142,7 +1191,7 @@ def build_transfers():
             + faq_block('Transfer questions', [('What happens if my flight is delayed?', 'Share your flight number when enquiring. We will confirm pickup arrangements and any waiting charges before booking.'),
                                                ('Can I change or cancel a booking?', 'Tell us as soon as possible. We will confirm the applicable change and cancellation terms for your chosen service before payment.'),
                                                ('Can I extend my chauffeur booking?', 'Extensions depend on driver availability and will be quoted before you confirm.')]))
-    page('/transfers', 'Private Transfers & Chauffeur', 'Arrange airport pickups, private transfers and chauffeur services in the UAE with KWIKAR.', main,
+    page('/transfers', 'Private Transfers & Chauffeur', 'Private airport transfers, hourly chauffeur and inter-emirate rides in the UAE. Get a starting price, then send your request to our team on WhatsApp.', main,
          active='Transfers', crumbs=[('Home', '/'), ('Transfers', '/transfers')])
 
 
@@ -1200,7 +1249,7 @@ def build_contact():
     main = (page_hero("LET'S PLAN TOGETHER", "Tell us where you're going.", 'Our team can help with experiences, holidays, transfers and visa enquiries.', photo('1512453979798-5ea266f8880c', 1600))
             + f'<section class="kw-section"><div class="kw-wrap kw-contact-grid"><div>{section_head("We\'re here to help", "SPEAK TO OUR TEAM")}<p>Share what you need and continue the conversation on WhatsApp.</p>'
             f'<div class="kw-contact-list"><a href="tel:+{PHONE}">Call us<br><strong>{PHONE_FMT}</strong></a><a href="mailto:{EMAIL}">Email us<br><strong>{EMAIL}</strong></a></div></div>{form}</div></section>')
-    page('/contact', 'Contact', 'Contact KWIKAR for attractions, holidays, private transfers and visa assistance.', main, crumbs=[('Home', '/'), ('Contact', '/contact')])
+    page('/contact', 'Contact', 'Contact KWIKAR on WhatsApp, phone or email about tours, attraction tickets, holiday packages, private transfers and UAE visa help. We are happy to help.', main, crumbs=[('Home', '/'), ('Contact', '/contact')])
 
 
 def info(path, title, desc, body, label):
@@ -1208,28 +1257,28 @@ def info(path, title, desc, body, label):
 
 
 def build_info_pages():
-    info('/about', 'About KWIKAR', 'Learn how KWIKAR helps travellers explore experiences, holidays, transfers and visa assistance in the UAE.', '''
+    info('/about', 'About KWIKAR', 'KWIKAR is a UAE travel company for tours, attraction tickets, holidays, private transfers and visa help. See how we check prices and visitor details.', '''
 <h1>Travel plans, made simpler.</h1><p>KWIKAR LLC-FZ helps travellers explore experiences, holiday ideas, private transfers and visa assistance in the UAE and beyond. Browse what interests you, then tell our team your dates and requirements.</p>
 <h2>How we check our information</h2><ul><li><strong>Prices and options</strong> come from our suppliers' live rates and are refreshed several times a day. Each tour page shows when they were last checked.</li><li><strong>Visitor details</strong> on our main pages, such as opening hours, entry rules and what to bring, are written by the KWIKAR team from official venue and supplier information, and each page shows the date it was checked.</li><li><strong>Final details</strong> are confirmed by our team for your date before you pay, because supplier rules can change.</li><li><strong>No invented reviews or ratings.</strong> We do not show ratings from other websites as our own.</li><li><strong>Corrections:</strong> if you spot something out of date, email <a href="mailto:info@kwikar.com">info@kwikar.com</a> and we will check and fix it.</li></ul>
 <h2>How enquiries work</h2><ol><li>Explore experiences and indicative prices.</li><li>Send your request on WhatsApp with your preferred date and number of guests.</li><li>Our team confirms availability, final price and applicable booking terms before payment.</li></ol><p>Questions? <a href="/contact">Get in touch</a>.</p>''', 'About')
-    info('/privacy', 'Privacy', 'How KWIKAR uses the information you share in WhatsApp and email enquiries.', f'''
+    info('/privacy', 'Privacy', 'How KWIKAR uses the details you share in WhatsApp and email enquiries. This website takes no online payments and does not ask for or store card details.', f'''
 <h1>Privacy and enquiries</h1><p>KWIKAR LLC-FZ uses the details you share to respond to travel enquiries and arrange requested services. This website does not take online payments and does not ask for or store card details.</p>
 <h2>How our forms work</h2><p>Booking and enquiry forms on this website open WhatsApp (or your email app) with a prepared message, which you review before you send it.</p>
 <h2>Information you share</h2><p>When you contact us we receive the details you choose to send, for example your name, phone number or email, selected tour or service, travel date, number of guests, pickup location and notes. We use them to answer you, confirm availability and price, arrange your booking and contact you about it. Visa documents should be shared only after our team confirms the appropriate process.</p>
 <h2>Other services</h2><p>WhatsApp and your email provider handle messages under their own terms. A tour or transfer supplier may receive the booking details needed to provide your service.</p>
 <h2>Your questions</h2><p>Contact <a href="mailto:{EMAIL}">{EMAIL}</a> about your information or a data request. See our <a href="/booking-information">booking information</a>.</p>''', 'Privacy')
-    info('/terms', 'Terms & conditions', 'Terms for KWIKAR travel enquiries, quoted services and confirmed bookings.', '''
+    info('/terms', 'Terms & conditions', 'Terms for KWIKAR travel enquiries, quotes and confirmed bookings: how reservations are confirmed in writing, payment, changes and supplier cancellation rules.', '''
 <h1>Terms &amp; conditions</h1><p>Kwikar LLC-FZ provides travel enquiries and booking assistance for attractions, holidays, transfers and visas. Information and prices on this website may change with supplier availability, dates and guest details.</p>
 <h2>Quotes and orders</h2><p>Only a written confirmation from KWIKAR confirms a reservation. Sending an enquiry does not reserve a service. Before any payment, KWIKAR confirms the final AED amount, what is included and the applicable supplier conditions.</p>
 <h2>Booking and payment</h2><p>No payment is taken on this website. Our team agrees the payment method with you directly. A booking is confirmed only when KWIKAR sends you a written confirmation with your booking details.</p>
 <h2>Changes and cancellations</h2><p>Supplier rules for each service govern changes, cancellation charges and refunds. Read the specific tour conditions and our <a href="/refund-policy">refund and cancellation policy</a>. Visa issuance is determined by the issuing authority; processing times and approval are not guaranteed.</p>
 <p>Read <a href="/booking-information">booking information</a> or <a href="/contact">contact our team</a> with questions.</p>''', 'Terms')
-    info('/refund-policy', 'Refund & cancellation policy', 'How KWIKAR handles unavailable experiences, changes and refunds.', f'''
+    info('/refund-policy', 'Refund & cancellation policy', 'How KWIKAR handles experiences that cannot be confirmed, changes and cancellations after confirmation, and refunds under each supplier policy.', f'''
 <h1>Refund &amp; cancellation policy</h1><h2>Before confirmation</h2><p>If an experience or service cannot be confirmed with the supplier, we tell you on WhatsApp and suggest alternatives. Nothing is booked until you accept the final quote.</p>
 <h2>After confirmation</h2><p>Cancellation or changes to a confirmed booking depend on the supplier's policy for that exact tour, option and travel date. The applicable conditions are shown on the tour page when provided by the supplier and are shared with your confirmation. Some tickets are non-refundable or carry a cancellation charge. Contact us as soon as possible with your booking details; we will check the supplier's terms and tell you the refundable amount, if any, before processing a request.</p>
 <h2>Other services</h2><p>Transfers, visas and holiday packages can have different cancellation terms. KWIKAR shares the applicable terms with your quote before requesting payment. Visa approval is determined by the issuing authority; an application fee may not be refundable after processing starts.</p>
 <p>For assistance email <a href="mailto:{EMAIL}">{EMAIL}</a> or <a href="/contact">contact our team</a>. See <a href="/booking-information">how booking works</a>.</p>''', 'Refund policy')
-    info('/booking-information', 'Booking information', 'How booking with KWIKAR works: requests on WhatsApp, confirmation and payment.', '''
+    info('/booking-information', 'Booking information', 'How booking with KWIKAR works: send your request on WhatsApp, our team confirms availability and the final AED price, then you pay and receive confirmation.', '''
 <h1>Booking information</h1><p>Tour prices are shown in AED. Some services require a quote before we can confirm the total.</p>
 <h2>Tour booking</h2><p>Choose an experience, option, date and guests, then send your booking request on WhatsApp. The supplier recommended prices are indicative; our team checks age-based guest prices, date and availability, then replies with the final AED amount and how to pay. Your booking is confirmed when we send your confirmation and voucher reference.</p>
 <h2>Transfers, visas and holidays</h2><p>Send an enquiry with your travel details. Transfers and holidays are arranged on WhatsApp. For visas, contact our team to check requirements and pricing. A website starting price does not reserve a vehicle, visa or holiday. The confirmed AED quote is the customer total, with no separate card or booking fee.</p>
