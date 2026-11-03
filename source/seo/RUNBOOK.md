@@ -1,4 +1,7 @@
-# KWIKAR hourly SEO run — runbook
+# KWIKAR SEO runs — runbook
+
+The team roles (Writer, Editor, Tech, Strategist) are described in `TEAM.md`. This file has the
+setup, the hard rules for every role, and the Writer's steps.
 
 Every scheduled run follows this file. Owner: Irfan Kabir (kwikar.com). Booking is on WhatsApp only;
 there is no online payment, no admin panel and no affiliate links.
@@ -12,8 +15,8 @@ there is no online payment, no admin panel and no affiliate links.
      `mkdir -p /tmp/feed && git -C <repo> fetch origin feed:refs/remotes/origin/feed && git -C <repo> show origin/feed:tours-feed.json > /tmp/feed/tours-feed.json`.
      Build with
      `cd source && python3 build.py --feed /tmp/feed/tours-feed.json && python3 qa.py`.
-2. **Pick the task**: the first unchecked item in `source/seo/BACKLOG.md` that is not marked
-   `(needs Irfan)`. If the backlog has fewer than 5 open items, first add new ones (see "Self-improvement").
+2. **Pick the task** (Writer): the first unchecked item in `source/seo/BACKLOG.md` that has no
+   `[tech]`/`[edit]` tag and is not under "Needs approval". If the backlog has fewer than 5 open items, first add new ones (see "Self-improvement").
 3. **Do it** following the rules below. Keep it small enough to finish in this run.
 4. **Check**: `python3 build.py --feed /tmp/feed/tours-feed.json && python3 qa.py` must print `QA OK`.
    Look at changed pages with Playwright screenshots (desktop 1300px and mobile 390px) when the

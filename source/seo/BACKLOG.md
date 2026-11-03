@@ -1,6 +1,6 @@
 # KWIKAR SEO backlog
 
-Hourly runs take the first open item. Add new items at the right priority; keep each item one page or one fix.
+Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Editor, untagged items for Writer (first open item first). Keep each item one page or one fix.
 
 ## Open
 
@@ -18,8 +18,11 @@ Hourly runs take the first open item. Add new items at the right priority; keep 
 - [ ] Guide: "Ferrari World vs Warner Bros. World vs Yas Waterworld"
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
-- [ ] Tour pages: option cards show supplier "hours" as-is (Aquarium All Access shows "22 hours"); add a per-offer override or hide the hours line when it is clearly wrong
-- [ ] Technical: add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
+- [ ] [tech] Tour pages: option cards show supplier "hours" as-is (Aquarium All Access shows "22 hours"); add a per-offer override or hide the hours line when it is clearly wrong
+- [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
+
+- [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144) and Aquaventure (142) photos (earlier runs could not open the supplier images)
+- [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched
 
 ## Needs approval (Irfan)
 
