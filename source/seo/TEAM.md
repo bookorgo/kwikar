@@ -24,6 +24,19 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 - If a run cannot finish, push only the notes (LOG/BACKLOG) and stop. Never push broken work.
 - End every run with a 2–3 line Roman Urdu summary for Irfan.
 
+## Free SEO data (branch `seo-data`, refreshed Mon and Thu by the "SEO data" workflow)
+
+Read it with: `git -C <repo> fetch origin seo-data:refs/remotes/origin/seo-data && git -C <repo> show origin/seo-data:<file>`
+- `keywords.md` / `keywords.json` — what people type in Google and Bing (UAE, English) for each seed in
+  `source/seo/keyword-seeds.txt`. G/B counts are demand signals, not search volumes. Never invent volumes.
+- `gsc.md`, `gsc-queries.json`, `gsc-pages.json`, `gsc-history.csv` — Search Console clicks, impressions,
+  positions and "quick wins" (only once Irfan adds the GSC_SA_JSON secret; until then the file says skipped).
+- `bing.json` — Bing Webmaster query stats (once the BING_API_KEY secret is added).
+- `pagespeed.json` — mobile PageSpeed scores and top fixes for 3 key pages.
+Who uses what: Writer picks the page's main keyword and FAQ questions from `keywords.md`; Editor works
+the GSC quick wins (title/meta/H2/FAQ for queries at position 4–20); Tech reads `pagespeed.json`;
+Strategist uses all of it to order the backlog and may edit `keyword-seeds.txt`.
+
 ## Writer
 
 Follow `RUNBOOK.md` steps 1–6 exactly: take the first open untagged backlog item, write it, check

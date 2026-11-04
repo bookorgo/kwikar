@@ -1,0 +1,48 @@
+# Seed topics for the free keyword research (source/seo_data.py).
+# One topic per line. The Strategist may add or remove lines; keep it under ~60.
+burj khalifa tickets
+burj khalifa at the top
+desert safari dubai
+evening desert safari
+morning desert safari
+overnight desert safari
+dhow cruise dubai
+dhow cruise marina
+yacht rental dubai
+shared yacht tour dubai
+dubai frame tickets
+dubai aquarium tickets
+aquaventure tickets
+global village dubai
+miracle garden dubai
+ferrari world tickets
+warner bros world abu dhabi
+yas waterworld
+louvre abu dhabi tickets
+ski dubai
+dubai city tour
+abu dhabi city tour
+abu dhabi day trip from dubai
+sheikh zayed grand mosque tour
+museum of the future tickets
+dubai parks and resorts
+img worlds of adventure
+hot air balloon dubai
+helicopter tour dubai
+jet ski dubai
+dubai creek tour
+musandam tour from dubai
+hatta tour
+dubai airport transfer
+abu dhabi airport transfer
+dubai to abu dhabi taxi
+dubai tourist visa
+uae visa for pakistani
+uae visa for indian
+dubai holiday package
+things to do in dubai
+things to do in abu dhabi
+dubai with kids
+dubai itinerary
+best time to visit dubai
+dubai new year eve dinner cruise

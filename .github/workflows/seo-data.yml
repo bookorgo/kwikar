@@ -1,0 +1,40 @@
+# Free SEO data for the team: keyword ideas (Google/Bing autocomplete), Search Console,
+# Bing Webmaster and PageSpeed. Results go to the "seo-data" branch (not deployed).
+name: SEO data
+on:
+  schedule:
+    - cron: '41 4 * * 1,4'   # Mon and Thu 04:41 UTC (08:41 UAE), before the Strategist run
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Get the previous data (keeps the ranking history)
+        run: |
+          git fetch -q origin seo-data:refs/remotes/origin/seo-data 2>/dev/null || true
+          mkdir -p /tmp/seo-data
+          if git rev-parse -q --verify origin/seo-data >/dev/null; then
+            git --work-tree=/tmp/seo-data checkout origin/seo-data -- . && git reset -q
+          fi
+      - name: Collect data
+        env:
+          GSC_SA_JSON: ${{ secrets.GSC_SA_JSON }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+        run: |
+          pip install --quiet google-auth requests
+          python3 source/seo_data.py /tmp/seo-data
+          cat /tmp/seo-data/README.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Save to the seo-data branch
+        run: |
+          cd /tmp/seo-data
+          rm -rf .git && git init -q -b seo-data
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "SEO data $(date -u +%F)"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" seo-data:seo-data
