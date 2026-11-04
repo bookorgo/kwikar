@@ -37,4 +37,8 @@ jobs:
           rm -rf .git && git init -q -b seo-data
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add -A
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "SEO data $(date -u +%F)"
-          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" seo-data:seo-data
+          for i in 1 2 3 4 5; do
+            git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" seo-data:seo-data && exit 0
+            echo "push failed, retry $i"; sleep $((i*15))
+          done
+          exit 1
