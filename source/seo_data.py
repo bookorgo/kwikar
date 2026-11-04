@@ -10,7 +10,8 @@ Collects, with free sources only:
      pages for the last 28 days, "quick win" queries (position 4-20, low CTR), and a
      history file so rankings can be tracked over time.
   3. Bing Webmaster (only when the BING_API_KEY secret is set): query stats.
-  4. PageSpeed Insights (mobile) for a few key pages (no key needed).
+  4. PageSpeed Insights (mobile) for a few key pages (free PAGESPEED_API_KEY secret recommended;
+     without it Google usually answers 429 to GitHub runners).
 
 Writes everything into the folder given as the first argument (default ./seo-data).
 Never fails the workflow because one source is down: each source writes its own error.
@@ -165,8 +166,9 @@ def pagespeed():
     for p in pages:
         url = SITE + p
         try:
+            key = os.environ.get('PAGESPEED_API_KEY', '').strip()
             d = get_json('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' + urllib.parse.urlencode(
-                [('url', url), ('strategy', 'mobile'), ('category', 'performance'), ('category', 'seo'),
+                ([('key', key)] if key else []) + [('url', url), ('strategy', 'mobile'), ('category', 'performance'), ('category', 'seo'),
                  ('category', 'accessibility'), ('category', 'best-practices')]), timeout=120)
             lh = d['lighthouseResult']
             res['pages'][url] = {
@@ -178,33 +180,8 @@ def pagespeed():
                     (a for a in lh['audits'].values() if a.get('details', {}).get('type') == 'opportunity'
                      and (a.get('numericValue') or 0) > 100), key=lambda a: -(a.get('numericValue') or 0))][:5]}
         except Exception as err:
-            res['pages'][url] = {'error': 'PageSpeed API: ' + str(err)[:200]}
-            try:  # free fallback: run Lighthouse on the GitHub runner (mobile emulation)
-                import subprocess, tempfile
-                out = tempfile.mktemp(suffix='.json')
-                import shutil
-                env = dict(os.environ)
-                chrome = next((c for c in ('google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser')
-                               if shutil.which(c)), None)
-                if chrome:
-                    env['CHROME_PATH'] = shutil.which(chrome)
-                p = subprocess.run(['npx', '-y', 'lighthouse@12.2.1', url, '--quiet', '--output=json',
-                                    f'--output-path={out}', '--chrome-flags=--headless=new --no-sandbox',
-                                    '--only-categories=performance,seo,accessibility,best-practices',
-                                    '--emulatedUserAgent=Mozilla/5.0 (Linux; Android 11; moto g power (2022)) '
-                                    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'],
-                                   timeout=240, capture_output=True, text=True, env=env)
-                if p.returncode != 0:
-                    raise RuntimeError(f'exit {p.returncode}: ' + (p.stderr or p.stdout)[-400:])
-                lh = json.load(open(out))
-                res['pages'][url] = {
-                    'source': 'lighthouse on GitHub runner (lab data; PageSpeed API was unavailable)',
-                    'scores': {k: round((v['score'] or 0) * 100) for k, v in lh['categories'].items()},
-                    'lcp': lh['audits']['largest-contentful-paint']['displayValue'],
-                    'cls': lh['audits']['cumulative-layout-shift']['displayValue'],
-                    'tbt': lh['audits']['total-blocking-time']['displayValue']}
-            except Exception as err2:
-                res['pages'][url]['fallback_error'] = str(err2)[-500:]
+            res['pages'][url] = {'error': 'PageSpeed API: ' + str(err)[:200] + (
+                '' if os.environ.get('PAGESPEED_API_KEY') else ' (add the free PAGESPEED_API_KEY secret)')}
     save('pagespeed.json', res)
     return 'pagespeed: ' + ', '.join(f"{u.replace(SITE, '/')}={v.get('scores', {}).get('performance', 'err')}"
                                      for u, v in res['pages'].items())

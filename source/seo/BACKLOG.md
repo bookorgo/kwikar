@@ -27,6 +27,8 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Needs approval (Irfan)
 
+- Free data keys as GitHub secrets (Settings → Secrets → Actions): GSC_SA_JSON (Search Console service account, add its email as a user in Search Console), BING_API_KEY (Bing Webmaster → Settings → API access), PAGESPEED_API_KEY (Google Cloud, PageSpeed Insights API). Until then the seo-data branch has keyword ideas only
+
 - Office address and trade licence number for the footer, About page and Organization schema
 - GA4 measurement ID (events are already in the code)
 
