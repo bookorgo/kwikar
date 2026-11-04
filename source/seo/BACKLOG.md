@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Guide: "Dubai with kids: indoor and outdoor things to do by age"
 - [ ] Louvre Abu Dhabi (tour 157): full tour-extras content. Target: "louvre abu dhabi tickets"
 - [ ] Dubai Miracle Garden (tour 185): full tour-extras content (season dates already in extras). Target: "dubai miracle garden tickets"
 - [ ] Guide: "Global Village guide: season dates, timings and tips"
@@ -22,6 +21,9 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] [tech] Auto titles for long tour names are cut mid-phrase (e.g. "…Gala Dinner New | KWIKAR"); cut at a natural break or drop words like "Theme Park" instead. Also collapse double spaces in supplier names (471 "Fly Board  Burj Al Arab", 472 "Donut Ride  Burj Al Arab")
 - [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
 
+- [ ] [tech] KidZania (275): the feed "price" is the adult (accompanying) rate AED 90 while the child ticket is AED 195, so cards and the hero say "From AED 90" for a children's attraction. Use the child rate as the from-price for KidZania (or label it "adult"). Seen while writing the Dubai with kids guide (4 Nov)
+- [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
+
 - [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144) and Aquaventure (142) photos (earlier runs could not open the supplier images)
 - [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read
 
@@ -31,8 +33,11 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 - Office address and trade licence number for the footer, About page and Organization schema
 - GA4 measurement ID (events are already in the code)
+- Real Madrid World (268) is published at /activities/spain/real-madrid-world because the supplier location is "spain"; the park is at Dubai Parks and Resorts. Moving it to /activities/dubai/... needs a URL change + 301 (Writer, 4 Nov)
 
 ## Done
+
+- [x] Guide: "Dubai with Kids: Indoor and Outdoor Things to Do by Age" /blog/dubai/dubai-with-kids (4 Nov 2026). All official sites (kidzania.ae, legoland.com, thegreenplanetdubai.com, dubaisafari.ae, imgworlds.com, skidxb.com) blocked; only facts already checked on our tour pages are used, other places are described without ages/hours
 
 - [x] Ferrari World Abu Dhabi (tour 161) full content (4 Nov 2026). Official ride page says Formula Rossa closed for maintenance (no date) and Roof Walk unavailable; page says so. ferrariworldabudhabi.com hours page did not render, visitabudhabi.ae / yasisland.com blocked: opening hours, ride list, food rules and Yas Express left out. Price row hidden and {from} not used (add-on sets the from-price, see [tech] item)
 - [x] [tech] Option hours override (`offer_hours` in tour-extras; Aquarium Platinum "22 hours" hidden), qa.py now fails on title > 60, meta outside 120–160 (indexable pages) and "book now/checkout/pay online/instant confirmation" in visible text, 120–160 char metas for all hubs/service/info pages and short auto tour metas, supplier "Book now"/"during checkout" wording filtered in build.py (3 Nov 2026)
