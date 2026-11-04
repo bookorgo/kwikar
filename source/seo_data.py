@@ -182,10 +182,18 @@ def pagespeed():
             try:  # free fallback: run Lighthouse on the GitHub runner (mobile emulation)
                 import subprocess, tempfile
                 out = tempfile.mktemp(suffix='.json')
-                subprocess.run(['npx', '-y', 'lighthouse@12.2.1', url, '--quiet', '--output=json',
-                                f'--output-path={out}', '--chrome-flags=--headless=new --no-sandbox',
-                                '--only-categories=performance,seo,accessibility,best-practices'],
-                               check=True, timeout=240, capture_output=True)
+                import shutil
+                env = dict(os.environ)
+                chrome = next((c for c in ('google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser')
+                               if shutil.which(c)), None)
+                if chrome:
+                    env['CHROME_PATH'] = shutil.which(chrome)
+                p = subprocess.run(['npx', '-y', 'lighthouse@12.2.1', url, '--quiet', '--output=json',
+                                    f'--output-path={out}', '--chrome-flags=--headless=new --no-sandbox',
+                                    '--only-categories=performance,seo,accessibility,best-practices'],
+                                   timeout=240, capture_output=True, text=True, env=env)
+                if p.returncode != 0:
+                    raise RuntimeError(f'exit {p.returncode}: ' + (p.stderr or p.stdout)[-400:])
                 lh = json.load(open(out))
                 res['pages'][url] = {
                     'source': 'lighthouse on GitHub runner (lab data; PageSpeed API was unavailable)',
@@ -194,7 +202,7 @@ def pagespeed():
                     'cls': lh['audits']['cumulative-layout-shift']['displayValue'],
                     'tbt': lh['audits']['total-blocking-time']['displayValue']}
             except Exception as err2:
-                res['pages'][url]['fallback_error'] = str(err2)[:200]
+                res['pages'][url]['fallback_error'] = str(err2)[-500:]
     save('pagespeed.json', res)
     return 'pagespeed: ' + ', '.join(f"{u.replace(SITE, '/')}={v.get('scores', {}).get('performance', 'err')}"
                                      for u, v in res['pages'].items())
@@ -202,7 +210,10 @@ def pagespeed():
 
 if __name__ == '__main__':
     summary = [f'# SEO data run {TODAY}', '']
+    only = os.environ.get('SEO_DATA_ONLY', '')
     for fn in (keywords, gsc, bing, pagespeed):
+        if only and fn.__name__ != only:
+            continue
         try:
             summary.append('- ' + fn())
         except Exception as err:

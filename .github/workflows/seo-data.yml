@@ -5,6 +5,11 @@ on:
   schedule:
     - cron: '41 4 * * 1,4'   # Mon and Thu 04:41 UTC (08:41 UAE), before the Strategist run
   workflow_dispatch:
+    inputs:
+      only:
+        description: 'Run only one part (keywords, gsc, bing, pagespeed); empty = all'
+        required: false
+        default: ''
 permissions:
   contents: write
 jobs:
@@ -27,6 +32,7 @@ jobs:
         env:
           GSC_SA_JSON: ${{ secrets.GSC_SA_JSON }}
           BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          SEO_DATA_ONLY: ${{ github.event.inputs.only }}
         run: |
           pip install --quiet google-auth requests
           python3 source/seo_data.py /tmp/seo-data
