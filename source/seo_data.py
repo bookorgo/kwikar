@@ -178,7 +178,23 @@ def pagespeed():
                     (a for a in lh['audits'].values() if a.get('details', {}).get('type') == 'opportunity'
                      and (a.get('numericValue') or 0) > 100), key=lambda a: -(a.get('numericValue') or 0))][:5]}
         except Exception as err:
-            res['pages'][url] = {'error': str(err)[:200]}
+            res['pages'][url] = {'error': 'PageSpeed API: ' + str(err)[:200]}
+            try:  # free fallback: run Lighthouse on the GitHub runner (mobile emulation)
+                import subprocess, tempfile
+                out = tempfile.mktemp(suffix='.json')
+                subprocess.run(['npx', '-y', 'lighthouse@12.2.1', url, '--quiet', '--output=json',
+                                f'--output-path={out}', '--chrome-flags=--headless=new --no-sandbox',
+                                '--only-categories=performance,seo,accessibility,best-practices'],
+                               check=True, timeout=240, capture_output=True)
+                lh = json.load(open(out))
+                res['pages'][url] = {
+                    'source': 'lighthouse on GitHub runner (lab data; PageSpeed API was unavailable)',
+                    'scores': {k: round((v['score'] or 0) * 100) for k, v in lh['categories'].items()},
+                    'lcp': lh['audits']['largest-contentful-paint']['displayValue'],
+                    'cls': lh['audits']['cumulative-layout-shift']['displayValue'],
+                    'tbt': lh['audits']['total-blocking-time']['displayValue']}
+            except Exception as err2:
+                res['pages'][url]['fallback_error'] = str(err2)[:200]
     save('pagespeed.json', res)
     return 'pagespeed: ' + ', '.join(f"{u.replace(SITE, '/')}={v.get('scores', {}).get('performance', 'err')}"
                                      for u, v in res['pages'].items())
