@@ -24,7 +24,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] [tech] KidZania (275): the feed "price" is the adult (accompanying) rate AED 90 while the child ticket is AED 195, so cards and the hero say "From AED 90" for a children's attraction. Use the child rate as the from-price for KidZania (or label it "adult"). Seen while writing the Dubai with kids guide (4 Nov)
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
-- [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144) and Aquaventure (142) photos (earlier runs could not open the supplier images)
+- [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 Nov
 - [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read
 
 ## Needs approval (Irfan)

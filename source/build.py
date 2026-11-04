@@ -1095,6 +1095,9 @@ _SUPPLIER_FIXES = [
     (re.compile(r'\b(?:selected|chosen) during checkout\b', re.I), 'chosen when booking'),
     (re.compile(r'\b(?:during|at) (?:the )?checkout\b', re.I), 'when booking'),
     (re.compile(r'\binstant confirmation\b', re.I), 'confirmation from our team'),
+    # "Upon purchase, you will instantly receive tickets" -> tickets come from our team after WhatsApp confirmation
+    (re.compile(r'\b(?:Upon|After|Once)\s+(?:completing\s+)?(?:purchase|payment)(?:\s+is\s+complete)?,?\s+you will instantly receive (?:a |your )?tickets?\b', re.I),
+     'After you pay, our team sends your tickets'),
 ]
 
 
