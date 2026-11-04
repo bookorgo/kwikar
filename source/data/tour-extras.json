@@ -1,5 +1,5 @@
 {
- "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301). offer_hours: {part of an option name: hours, or null to hide} fixes clearly wrong supplier durations on option cards.",
+ "_help": "Optional hand-written content per tour, keyed by TravelDesk tour id. Only add facts you have checked, with the date you checked them. Every field is optional; empty blocks stay hidden. Prices always come from the API: write {from} where the lowest current price should appear. overview/steps/terms/faqs replace the API text when given (faqs only if faqs_replace is true). slug changes the URL and the old URL redirects (301). offer_hours: {part of an option name: hours, or null to hide} fixes clearly wrong supplier durations on option cards. from_price: \"child\" uses the child rate as the From price (child-led attractions such as KidZania); from_exclude: offer ids left out of the From price (fast-track add-ons are left out automatically).",
  "136": {
   "slug": "burj-khalifa-at-the-top-tickets",
   "title": "Burj Khalifa Tickets – At the Top 124, 125 & 148 | KWIKAR",
@@ -2191,5 +2191,8 @@
    "https://en.wikipedia.org/wiki/Formula_Rossa",
    "TravelDesk supplier notes for offers 1160 and 1348 (Ferrari World Abu Dhabi)"
   ]
+ },
+ "275": {
+  "from_price": "child"
  }
 }

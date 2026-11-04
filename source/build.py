@@ -92,6 +92,38 @@ try:
     EXTRAS = {k: v for k, v in json.load(open(os.path.join(ROOT, 'data', 'tour-extras.json'), encoding='utf-8')).items() if not k.startswith('_')}
 except Exception:
     EXTRAS = {}
+
+ADDON_RE = re.compile(r'\badd[\s-]?on\b|addon', re.I)
+
+
+def _clean_name(s):
+    return re.sub(r'\s{2,}', ' ', s).strip() if isinstance(s, str) else s
+
+
+def from_offers(tid, offers):
+    """Offers that may set the "From" price: fast-track add-ons need a separate entry ticket, so they are
+    left out (also any offer id in tour-extras `from_exclude`). With `from_price: "child"` the child rate is used."""
+    x = EXTRAS.get(str(tid), {})
+    skip = {str(i) for i in x.get('from_exclude', [])}
+    priced = [o for o in offers if o.get('price')]
+    keep = [o for o in priced if str(o.get('id')) not in skip and not ADDON_RE.search(o.get('name') or '')]
+    keep = keep or priced
+    if x.get('from_price') == 'child':
+        keep = [dict(o, price=o['child'], unit='child') for o in keep if o.get('child')] or keep
+    return keep
+
+
+for _t in ALL_TOURS:   # listing price + tidy supplier names (slugs are already fixed, so URLs do not change)
+    _d = DETAILS.get(_t['id']) or DETAILS.get(str(_t['id'])) or {}
+    _t['name'] = _clean_name(_t['name'])
+    if _d.get('name'):
+        _d['name'] = _clean_name(_d['name'])
+    for _o in _d.get('offers') or []:
+        _o['name'] = _clean_name(_o.get('name'))
+    _fo = from_offers(_t['id'], _d.get('offers') or [])
+    if _fo:
+        _c = min(_fo, key=lambda o: o['price'])
+        _t['price'], _t['unit'] = _c['price'], _c.get('unit') or _t.get('unit')
 try:
     CHECKED = datetime.datetime.fromisoformat(FEED_UPDATED.replace('Z', '+00:00')).strftime('%-d %b %Y')
 except Exception:
@@ -870,6 +902,34 @@ def _free_cancel_hours(d):
     return None
 
 
+_TAIL_WORDS = {'and', 'or', 'of', 'the', 'with', 'in', 'at', 'on', 'for', 'to', 'from', 'by', 'new', '&', '+', '-', '–', 'a'}
+
+
+def short_title(name, limit=51):
+    """Shorten a long supplier name for the <title> (limit + ' | KWIKAR' <= 60) at a natural break."""
+    if len(name) <= limit:
+        return name
+    n = re.sub(r'\s+(Theme Park|Tickets?|Experience)\b', '', name).strip()
+    if len(n) <= limit:
+        return n
+    n = name
+    cuts = []
+    for sep in (' – ', ' - ', ' | ', ': ', ', ', ' (', ' with ', ' including ', ' at ', ' in ', ' from '):
+        i = n.rfind(sep, 0, limit + 1)
+        while i >= 20:
+            c = n[:i].rstrip(' ,(-–')
+            if c.count('(') == c.count(')'):
+                cuts.append(c)
+                break
+            i = n.rfind(sep, 0, i)
+    if cuts:
+        return max(cuts, key=len)
+    words = n[:limit + 1].rsplit(' ', 1)[0].split()
+    while len(words) > 2 and words[-1].lower() in _TAIL_WORDS:
+        words.pop()
+    return ' '.join(words).rstrip(' ,(-–')
+
+
 def build_product(t, d):
     tid = str(t['id'])
     x = EXTRAS.get(tid, {})
@@ -879,11 +939,14 @@ def build_product(t, d):
     name = d.get('name') or t['name']
     offers = d.get('offers') or []
     priced = [o for o in offers if o.get('price')]
-    cheapest = min(priced, key=lambda o: o['price']) if priced else None
+    from_ = from_offers(t['id'], offers)
+    cheapest = min(from_, key=lambda o: o['price']) if from_ else None
     low = cheapest['price'] if cheapest else t.get('price')
-    high = max((o['price'] for o in priced), default=low)
+    high = max([o['price'] for o in priced] + ([low] if low else []), default=low)
     unit = (cheapest or t).get('unit')
-    low_unit = 'per booking' if unit == 'trip' else 'per person'
+    low_unit = {'trip': 'per booking', 'child': 'per child'}.get(unit, 'per person')
+    if cheapest and cheapest.get('unit') == 'child':
+        cheapest = next((o for o in priced if o.get('id') == cheapest.get('id')), cheapest)
     cats = d.get('categories') or t.get('cats') or []
     photos = [p for p in [d.get('img') or t.get('img')] + (d.get('photos') or []) if p][:4]
     cancel = [c for c in (d.get('cancellation') or []) if c]
@@ -905,7 +968,7 @@ def build_product(t, d):
         if len(title) > 60:
             title = f'{name} | KWIKAR'
         if len(title) > 60:
-            title = name[:50].rsplit(' ', 1)[0] + ' | KWIKAR'
+            title = short_title(name) + ' | KWIKAR'
     desc = x.get('description')
     if not desc:
         head_ = f'Book {name} in {cname}' + (f' from {money(low)} {low_unit}' if low else '') + '.'
@@ -955,7 +1018,7 @@ def build_product(t, d):
     rows = ''.join(f'<tr><th scope="row">{e(o["name"])}</th><td>{e(_num(o["hours"]) + " h" if o.get("hours") else "—")}</td><td>{e(transfer(o))}</td><td>{e(_opt_price(o))}</td></tr>' for o in offers)
     choose = []
     if len(priced) >= 2:
-        choose.append(('Lowest price', cheapest['name'], _opt_price(cheapest)))
+        choose.append(('Lowest price' if cheapest['price'] == min(o['price'] for o in priced) else 'Entry ticket', cheapest['name'], _opt_price(cheapest)))
         tr = [o for o in priced if o.get('pickupRequired')]
         if tr and min(tr, key=lambda o: o['price']) is not cheapest:
             tc = min(tr, key=lambda o: o['price'])

@@ -17,11 +17,8 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
-- [ ] [tech] Tour 161 (Ferrari World): the "Fast Track Ticket Add on" (offer 1348, AED 200, needs a separate general admission ticket) sets the auto "From" price in the hero, sticky bar, schema and {from}, so the page says "From AED 200" while entry costs more. Add a way to leave add-on offers out of the from-price (e.g. `from_exclude` in tour-extras, or skip offer names containing "Add on"). Writer avoided {from} on this page until then
-- [ ] [tech] Auto titles for long tour names are cut mid-phrase (e.g. "…Gala Dinner New | KWIKAR"); cut at a natural break or drop words like "Theme Park" instead. Also collapse double spaces in supplier names (471 "Fly Board  Burj Al Arab", 472 "Donut Ride  Burj Al Arab")
 - [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
 
-- [ ] [tech] KidZania (275): the feed "price" is the adult (accompanying) rate AED 90 while the child ticket is AED 195, so cards and the hero say "From AED 90" for a children's attraction. Use the child rate as the from-price for KidZania (or label it "adult"). Seen while writing the Dubai with kids guide (4 Nov)
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
 - [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 Nov
@@ -33,10 +30,13 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 - Office address and trade licence number for the footer, About page and Organization schema
 - GA4 measurement ID (events are already in the code)
+- Xclusive Super Yacht Cruise (tour 68, /activities/uae/xclusive-super-yacht-cruise): the supplier gives no photos, no description, no categories and location "other", so the page is thin (only 2 option cards). Ask TravelDesk for details/photos, or approve noindex until they arrive (Tech, 5 Nov)
 - Real Madrid World (268) is published at /activities/spain/real-madrid-world because the supplier location is "spain"; the park is at Dubai Parks and Resorts. Moving it to /activities/dubai/... needs a URL change + 301 (Writer, 4 Nov)
 
 ## Done
 
+- [x] [tech] From-price fixes (5 Nov 2026): fast-track add-ons (name contains "add on"/"addon", or ids in `from_exclude`) no longer set the From price — Ferrari World 200→345, Sea World 250→375, Warner Bros. World 250→345, Yas Waterworld 150→295 in titles, hero, sticky bar, cards, schema, {from} and {price:ID}. KidZania (275) uses the child rate via `from_price: "child"` (From AED 195 per child). Writer may now use {from} on Ferrari World
+- [x] [tech] Auto titles for long tour names cut at a natural break (longest of " – ", ":", ",", " (", " with ", " in ", " from "…, no open bracket, no trailing "and/of/with"); double spaces collapsed in tour and option names (no URL change) (5 Nov 2026)
 - [x] Guide: "Dubai with Kids: Indoor and Outdoor Things to Do by Age" /blog/dubai/dubai-with-kids (4 Nov 2026). All official sites (kidzania.ae, legoland.com, thegreenplanetdubai.com, dubaisafari.ae, imgworlds.com, skidxb.com) blocked; only facts already checked on our tour pages are used, other places are described without ages/hours
 
 - [x] Ferrari World Abu Dhabi (tour 161) full content (4 Nov 2026). Official ride page says Formula Rossa closed for maintenance (no date) and Roof Walk unavailable; page says so. ferrariworldabudhabi.com hours page did not render, visitabudhabi.ae / yasisland.com blocked: opening hours, ride list, food rules and Yas Express left out. Price row hidden and {from} not used (add-on sets the from-price, see [tech] item)
