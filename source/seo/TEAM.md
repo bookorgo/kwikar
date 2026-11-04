@@ -1,6 +1,6 @@
 # KWIKAR SEO team — who does what
 
-Four scheduled roles work on kwikar.com like a small team. Each run reads this file, its own role
+Five scheduled roles work on kwikar.com like a small team. Each run reads this file, its own role
 section, `RUNBOOK.md` (setup, build, hard rules, how to ship) and `LEARNINGS.md`.
 The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 
@@ -9,6 +9,7 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 | Writer | daily 10:43 and 16:43 | One new or expanded page/guide per run |
 | Editor | daily 21:37 | Check and polish what was published in the last 24 h |
 | Tech | daily 03:23 | Live site health, feed changes, technical fixes |
+| Auditor | daily 07:13 | Checks every page like a visitor (mobile + desktop), fixes what it finds, reports SEO issues |
 | Strategist | Monday 11:17 | Research, reprioritise the backlog, weekly report for Irfan |
 
 ## Shared rules for the team
@@ -20,7 +21,7 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
   push conflicts, rebase again, rebuild, re-run QA, then push.
 - Log every run in `LOG.md`, starting the line with the role: `- YYYY-MM-DD HH:MM UTC — [Editor] …`.
 - No more than **2 new pages or guides a day** across the team (quality over volume; Google treats
-  mass-produced pages as low quality). Editor and Tech never add new pages.
+  mass-produced pages as low quality). Editor, Tech and Auditor never add new pages.
 - If a run cannot finish, push only the notes (LOG/BACKLOG) and stop. Never push broken work.
 - End every run with a 2–3 line Roman Urdu summary for Irfan.
 
@@ -83,6 +84,33 @@ it, ship it, trigger the rebuild. If the Writer backlog has fewer than 5 items, 
 4. Never change robots rules, canonicals, URLs/slugs, redirects, the design system, contact details,
    tracking or `public_html/api/` — write those under "Needs approval" instead.
 5. Ship as in RUNBOOK step 5 (only if something changed).
+
+## Auditor (whole-site check, fix and report)
+
+The Auditor is the site's QA: every morning it checks all pages, fixes problems and reports.
+1. Set up as in RUNBOOK step 1 and build the site with the latest feed.
+2. **Every page, like a visitor:** `cd source && python3 site_audit.py /tmp/audit` opens every built page in
+   Chromium on mobile (390 px) and desktop (1300 px) and lists JavaScript errors, missing files, sideways
+   scrolling, broken or huge images, missing alt attributes, leftover template text (undefined, NaN,
+   {placeholder}, "AED 0", odd price formats), bad WhatsApp/phone links, links to missing pages, and empty or
+   duplicate titles, H1s and meta descriptions. Read `/tmp/audit/audit-report.md`.
+3. **Live site:** `python3 source/seo_check.py` (status, canonical, noindex, JSON-LD, robots, redirects) and with
+   curl: http→https and www→non-www redirect once (301), an unknown URL returns 404 (not 200), robots.txt and
+   sitemap.xml load, the SSL certificate is valid for 21+ more days
+   (`echo | openssl s_client -connect kwikar.com:443 -servername kwikar.com 2>/dev/null | openssl x509 -noout -enddate`),
+   and the newest commit on `main` that changed `public_html` is really live (compare one changed line).
+4. **Fix** what is safe to fix in this run: template or CSS bugs, broken links, missing alt attributes on our
+   own images, wrong formatting, duplicate or empty titles/metas. Re-run `site_audit.py` and `qa.py` after
+   fixing; the issue count must go down and QA must print `QA OK`. Bigger content work → backlog for Writer
+   (untagged) or Editor (`[edit]`); technical work → `[tech]`. Never change the things listed under "Never
+   without Irfan's approval" in the RUNBOOK — report them instead.
+5. **Report:** overwrite `source/seo/reports/audit-latest.md` (Roman Urdu, short): date, pages checked, issues
+   found / fixed / still open, live checks result, SEO issues that need a decision. If something is broken on
+   the live site and you cannot fix it (SSL, hosting, deploy, a page down), also open a GitHub issue with the
+   title starting "Audit:" (`gh api repos/bookorgo/kwikar/issues -f title=... -f body=...`), unless an open
+   one already exists for it.
+6. Ship as in RUNBOOK step 5 (log line starts with `[Auditor]`). Improve `site_audit.py` itself when you find
+   a false alarm or a problem type it misses, and note it in `LEARNINGS.md`.
 
 ## Strategist (weekly plan and report)
 

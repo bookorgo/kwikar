@@ -128,7 +128,7 @@ def wa(msg):
 
 def money(n):
     n = float(n)
-    return f'AED {n:,.0f}' if n.is_integer() else f'AED {n:,.2f}'.rstrip('0').rstrip('.')
+    return f'AED {n:,.0f}' if n.is_integer() else f'AED {n:,.2f}'  # 52.5 -> AED 52.50 (same as kw.js)
 
 
 def loc(id_):
