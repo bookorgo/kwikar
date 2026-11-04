@@ -190,7 +190,9 @@ def pagespeed():
                     env['CHROME_PATH'] = shutil.which(chrome)
                 p = subprocess.run(['npx', '-y', 'lighthouse@12.2.1', url, '--quiet', '--output=json',
                                     f'--output-path={out}', '--chrome-flags=--headless=new --no-sandbox',
-                                    '--only-categories=performance,seo,accessibility,best-practices'],
+                                    '--only-categories=performance,seo,accessibility,best-practices',
+                                    '--emulatedUserAgent=Mozilla/5.0 (Linux; Android 11; moto g power (2022)) '
+                                    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'],
                                    timeout=240, capture_output=True, text=True, env=env)
                 if p.returncode != 0:
                     raise RuntimeError(f'exit {p.returncode}: ' + (p.stderr or p.stdout)[-400:])
