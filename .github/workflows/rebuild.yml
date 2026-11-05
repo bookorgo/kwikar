@@ -49,4 +49,4 @@ jobs:
           git push origin HEAD:main
           git subtree split --prefix public_html -b deploy-new
           git push --force origin deploy-new:deploy
-          python3 source/indexnow.py HEAD~1 HEAD || true
+          timeout 180 python3 -u source/indexnow.py HEAD~1 HEAD || true

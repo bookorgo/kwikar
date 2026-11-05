@@ -63,7 +63,7 @@ def changed_urls(old, new):
     return sorted(set(urls))
 
 
-def key_is_live(key, tries=10, wait=30):
+def key_is_live(key, tries=3, wait=20):
     for i in range(tries):
         try:
             r = urllib.request.urlopen(urllib.request.Request(f'{SITE}/{key}.txt', headers=UA), timeout=20)
@@ -88,8 +88,9 @@ def main():
         print('IndexNow: no indexable pages changed')
         return
     if not key_is_live(key):
-        print('IndexNow: key file is not live on kwikar.com yet, skipped this time')
-        return
+        # The runner cannot always reach kwikar.com (seen: "Network is unreachable"); IndexNow checks
+        # the key itself and answers 403 if it is not served, so send the ping anyway.
+        print('IndexNow: key file could not be confirmed from this runner, pinging anyway')
     body = json.dumps({'host': HOST, 'key': key, 'keyLocation': f'{SITE}/{key}.txt', 'urlList': urls[:10000]}).encode()
     req = urllib.request.Request('https://api.indexnow.org/indexnow', data=body, method='POST',
                                  headers={**UA, 'Content-Type': 'application/json; charset=utf-8'})

@@ -25,6 +25,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Needs approval (Irfan)
 
+- http://www.kwikar.com still goes to https://www first (2 hops) after the approved .htaccess swap was live (6 Nov 00:00 UTC): the http→https 301 is made by Hostinger itself (hcdn / hPanel "Force HTTPS"), before our .htaccess. Irfan: in hPanel → Security → SSL, if "Force HTTPS" is on, turn it off (our .htaccess already forces HTTPS), or leave it (Google follows 2 hops; low impact). Issue #1 (Tech, 6 Nov)
 - Free data keys as GitHub secrets (Settings → Secrets → Actions): GSC_SA_JSON (Search Console service account, add its email as a user in Search Console), BING_API_KEY (Bing Webmaster → Settings → API access), PAGESPEED_API_KEY (Google Cloud, PageSpeed Insights API). Until then the seo-data branch has keyword ideas only
 
 - Office address and trade licence number for the footer, About page and Organization schema
