@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Dubai Miracle Garden (tour 185): full tour-extras content (season dates already in extras). Target: "dubai miracle garden tickets"
 - [ ] Guide: "Global Village guide: season dates, timings and tips"
 - [ ] Transfers page: SEO content (quick answer, routes and starting prices from the estimator, airports, FAQs) in the existing design
 - [ ] Holidays page: SEO content (what a package includes, how quotes work, FAQs) in the existing design
@@ -37,6 +36,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] Dubai Miracle Garden (tour 185) full content (5 Nov 2026). dubaimiraclegarden.com (home, FAQ, A380, floral clock, Butterfly pages) could be fetched: Season 15 dates 8 Oct 2026–31 May 2027, 9am–9pm, last entry 8:30pm, Gate 1, rules, Metro + bus 105. Upper child age left out (official 3–12 vs supplier 3–11); parking, wheelchair/pram access and People of Determination rules left out (FAQ answers collapsed). Photo alt text still to do
 - [x] Louvre Abu Dhabi (tour 157) full content (5 Nov 2026). Hours, Monday closing, bag/food/photo/pram rules from the official plan-your-visit page and visitor regulations PDF. Sunday gallery closing left out (sources disagree: 6:30pm vs 8:30pm); free under-18 entry attributed to the supplier (official page not found). Photo alt text still to do
 - [x] [Auditor] Category hub titles "Cruises Experiences" / "Luxury experiences Experiences" → "<Category> in Dubai & the UAE"; supplier typo "tour form" → "tour from" in names (no URL change); site_audit.py checks repeated words and this typo in titles/H1s (5 Nov 2026)
 
