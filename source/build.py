@@ -346,12 +346,26 @@ FOOTER_LINKS = [('/destinations', 'Destinations'), ('/activities', 'Activities')
                 ('/terms', 'Terms & conditions'), ('/booking-information', 'Booking information'), ('/refund-policy', 'Refund & cancellation')]
 
 
+TRUSTPILOT_WIDGET = (
+    '<div class="kw-wrap kw-trustpilot"><p class="kw-trustpilot-head">Travelled with us? Leave a review</p>'
+    '<div class="kw-trustpilot-box">'
+    '<!-- TrustBox widget - Review Collector -->\n'
+    '<div class="trustpilot-widget" data-locale="en-US" data-template-id="56278e9abfbbba0bdcd568bc" '
+    'data-businessunit-id="6aec232d6c0eb68ba5bb8064" data-style-height="52px" data-style-width="100%">\n'
+    '  <a href="https://www.trustpilot.com/review/kwikar.com" target="_blank" rel="noopener">Trustpilot</a>\n'
+    '</div>\n<!-- End TrustBox widget -->'
+    '</div></div>')
+TRUSTPILOT_SCRIPT = ('<!-- TrustBox script -->\n'
+    '<script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>\n'
+    '<!-- End TrustBox script -->')
+
+
 def footer():
     links = ''.join(f'<a href="{h}">{e(t)}</a>' for h, t in FOOTER_LINKS)
     return (f'<footer class="kw-footer"><div class="kw-wrap kw-footer-grid"><div><a class="kw-logo kw-logo-footer" href="/"><img src="/assets/img/logo-white.webp" alt="KWIKAR" loading="lazy"></a>'
             f'<p>Travel experiences, holidays, transfers and visa assistance across the UAE and beyond.</p></div><div><strong>Explore</strong>{links}</div>'
             f'<div><strong>Contact</strong><a href="tel:+{PHONE}">{PHONE_FMT}</a><a href="mailto:{EMAIL}">{EMAIL}</a><a href="{e(wa("Hi KWIKAR, I have an enquiry."))}" target="_blank" rel="noopener noreferrer">WhatsApp us</a></div></div>'
-            f'<div class="kw-wrap kw-footer-bottom">© <span data-year>{datetime.date.today().year}</span> Kwikar LLC-FZ · United Arab Emirates · {PHONE_FMT} · {EMAIL}</div></footer>'
+            f'{TRUSTPILOT_WIDGET}<div class="kw-wrap kw-footer-bottom">© <span data-year>{datetime.date.today().year}</span> Kwikar LLC-FZ · United Arab Emirates · {PHONE_FMT} · {EMAIL}</div></footer>'
             f'<a class="kw-floating-chat" href="{e(wa("Hi KWIKAR, I would like help planning my trip."))}" target="_blank" rel="noopener noreferrer" aria-label="Chat with KWIKAR on WhatsApp"><span aria-hidden="true">WhatsApp</span></a>')
 
 
@@ -402,6 +416,7 @@ def page(path, title, desc, main, active=None, scripts=('kw',), noindex=False, o
 <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/css/site.css?v={VERSION}">
 {extra}
+{TRUSTPILOT_SCRIPT}
 </head>
 <body>
 {header(active)}
