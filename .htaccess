@@ -10,14 +10,14 @@ AddDefaultCharset UTF-8
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
+# --- One address for Google: www.kwikar.com -> kwikar.com (first, so http://www needs only one 301) ---
+RewriteCond %{HTTP_HOST} ^www\.kwikar\.com$ [NC]
+RewriteRule ^ https://kwikar.com%{REQUEST_URI} [L,R=301]
+
 # --- Always use HTTPS ---
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# --- One address for Google: www.kwikar.com -> kwikar.com ---
-RewriteCond %{HTTP_HOST} ^www\.kwikar\.com$ [NC]
-RewriteRule ^ https://kwikar.com%{REQUEST_URI} [L,R=301]
 
 # --- Old addresses from the previous website ---
 RewriteRule ^home\.html$ / [R=301,L]
