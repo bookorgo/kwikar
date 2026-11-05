@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Louvre Abu Dhabi (tour 157): full tour-extras content. Target: "louvre abu dhabi tickets"
 - [ ] Dubai Miracle Garden (tour 185): full tour-extras content (season dates already in extras). Target: "dubai miracle garden tickets"
 - [ ] Guide: "Global Village guide: season dates, timings and tips"
 - [ ] Transfers page: SEO content (quick answer, routes and starting prices from the estimator, airports, FAQs) in the existing design
@@ -22,7 +21,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
-- [ ] [edit] Alt text for Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 Nov
+- [ ] [edit] Alt text for Louvre Abu Dhabi (157), Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 Nov
 - [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read
 
 ## Needs approval (Irfan)
@@ -38,6 +37,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] Louvre Abu Dhabi (tour 157) full content (5 Nov 2026). Hours, Monday closing, bag/food/photo/pram rules from the official plan-your-visit page and visitor regulations PDF. Sunday gallery closing left out (sources disagree: 6:30pm vs 8:30pm); free under-18 entry attributed to the supplier (official page not found). Photo alt text still to do
 - [x] [Auditor] Category hub titles "Cruises Experiences" / "Luxury experiences Experiences" → "<Category> in Dubai & the UAE"; supplier typo "tour form" → "tour from" in names (no URL change); site_audit.py checks repeated words and this typo in titles/H1s (5 Nov 2026)
 
 - [x] [tech] From-price fixes (5 Nov 2026): fast-track add-ons (name contains "add on"/"addon", or ids in `from_exclude`) no longer set the From price — Ferrari World 200→345, Sea World 250→375, Warner Bros. World 250→345, Yas Waterworld 150→295 in titles, hero, sticky bar, cards, schema, {from} and {price:ID}. KidZania (275) uses the child rate via `from_price: "child"` (From AED 195 per child). Writer may now use {from} on Ferrari World
