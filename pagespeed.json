@@ -1,0 +1,14 @@
+{
+ "date": "2026-11-05",
+ "pages": {
+  "https://kwikar.com/": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret)"
+  },
+  "https://kwikar.com/activities/dubai/burj-khalifa-at-the-top-tickets/": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret)"
+  },
+  "https://kwikar.com/blog/dubai/3-days-in-dubai-itinerary/": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret)"
+  }
+ }
+}
