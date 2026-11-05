@@ -25,6 +25,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Needs approval (Irfan)
 
+- Redirect chain (redirect rules): http://www.kwikar.com/ goes to https://www.kwikar.com/ first and only then to https://kwikar.com/ (2 hops; found by the new SEO check, GitHub issue #1). Fix: in source/htaccess.template move the "www → kwikar.com" block above the "Always use HTTPS" block, so every old address reaches https://kwikar.com in one 301. SSL is fine (Let's Encrypt, 42 days left on 5 Nov) (Tech, 5 Nov)
 - Colour contrast (design system): the grey location label on homepage cards (#697888 on #f6f7f9, 11px) is 4.21:1, below the 4.5:1 accessibility minimum (Lighthouse). A slightly darker grey (e.g. #5f6b7a) would pass (Tech, 5 Nov)
 - Free data keys as GitHub secrets (Settings → Secrets → Actions): GSC_SA_JSON (Search Console service account, add its email as a user in Search Console), BING_API_KEY (Bing Webmaster → Settings → API access), PAGESPEED_API_KEY (Google Cloud, PageSpeed Insights API). Until then the seo-data branch has keyword ideas only
 
