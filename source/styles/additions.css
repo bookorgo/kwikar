@@ -229,3 +229,6 @@
 .kw-trustpilot-head{margin:0 0 10px;color:#fff;font-weight:700;font-size:15px}
 .kw-trustpilot-box{width:100%;max-width:400px;min-height:52px;background:#fff;border-radius:12px;padding:6px 10px;box-sizing:border-box}
 .kw-trustpilot-box .trustpilot-widget a{color:#07111e;font-weight:600;line-height:40px}
+
+/* Card location label: darker grey for 4.5:1 contrast (approved by Irfan, 6 Nov 2026) */
+.kw-market-info>span{color:#5f6b7a}
