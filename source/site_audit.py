@@ -27,6 +27,8 @@ BAD_TEXT = re.compile(r'\b(undefined|NaN|None|null)\b|\{[a-z_]+(:[0-9a-z_-]+)?\}
                       r'|AED[ \t]*(?=$|/|per\b|\|)|\bAED [\d,]+\.\d(?!\d)', re.M)
 WA_OK = re.compile(r'^https://wa\.me/\d{9,15}(\?text=[^\s]+)?$')
 TEL_OK = re.compile(r'^tel:\+?\d{7,15}$')
+REPEAT_WORD = re.compile(r'\b(\w{3,})\s+\1\b', re.I)          # "Luxury experiences Experiences"
+TYPO_RE = re.compile(r'\b(tour|trip|transfer|cruise|safari) form\b', re.I)   # supplier typo "City Tour form Abu Dhabi"
 
 JS_PAGE = r"""
 () => {
@@ -170,6 +172,12 @@ def main():
                         issues[path].append(f'link to missing page: {h}')
                     if not a['text'] and h.startswith('/') and 'aria' not in a:
                         pass
+                for label, val in (('title', d['title']), ('H1', (d['h1'] or [''])[0])):
+                    rep = REPEAT_WORD.search(val or '')
+                    if rep:
+                        issues[path].append(f'repeated word in {label}: "{rep.group(0)}"')
+                    if TYPO_RE.search(val or ''):
+                        issues[path].append(f'typo in {label}: "{TYPO_RE.search(val).group(0)}"')
                 if 'noindex' in d['robots']:
                     continue
                 if not d['title'].strip():

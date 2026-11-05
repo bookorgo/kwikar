@@ -97,7 +97,10 @@ ADDON_RE = re.compile(r'\badd[\s-]?on\b|addon', re.I)
 
 
 def _clean_name(s):
-    return re.sub(r'\s{2,}', ' ', s).strip() if isinstance(s, str) else s
+    if not isinstance(s, str):
+        return s
+    s = re.sub(r'\b(tour|trip|transfer|cruise|safari) form\b', r'\1 from', s, flags=re.I)   # supplier typo "City Tour form Abu Dhabi"
+    return re.sub(r'\s{2,}', ' ', s).strip()
 
 
 def from_offers(tid, offers):
@@ -792,7 +795,7 @@ def build_listings():
         related = ''.join(f'<a href="/activities/{x["slug"]}">{e(x["name"])}<span>↗</span></a>' for x in LIVE_CATS if x['slug'] != slug)[:100000]
         rel_html = f'<section class="kw-related-categories"><div class="kw-market-wrap"><h2>Keep exploring</h2><div>{related}</div></div></section>'
         main = lead + places_html + list_body(items, category=slug, kind=kind) + hub_intro(f'cat:{slug}', f'{c["name"]} in the UAE', items, eyebrow='GOOD TO KNOW') + rel_html
-        page(f'/activities/{slug}', f'{c["name"]} Experiences', CAT_DESC.get(slug) or f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
+        page(f'/activities/{slug}', f'{c["name"]} in Dubai & the UAE', CAT_DESC.get(slug) or f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
              active='Cruises' if slug == 'cruises' else 'Activities', noindex=not items,
              main_class=f'kw-list-page kw-list-{kind} kw-category-{slug}',
              main_attrs=f' data-listing data-kind="{kind}" data-category="{slug}" data-term="{e(c["term"])}"',

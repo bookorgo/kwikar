@@ -17,6 +17,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
+- [ ] [tech] Add SSL-expiry (warn under 21 days) and www → non-www 301 checks to the SEO check GitHub Action: the run sandbox's proxy shows its own certificate and blocks www.kwikar.com, so the Auditor cannot check these (Auditor, 5 Nov)
 - [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
@@ -33,7 +34,11 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - Xclusive Super Yacht Cruise (tour 68, /activities/uae/xclusive-super-yacht-cruise): the supplier gives no photos, no description, no categories and location "other", so the page is thin (only 2 option cards). Ask TravelDesk for details/photos, or approve noindex until they arrive (Tech, 5 Nov)
 - Real Madrid World (268) is published at /activities/spain/real-madrid-world because the supplier location is "spain"; the park is at Dubai Parks and Resorts. Moving it to /activities/dubai/... needs a URL change + 301 (Writer, 4 Nov)
 
+- Slug typo: /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" should be "from"; title/H1 already fixed, page is noindex). Renaming needs a `slug` in tour-extras + 301 (Auditor, 5 Nov)
+
 ## Done
+
+- [x] [Auditor] Category hub titles "Cruises Experiences" / "Luxury experiences Experiences" → "<Category> in Dubai & the UAE"; supplier typo "tour form" → "tour from" in names (no URL change); site_audit.py checks repeated words and this typo in titles/H1s (5 Nov 2026)
 
 - [x] [tech] From-price fixes (5 Nov 2026): fast-track add-ons (name contains "add on"/"addon", or ids in `from_exclude`) no longer set the From price — Ferrari World 200→345, Sea World 250→375, Warner Bros. World 250→345, Yas Waterworld 150→295 in titles, hero, sticky bar, cards, schema, {from} and {price:ID}. KidZania (275) uses the child rate via `from_price: "child"` (From AED 195 per child). Writer may now use {from} on Ferrari World
 - [x] [tech] Auto titles for long tour names cut at a natural break (longest of " – ", ":", ",", " (", " with ", " in ", " from "…, no open bracket, no trailing "and/of/with"); double spaces collapsed in tour and option names (no URL change) (5 Nov 2026)
