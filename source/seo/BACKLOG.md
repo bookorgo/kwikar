@@ -15,8 +15,8 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
-- [ ] [tech] Add SSL-expiry (warn under 21 days) and www → non-www 301 checks to the SEO check GitHub Action: the run sandbox's proxy shows its own certificate and blocks www.kwikar.com, so the Auditor cannot check these (Auditor, 5 Nov)
-- [ ] [tech] Add IndexNow (key file + ping from the rebuild Action for changed URLs) so Bing picks up changes faster
+- [ ] [tech] Homepage slider dots fail Lighthouse "touch target size" on mobile (Tech PageSpeed run, 5 Nov). Enlarge the tap area invisibly (padding or ::before hit area), keep the dots looking the same
+- [ ] [tech] Check the first live IndexNow ping in the next "Update deploy branch" / "Refresh tours" run log (expect HTTP 200/202). If it fails with 403, the key file https://kwikar.com/f3bbea1224a94f12916805548158854f.txt is not served (Tech, 5 Nov)
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
@@ -25,6 +25,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Needs approval (Irfan)
 
+- Colour contrast (design system): the grey location label on homepage cards (#697888 on #f6f7f9, 11px) is 4.21:1, below the 4.5:1 accessibility minimum (Lighthouse). A slightly darker grey (e.g. #5f6b7a) would pass (Tech, 5 Nov)
 - Free data keys as GitHub secrets (Settings → Secrets → Actions): GSC_SA_JSON (Search Console service account, add its email as a user in Search Console), BING_API_KEY (Bing Webmaster → Settings → API access), PAGESPEED_API_KEY (Google Cloud, PageSpeed Insights API). Until then the seo-data branch has keyword ideas only
 
 - Office address and trade licence number for the footer, About page and Organization schema
@@ -36,6 +37,9 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] [tech] SEO check Action now also checks SSL expiry (problem under 21 days) and http→https / www→non-www 301s; outside GitHub Actions (sandbox proxy) these show as notes, not failures (5 Nov 2026)
+- [x] [tech] IndexNow: public key file in public_html, source/indexnow.py pings changed sitemap URLs after each deploy (Update deploy branch + Refresh tours Actions); never fails a run (5 Nov 2026)
+- [x] [tech] SEO data: when the PageSpeed API refuses (429, no key) the Action runs Lighthouse mobile on the runner instead; checks canonical URLs (no redirect) and lists only failing audits (5 Nov 2026)
 - [x] Dubai Miracle Garden (tour 185) full content (5 Nov 2026). dubaimiraclegarden.com (home, FAQ, A380, floral clock, Butterfly pages) could be fetched: Season 15 dates 8 Oct 2026–31 May 2027, 9am–9pm, last entry 8:30pm, Gate 1, rules, Metro + bus 105. Upper child age left out (official 3–12 vs supplier 3–11); parking, wheelchair/pram access and People of Determination rules left out (FAQ answers collapsed). Photo alt text still to do
 - [x] Louvre Abu Dhabi (tour 157) full content (5 Nov 2026). Hours, Monday closing, bag/food/photo/pram rules from the official plan-your-visit page and visitor regulations PDF. Sunday gallery closing left out (sources disagree: 6:30pm vs 8:30pm); free under-18 entry attributed to the supplier (official page not found). Photo alt text still to do
 - [x] [Auditor] Category hub titles "Cruises Experiences" / "Luxury experiences Experiences" → "<Category> in Dubai & the UAE"; supplier typo "tour form" → "tour from" in names (no URL change); site_audit.py checks repeated words and this typo in titles/H1s (5 Nov 2026)

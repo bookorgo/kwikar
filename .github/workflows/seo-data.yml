@@ -36,6 +36,7 @@ jobs:
           SEO_DATA_ONLY: ${{ github.event.inputs.only }}
         run: |
           pip install --quiet google-auth requests
+          npm install --silent -g lighthouse@12 || echo "lighthouse install failed (PageSpeed fallback off)"
           python3 source/seo_data.py /tmp/seo-data
           cat /tmp/seo-data/README.md >> "$GITHUB_STEP_SUMMARY"
       - name: Save to the seo-data branch

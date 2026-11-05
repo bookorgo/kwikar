@@ -16,7 +16,7 @@ Collects, with free sources only:
 Writes everything into the folder given as the first argument (default ./seo-data).
 Never fails the workflow because one source is down: each source writes its own error.
 """
-import csv, datetime as dt, json, os, sys, time, urllib.parse, urllib.request
+import csv, datetime as dt, json, os, shutil, subprocess, sys, tempfile, time, urllib.parse, urllib.request
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'seo-data'
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -160,8 +160,34 @@ def bing():
 
 
 # ---------- 4. PageSpeed ----------
+def _summarise_lighthouse(lh, source):
+    return {
+        'source': source,
+        'scores': {k: round((v.get('score') or 0) * 100) for k, v in lh['categories'].items()},
+        'lcp': lh['audits']['largest-contentful-paint']['displayValue'],
+        'cls': lh['audits']['cumulative-layout-shift']['displayValue'],
+        'tbt': lh['audits']['total-blocking-time']['displayValue'],
+        'top_fixes': [a['title'] for a in sorted(
+            (a for a in lh['audits'].values() if a.get('details', {}).get('type') == 'opportunity'
+             and a.get('score') is not None and a['score'] < 0.9 and (a.get('numericValue') or 0) > 100), key=lambda a: -(a.get('numericValue') or 0))][:5]}
+
+
+def _local_lighthouse(url):
+    """Fallback when the PageSpeed API refuses (429 without a key): run the Lighthouse CLI
+    (installed by the workflow) in mobile mode with the runner's Chrome."""
+    exe = shutil.which('lighthouse')
+    if not exe:
+        raise RuntimeError('lighthouse CLI not installed')
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, 'lh.json')
+        subprocess.run([exe, url, '--quiet', '--form-factor=mobile', '--output=json', f'--output-path={out}',
+                        '--only-categories=performance,seo,accessibility,best-practices',
+                        '--chrome-flags=--headless=new --no-sandbox'], check=True, timeout=240)
+        return json.load(open(out))
+
+
 def pagespeed():
-    pages = ['', 'activities/dubai/burj-khalifa-at-the-top-tickets/', 'blog/dubai/3-days-in-dubai-itinerary/']
+    pages = ['', 'activities/dubai/burj-khalifa-at-the-top-tickets', 'blog/dubai/3-days-in-dubai-itinerary']   # canonical URLs (no trailing slash)
     res = {'date': TODAY, 'pages': {}}
     for p in pages:
         url = SITE + p
@@ -170,18 +196,15 @@ def pagespeed():
             d = get_json('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' + urllib.parse.urlencode(
                 ([('key', key)] if key else []) + [('url', url), ('strategy', 'mobile'), ('category', 'performance'), ('category', 'seo'),
                  ('category', 'accessibility'), ('category', 'best-practices')]), timeout=120)
-            lh = d['lighthouseResult']
-            res['pages'][url] = {
-                'scores': {k: round(v['score'] * 100) for k, v in lh['categories'].items()},
-                'lcp': lh['audits']['largest-contentful-paint']['displayValue'],
-                'cls': lh['audits']['cumulative-layout-shift']['displayValue'],
-                'tbt': lh['audits']['total-blocking-time']['displayValue'],
-                'top_fixes': [a['title'] for a in sorted(
-                    (a for a in lh['audits'].values() if a.get('details', {}).get('type') == 'opportunity'
-                     and (a.get('numericValue') or 0) > 100), key=lambda a: -(a.get('numericValue') or 0))][:5]}
+            res['pages'][url] = _summarise_lighthouse(d['lighthouseResult'], 'PageSpeed API')
         except Exception as err:
-            res['pages'][url] = {'error': 'PageSpeed API: ' + str(err)[:200] + (
-                '' if os.environ.get('PAGESPEED_API_KEY') else ' (add the free PAGESPEED_API_KEY secret)')}
+            api_err = 'PageSpeed API: ' + str(err)[:200] + (
+                '' if os.environ.get('PAGESPEED_API_KEY') else ' (add the free PAGESPEED_API_KEY secret)')
+            try:
+                res['pages'][url] = _summarise_lighthouse(_local_lighthouse(url), 'Lighthouse CLI on the runner (mobile lab test)')
+                res['pages'][url]['note'] = api_err
+            except Exception as err2:
+                res['pages'][url] = {'error': api_err + '; local Lighthouse: ' + str(err2)[:200]}
     save('pagespeed.json', res)
     return 'pagespeed: ' + ', '.join(f"{u.replace(SITE, '/')}={v.get('scores', {}).get('performance', 'err')}"
                                      for u, v in res['pages'].items())

@@ -21,3 +21,5 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git subtree split --prefix public_html -b deploy-new
           git push --force origin deploy-new:deploy
+      - name: Tell IndexNow (Bing) which pages changed
+        run: python3 source/indexnow.py "${{ github.event.before }}" "${{ github.sha }}" || true
