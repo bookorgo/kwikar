@@ -40,8 +40,8 @@ TR = json.load(open(os.path.join(ROOT, 'data', 'transfers.json'), encoding='utf-
 for _c in CARS:   # uniform fleet photo (assets/img/fleet) first, then the local copy made by fetch_images.py
     _slug = re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-')
     for _local in ('assets/img/fleet/' + _slug + '.webp', 'assets/img/cars/' + _slug + '.webp'):
-        if os.path.exists(os.path.join(OUT, _local)):
-            _c['img'] = '/' + _local
+        if os.path.exists(os.path.join(OUT, _local)):   # ?v= busts the 6-month image cache when a photo changes
+            _c['img'] = '/' + _local + '?v=' + hashlib.md5(open(os.path.join(OUT, _local), 'rb').read()).hexdigest()[:8]
             break
 CAT_DESC = {   # meta descriptions for category hubs (120–160 chars)
     'city-tours': 'City tours of Dubai, Abu Dhabi, Ras Al Khaimah and Fujairah, with guided day tours and private options. Compare current prices and ask us on WhatsApp.',
