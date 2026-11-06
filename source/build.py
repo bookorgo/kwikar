@@ -358,7 +358,7 @@ def mobile_nav(path):
 
 FOOTER_LINKS = [('/destinations', 'Destinations'), ('/activities', 'Activities'), ('/destinations/dubai', 'Dubai'), ('/holidays', 'Holidays'),
                 ('/transfers', 'Transfers'), ('/visa', 'Visa'), ('/blog', 'Travel guides'), ('/contact', 'Contact'), ('/about', 'About'), ('/privacy', 'Privacy policy'),
-                ('/terms', 'Terms & conditions'), ('/booking-information', 'Booking information'), ('/refund-policy', 'Refund & cancellation')]
+                ('/terms', 'Terms & conditions'), ('/booking-information', 'Booking information'), ('/refund-policy', 'Refund & cancellation'), ('/photo-credits', 'Photo credits')]
 
 
 TRUSTPILOT_WIDGET = (
@@ -1509,7 +1509,7 @@ def build_transfer_class(c):
             ('Can I ask for a specific model?', 'Write the model you prefer in your request. We confirm it when it is free; otherwise we offer another car of the same class.')]
     body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
             + facts([('Cars', e(models) + ' or similar'), ('Capacity', e(cls_cap(c))), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
-            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div><p><a class="kw-text-link" href="/transfers/fleet">See the full fleet ↗</a> <span class="kw-photo-note">Example photos. <a href="/transfers/fleet#photo-credits">Photo credits</a></span></p></section>' if pics else '')
+            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div><p><a class="kw-text-link" href="/transfers/fleet">See the full fleet ↗</a></p></section>' if pics else '')
             + f'<section class="kw-detail-block"><h2>{e(c["name"])} transfer prices</h2><p>Per car, one way. Open a route for details.</p>{route_rows(rs, key=k)}</section>'
             f'<section class="kw-detail-block"><h2>Other vehicle classes</h2><div class="kw-chip-links">'
             + ''.join(f'<a href="{cls_href(o)}">{e(o["name"])}<span>↗</span></a>' for o in TR_CLASSES if o is not c) + '</div></section>'
@@ -1593,7 +1593,6 @@ def build_transfers():
             + f'<section class="kw-section kw-fleet-section" id="fleet"><div class="kw-wrap">{section_head("Our fleet", "CHOOSE YOUR CAR", action=("Full fleet page", FLEET_PATH), carousel_id="kw-fleet-row")}'
             + f'<p class="kw-section-intro">{len(CARS)} chauffeur-driven cars. Pick the car you like and send your trip; prices are per car and include tolls and parking.</p>'
             + f'<div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{ftabs}</div><div class="kw-fleet-row" id="kw-fleet-row">{fcards}</div>'
-            + f'<p class="kw-photo-note">Example photos of each model. <a href="{FLEET_PATH}#photo-credits">Photo credits</a></p>'
             + f'<h3 class="kw-fleet-classes-h">Prices by vehicle class</h3><div class="kw-chip-links">{class_chips}</div></div></section>'
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
@@ -1615,6 +1614,7 @@ def build_transfers():
         build_transfer_class(c)
     build_transfer_hourly()
     build_fleet()
+    build_photo_credits()
     for x in CARS:
         build_car_page(x)
 
@@ -1634,7 +1634,7 @@ def fleet_credits_html():
                     f'<a href="{e(v["page"])}" target="_blank" rel="noopener">Wikimedia Commons</a>, '
                     + (f'<a href="{e(v["license_url"])}" target="_blank" rel="noopener">{e(v["license"])}</a>' if v.get('license_url') else e(v['license'])) + '</li>'
                     for k, v in FLEET_CREDITS.items())
-    return (f'<section class="kw-section kw-photo-credits" id="photo-credits"><div class="kw-wrap"><h2>Photo credits</h2>'
+    return (f'<section class="kw-section kw-photo-credits"><div class="kw-wrap"><h1>Photo credits</h1>'
             f'<p>Car photos are example photos of each model from Wikimedia Commons, used under their free licences. We cropped the photos and hid the number plates; '
             f'the edited photos are shared under the same licence. The car sent for your booking may differ in colour and details.</p><ul>{items}</ul></div></section>')
 CAR_INFO = {   # one line per car and the filter groups it belongs to
@@ -1680,6 +1680,12 @@ def fleet_cards():
     return tabs, cards, cars
 
 
+def build_photo_credits():
+    if FLEET_CREDITS:
+        page('/photo-credits', 'Photo Credits', 'Credits and licences for the car photos used on the KWIKAR website, from Wikimedia Commons under free licences.', fleet_credits_html(),
+             noindex=True, crumbs=[('Home', '/'), ('Photo credits', '/photo-credits')])
+
+
 def build_fleet():
     path = FLEET_PATH
     tabs, cards, cars = fleet_cards()
@@ -1700,7 +1706,7 @@ def build_fleet():
             f'<div class="kw-fleet-grid">{cards}</div></div></section>'
             f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{seo_head("CHOOSING A CAR", "Which car suits your journey")}{suits}</div></section>'
             + tr_enquiry_section('Book a car', 'Tell us your route, date and the car you prefer.')
-            + faq_block('Fleet questions', faqs) + fleet_credits_html())
+            + faq_block('Fleet questions', faqs))
     page(path, title, desc, main, active='Transfers', full_title=True, crumbs=[('Home', '/'), ('Transfers', '/transfers'), ('Fleet', path)],
          head_extra=ld(faq_ld(faqs)) + ld({'@context': 'https://schema.org', '@type': 'ItemList', 'name': 'KWIKAR chauffeur fleet',
                                             'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'name': x['name']} for i, x in enumerate(cars)]}))
@@ -1748,7 +1754,6 @@ def build_car_page(x):
             ('How do I book?', 'Send your route, date, time and guests with the form or on WhatsApp. Our team confirms the car and the final price before you pay. There is no online payment.')]
     car_cards = lambda lst: ''.join(f'<a class="kw-price-row" href="{car_href(o)}"><span><strong>{e(o["name"])}</strong><small>{e(car_class(o)["name"])} · up to {o["pax"]} guests</small></span><em>from {money(class_low(car_class(o)))}</em></a>' for o in lst)
     body = (f'<div class="kw-car-hero"><img src="{e(x["img"])}" alt="{e(name)} with chauffeur" width="1200" height="750" fetchpriority="high"></div>'
-            f'<p class="kw-photo-note">Example photo of this model. <a href="{FLEET_PATH}#photo-credits">Photo credits</a></p>'
             f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
             + facts([('Vehicle class', f'<a href="{cls_href(c)}">{e(c["name"])}</a>'), ('Guests', f'Up to {x["pax"]}'), ('Bags', f'About {c["bags"]}'),
                      ('Type', e(kind_txt or x['type'])), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
