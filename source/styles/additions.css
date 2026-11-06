@@ -117,6 +117,7 @@
 .kw-blog-body ul{list-style:disc;padding-left:22px}.kw-blog-body li{margin:6px 0}
 .kw-blog-body a,.kw-sources a{color:#1265e8;font-weight:600}
 .kw-blog-body .kw-table-wrap{margin:16px 0}
+.kw-blog-body .kw-opt-table td:last-child{white-space:normal}
 .kw-blog-list{padding-top:34px;padding-bottom:60px}
 .kw-sources{list-style:disc;padding-left:22px}
 /* accessibility: contrast and touch targets (PageSpeed) */
