@@ -1,0 +1,34 @@
+# Finds (search) or downloads (fetch) freely licensed fleet photos from Wikimedia Commons.
+# Results go to the "fleet-photos" branch (not deployed); Claude reviews and processes them.
+name: Fleet photos
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'search or fetch'
+        required: true
+        default: 'search'
+permissions:
+  contents: write
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run
+        run: python3 source/fleet_photos.py ${{ github.event.inputs.mode }} /tmp/out/${{ github.event.inputs.mode }}
+      - name: Save to the fleet-photos branch
+        run: |
+          cd /tmp/out
+          git init -q -b fleet-photos
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Fleet photos ${{ github.event.inputs.mode }} $(date -u +%F)"
+          for i in 1 2 3 4 5; do
+            git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" fleet-photos:fleet-photos && exit 0
+            sleep $((i*15))
+          done
+          exit 1
