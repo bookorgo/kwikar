@@ -33,3 +33,4 @@
 - 2026-11-06 07:41 UTC — [Setup] V-Class photo replaced with a standard 2024 V 200 d (was a custom Maybach-style V-Class), plate hidden, credit updated
 - 2026-11-06 11:05 UTC — [Setup] Own 3D-style menu icons (globe+pin, hot air balloon, palm island, passport+stamp, dhow, car, ticket, tiles) in assets/img/icons, used in the header and mobile shortcuts
 - 2026-11-06 11:24 UTC — [Setup] Fleet photos switched from studio cut-outs to the real photos with their natural backgrounds (16:10 crop), plates hidden (Irfan: cut-outs looked 3D)
+- 2026-11-06 11:32 UTC — [Setup] 12 car detail pages /transfers/fleet/<car> (photo, class, guests/bags, prices, popular trips, FAQs, form with preferred car); fleet card photo and title link to them; home and class pages link cars to them

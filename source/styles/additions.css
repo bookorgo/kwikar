@@ -306,3 +306,12 @@ a.kw-package{color:inherit}
 .kw-mobile-extra>summary .kw-service-icon .kw-icon3d{width:28px;height:28px}
 .kw-mobile-more a .kw-icon3d{width:22px;height:22px}
 @media(prefers-reduced-motion:reduce){.kw-nav-attractions .kw-icon3d{transition:none}}
+/* car detail pages */
+.kw-car-hero img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:16px}
+.kw-fleet-photo{display:block}
+.kw-fleet-photo img{transition:transform .3s}
+.kw-fleet-card:hover .kw-fleet-photo img{transform:scale(1.03)}
+.kw-fleet-photo{overflow:hidden}
+.kw-fleet-body h3 a{color:inherit}
+.kw-fleet-body h3 a:hover{color:#1265e8}
+@media(prefers-reduced-motion:reduce){.kw-fleet-photo img{transition:none}}
