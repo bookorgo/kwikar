@@ -36,6 +36,7 @@ cat = json.load(open(os.path.join(ROOT, 'data', 'catalog.json'), encoding='utf-8
 LOCATIONS = cat['locations']                       # includes 'other' (shown as "More")
 REAL_LOCATIONS = [l for l in LOCATIONS if l['id'] != 'other']
 HOLIDAYS, CARS, VISAS = cat['holidays'], cat['cars'], cat['visas']
+TR = json.load(open(os.path.join(ROOT, 'data', 'transfers.json'), encoding='utf-8'))
 for _c in CARS:   # use the local copy made by fetch_images.py when it exists
     _local = 'assets/img/cars/' + re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-') + '.webp'
     if os.path.exists(os.path.join(OUT, _local)):
@@ -273,8 +274,10 @@ MENU_ITEMS = {
     'Visas': [('UAE visa options', [(v['name'], f"/visa?type={quote(v['name'])}#visa-enquiry") for v in VISAS if 'UAE' in v['name']]),
               ('Other visa assistance', [(v['name'], f"/visa?type={quote(v['name'])}#visa-enquiry") for v in VISAS if 'UAE' not in v['name']])],
     'Cruises': [('Cruise experiences', [('All cruises', '/activities/cruises'), ('Dubai Marina cruises', '/search?q=marina%20cruise'), ('Dhow cruises', '/search?q=dhow%20cruise'), ('Dinner cruises', '/search?q=dinner%20cruise')])],
-    'Transfers': [('Your transfer', [('Airport transfers', '/transfers?service=Airport%20transfer#transfer-enquiry'), ('Point to point', '/transfers?service=Point%20to%20point#transfer-enquiry'), ('Hourly chauffeur', '/transfers?service=Hourly%20chauffeur#transfer-enquiry')]),
-                  ('Browse vehicles', [(t, f'/transfers?type={quote(t)}') for t in dict.fromkeys(c['type'] for c in CARS)])],
+    'Transfers': [('Airport transfers', [(a['short'] + ' (' + a['code'] + ')', '/transfers/' + a['slug']) for a in TR['airports']]),
+                  ('Popular routes', [(r['to'] + ' from ' + r['airport'], '/transfers/' + r['slug']) for r in TR['routes'] if r['id'] in ('dxb-downtown', 'dxb-marina', 'dxb-palm', 'dxb-abudhabi')]
+                   + [('Dubai to Abu Dhabi', '/transfers/dubai-to-abu-dhabi'), ('Chauffeur by the hour', '/transfers/' + TR['hourly']['slug'])]),
+                  ('Vehicle classes', [(c['name'], '/transfers/vehicles/' + c['slug']) for c in TR['classes']])],
 }
 MENU_CITIES = ['dubai', 'abu-dhabi', 'sharjah', 'ras-al-khaimah', 'singapore', 'bali', 'thailand', 'malaysia']
 EXPERIENCE_TERMS = [('City Tours', 'city tour'), ('Theme Parks', 'theme park'), ('Desert Adventures', 'desert'), ('Water Activities', 'water'),
@@ -539,7 +542,7 @@ def home_faqs():
         ('How do I book a tour or activity with KWIKAR?', f'Choose an experience on our website and send a request with your preferred date and number of guests. You can also message us on WhatsApp or call {PHONE_FMT}. Our team checks availability with the supplier, confirms the final price and booking terms, and only then asks for payment.'),
         ('Are the prices on KWIKAR final?', 'Prices shown are starting prices, and tour prices come from live supplier rates. The final amount depends on your date, group size, ticket type and any extras. We send you a confirmed quote before you pay, so you know the full cost in advance.'),
         ('Does KWIKAR offer airport transfers from Dubai Airport?', 'Yes. We arrange private transfers from Dubai International Airport (DXB) to hotels in Downtown, DIFC, Dubai Marina, JBR, Palm Jumeirah and other areas.'
-         + (f' A Mercedes E-Class to Downtown or DIFC starts from {money(EST["airport"][0]["rates"]["Mercedes E-Class"])}.' if et else '') + ' Share your flight number so we can plan the pickup.'),
+         + (f' A Business Sedan (Mercedes E-Class or similar) to Downtown or DIFC starts from {money(DXB_DT)}.' if et else '') + ' Share your flight number so we can plan the pickup.'),
         ('Can KWIKAR help me get a UAE tourist visa?', 'Yes. We assist with 14, 30 and 60-day UAE tourist visas, single and multiple entry'
          + (f', from {money(min(v["price"] for v in uae_v))}' if uae_v else '') + '. Processing usually takes three to four working days. You typically need a passport valid for six months and a recent colour photo. The issuing authority makes the final decision.'),
         ('Which UAE cities does KWIKAR cover?', f'Our UAE destinations are {", ".join(uae_cities[:-1])} and {uae_cities[-1]}. Private chauffeur transfers also run between emirates, for example from Dubai to Abu Dhabi. For travel outside the UAE, we arrange holiday packages to several countries in Asia and Europe.'),
@@ -592,7 +595,7 @@ def home_guide():
     intl = [l for l in REAL_LOCATIONS if l['group'] != 'uae']
     uae_locs = [l for l in REAL_LOCATIONS if l['group'] == 'uae']
     wa_ = wa('Hi KWIKAR, I would like help planning my UAE trip.')
-    e150 = money(EST["airport"][0]["rates"]["Mercedes E-Class"])
+    e150 = money(DXB_DT)
 
     s1 = (f'<section class="kw-seo-section"><div class="kw-market-wrap">'
           + seo_head('POPULAR PICKS', 'Top UAE tours and activities to book',
@@ -616,11 +619,11 @@ def home_guide():
               + '<a class="kw-text-link" href="/activities/cruises">See all Dubai cruises <span aria-hidden="true">↗</span></a></div>'
               + f'<div>{facts(rows)}</div></div></section>')
 
-    car_rows = [(e(t_), f'{e(", ".join(c["name"] for c in cs))} · up to {max(c["pax"] for c in cs)} guests') for t_, cs in by_type.items()]
+    car_rows = [(f'<a href="{cls_href(c)}">{e(c["name"])}</a>', f'{e(", ".join(c["models"][:2]))} or similar · up to {c["guests"]} guests') for c in TR_CLASSES]
     s3 = (f'<section class="kw-seo-section"><div class="kw-market-wrap kw-seo-split"><div>'
           + seo_head('PRIVATE TRANSFERS', 'Airport transfers and chauffeur service')
-          + f'<p class="kw-seo-lead">Travel between Dubai International Airport (DXB), your hotel and other emirates in a private car with a professional chauffeur. A Mercedes E-Class from DXB to Downtown Dubai or DIFC starts from {e150}; popular routes also include Dubai Marina, JBR and Palm Jumeirah.</p>'
-          + '<p>Share your flight number and we confirm pickup arrangements and any waiting charges before you book.</p>'
+          + f'<p class="kw-seo-lead">Travel between Dubai International Airport (DXB), your hotel and other emirates in a private car with a professional chauffeur. A Business Sedan (Mercedes E-Class or similar) from DXB to <a href="/transfers/dubai-airport-to-downtown-dubai">Downtown Dubai or DIFC</a> starts from {e150}; popular routes also include <a href="/transfers/dubai-airport-to-dubai-marina">Dubai Marina</a>, <a href="/transfers/dubai-airport-to-palm-jumeirah">Palm Jumeirah</a> and <a href="/transfers/dubai-to-abu-dhabi">Dubai to Abu Dhabi</a>.</p>'
+          + f'<p>Prices are per car and include {e(INCLUDED_TXT)}. Share your flight number and your driver follows your flight.</p>'
           + '<a class="kw-text-link" href="/transfers#transfer-enquiry">Get a transfer quote <span aria-hidden="true">↗</span></a></div>'
           + f'<div>{facts(car_rows)}</div></div></section>')
 
@@ -691,7 +694,7 @@ def build_home():
                         for i, n, sub, img in cities)
     hol = ''.join(f'<a class="kw-home-feature" href="/holidays?country={quote(h["country"])}"><img src="{e(h["img"])}" loading="lazy" alt=""><span>{e(h["country"])}</span><strong>{e(h["name"])}</strong><small>{h["nights"]} nights · Request a quote</small></a>'
                   for h in [x for x in HOLIDAYS if x.get('img')][:6])
-    cars = ''.join(f'<a class="kw-home-feature" href="/transfers"><img src="{e(c["img"])}" loading="lazy" alt=""><span>{e(c["type"])}</span><strong>{e(c["name"])}</strong><small>Up to {c["pax"]} passengers · Enquire for a quote</small></a>'
+    cars = ''.join(f'<a class="kw-home-feature" href="{car_class_href(c)}"><img src="{e(c["img"])}" loading="lazy" alt=""><span>{e(c["type"])}</span><strong>{e(c["name"])}</strong><small>Up to {c["pax"]} passengers · Enquire for a quote</small></a>'
                    for c in CARS[:5])
     visas = ''.join(f'<a href="/visa?type={quote(v["name"])}#visa-enquiry"><span>UAE TOURIST VISA</span><strong>{e(v["name"])}</strong><small>{("From " + money(v["price"])) if v.get("price") else "Request a quote"} →</small></a>'
                     for v in [v for v in VISAS if re.search(r'30 Days|60 Days', v['name'])][:4])
@@ -1230,12 +1233,59 @@ def build_holidays():
          active='Holidays', main_class='kw-category-service kw-holiday-service', crumbs=[('Home', '/'), ('Holidays', '/holidays')])
 
 
+TR_CLASSES = TR['classes']
+TR_ROUTES = TR['routes']
+TR_AIRPORTS = TR['airports']
+TR_SET = TR['settings']
+WAIT_A, WAIT_O, HOUR_MIN = TR_SET['wait_airport'], TR_SET['wait_other'], TR_SET['hourly_min']
+HOURLY_PATH = '/transfers/' + TR['hourly']['slug']
+DXB_DT = next(r for r in TR_ROUTES if r['id'] == 'dxb-downtown')['prices']['e']
+INCLUDED_TXT = f'Salik and Darb tolls, airport parking, child seats and {WAIT_A} minutes of free waiting at airports ({WAIT_O} minutes elsewhere)'
+
+
+def tr_href(r):
+    return '/transfers/' + r['slug']
+
+
+def cls_href(c):
+    return '/transfers/vehicles/' + c['slug']
+
+
+def ap_href(a):
+    return '/transfers/' + a['slug']
+
+
+def cls_img(c):
+    car = next((x for x in CARS if x['name'] == c['car']), None)
+    return car['img'] if car else '/assets/img/kwikar-share.webp'
+
+
+def cls_cap(c):
+    g = c['guests']
+    return (f'{g} guests' if isinstance(g, str) else f'Up to {g} guests') + f' · {c["bags"]} bags'
+
+
+def tr_low(prices):
+    vals = [v for v in prices.values() if v]
+    return min(vals) if vals else None
+
+
+def tr_name(r):
+    return f'{r["from"]} to {r["to"]}'
+
+
+def tr_short_from(r):
+    return re.sub(r' \((DXB|DWC|AUH|SHJ)\)$', '', r['from'])
+
+
+# Estimator on /transfers: the same approved rates, by vehicle class
 EST = {
-    'vehicles': ['Mercedes E-Class', 'Mercedes S-Class', 'Mercedes V-Class', 'Cadillac Escalade'],
-    'airport': [{'name': 'DXB → Downtown / DIFC', 'from': 'Dubai International Airport (DXB)', 'to': 'Downtown Dubai / DIFC', 'rates': {'Mercedes E-Class': 150, 'Mercedes S-Class': 220, 'Mercedes V-Class': 250, 'Cadillac Escalade': 280}},
-                {'name': 'DXB → Marina / JBR / Palm', 'from': 'Dubai International Airport (DXB)', 'to': 'Dubai Marina / JBR / Palm', 'rates': {'Mercedes E-Class': 180, 'Mercedes S-Class': None, 'Mercedes V-Class': None, 'Cadillac Escalade': None}}],
-    'intercity': [{'name': 'Dubai → Abu Dhabi', 'from': 'Dubai', 'to': 'Abu Dhabi', 'rates': {'Mercedes E-Class': 450, 'Mercedes S-Class': 650, 'Mercedes V-Class': 750, 'Cadillac Escalade': None}}],
-    'hourly': {'Mercedes E-Class': 150, 'Mercedes S-Class': 280, 'Mercedes V-Class': 320, 'Cadillac Escalade': 350},
+    'vehicles': [c['name'] for c in TR_CLASSES],
+    'airport': [{'name': f'{tr_short_from(r)} → {r["to"]}', 'from': r['from'], 'to': r['to'],
+                 'rates': {c['name']: r['prices'].get(c['key']) for c in TR_CLASSES}} for r in TR_ROUTES if r['airport']],
+    'intercity': [{'name': f'{r["from"]} → {r["to"]}', 'from': r['from'], 'to': r['to'],
+                   'rates': {c['name']: r['prices'].get(c['key']) for c in TR_CLASSES}} for r in TR_ROUTES if not r['airport']],
+    'hourly': {c['name']: TR['hourly']['prices'].get(c['key']) for c in TR_CLASSES},
 }
 
 
@@ -1243,40 +1293,317 @@ def faq_block(title, items):
     return f'<section class="kw-section"><div class="kw-wrap kw-seo-narrow">{seo_head("FAQ", e(title), None, center=True)}{faq_cards(items, open_all=False)}</div></section>'
 
 
-def build_transfers():
-    types = list(dict.fromkeys(c['type'] for c in CARS))
-    tabs = ''.join(f'<button type="button" data-service="{v}" class="{"selected" if v == "airport" else ""}" aria-pressed="{"true" if v == "airport" else "false"}">{l_}</button>'
-                   for v, l_ in (('airport', 'Airport transfer'), ('hourly', 'Hourly chauffeur'), ('intercity', 'Inter-emirate')))
-    routes = ''.join(f'<option value="{i}">{e(r["name"])}</option>' for i, r in enumerate(EST['airport']))
-    veh = ''.join(f'<option>{v}</option>' for v in EST['vehicles'])
-    estimator = (f'<section class="kw-section kw-transfer-estimator" data-estimator=\'{e(json.dumps(EST))}\'><div class="kw-wrap"><div class="kw-estimate-head"><div><span class="kw-eyebrow">STANDARD JOURNEYS</span><h2>Estimate your transfer</h2>'
-                 f'<p>Select a standard journey and vehicle to see a starting AED price. Our team confirms your custom request and final estimate on WhatsApp. No online payment.</p></div></div>'
-                 f'<div class="kw-estimate-grid"><div><div class="kw-estimate-tabs" role="group" aria-label="Transfer service">{tabs}</div>'
-                 f'<label class="kw-estimate-field" data-route-field>Standard route<select name="route">{routes}</select></label>'
-                 f'<label class="kw-estimate-field" data-hours-field hidden>Hours (minimum 3)<input type="number" name="hours" min="3" max="12" value="3"></label>'
-                 f'<label class="kw-estimate-field">Vehicle<select name="vehicle">{veh}</select></label></div>'
-                 f'<div class="kw-estimate-result"><span>INDICATIVE SERVICE PRICE</span><strong data-out>{money(150)}</strong><p data-sel>DXB → Downtown / DIFC · Mercedes E-Class</p>'
-                 f'<p>Custom locations, extra stops, child seats or waiting time are assessed by our team using your booking details. The final estimate is confirmed with you on WhatsApp.</p>'
-                 f'<a href="#transfer-enquiry" data-request>Request final quote →</a></div></div></div></section>')
-    filt = ''.join(f'<button data-type="{e(x_)}"{" class=selected" if x_ == "All" else ""}>{e(x_)}</button>' for x_ in ['All'] + types)
-    fleet = ''.join(f'<article class="kw-package kw-car" data-car-type="{e(c["type"])}"><img src="{e(c["img"])}" alt="{e(c["name"])}" loading="lazy"><div><span class="kw-eyebrow">{e(c["type"])} · up to {c["pax"]} guests</span><h3>{e(c["name"])}</h3>'
-                    f'<p>Pricing depends on the route and booking details. See the standard journey estimator above.</p><a href="#transfer-enquiry" data-pick="{e(c["name"])}">Request this vehicle ↗</a> · <a href="tel:+{PHONE}">Call</a></div></article>' for c in CARS)
-    car_opts = ''.join(f'<option>{e(c["name"])}</option>' for c in CARS)
-    form = (f'<form class="kw-form" data-wa="Transfer enquiry"><label>Service type<select name="service" data-label="Service" data-prefill="service"><option>Airport transfer</option><option>Point to point</option><option>Hourly chauffeur</option></select></label>'
-            f'<label>Vehicle<select name="vehicle" data-label="Vehicle">{car_opts}</select></label><label>Pickup location<input required name="pickup" data-label="Pickup"></label><label>Drop-off location<input required name="dropoff" data-label="Drop-off"></label>'
+def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_title='Transfer enquiry'):
+    opts = ''.join(f'<option{" selected" if c["name"] == vehicle else ""}>{e(c["name"])}</option>' for c in TR_CLASSES)
+    svc = ''.join(f'<option{" selected" if s == service else ""}>{s}</option>' for s in ('Airport transfer', 'Point to point', 'Hourly chauffeur'))
+    return (f'<form class="kw-form" data-wa="{e(wa_title)}"><label>Service type<select name="service" data-label="Service" data-prefill="service">{svc}</select></label>'
+            f'<label>Vehicle class<select name="vehicle" data-label="Vehicle class">{opts}</select></label>'
+            f'<label>Pickup location<input required name="pickup" data-label="Pickup" value="{e(pickup)}" placeholder="Hotel, address or airport terminal"></label>'
+            f'<label>Drop-off location<input required name="dropoff" data-label="Drop-off" value="{e(dropoff)}" placeholder="Hotel or address"></label>'
             f'<div class="kw-two-fields"><label>Date<input required type="date" name="date" data-label="Date"></label><label>Time<input required type="time" name="time" data-label="Time"></label></div>'
             f'<div class="kw-two-fields"><label>Passengers<input required type="number" min="1" value="1" name="pax" data-label="Passengers"></label><label>Your name<input required name="name" data-label="Name"></label></div>'
-            f'<label>Extra stops, child seats or special requests<textarea name="special" data-label="Special requirements" placeholder="Tell us anything we should include in the final quote"></textarea></label>'
+            f'<label>Flight number (airport pickups)<input name="flight" data-label="Flight number" placeholder="For example EK 202"></label>'
+            f'<label>Child seats, extra stops or special requests<textarea name="special" data-label="Special requirements" placeholder="Child ages for seats, luggage, extra stops"></textarea></label>'
             f'<button class="kw-button" type="submit">Send enquiry on WhatsApp ↗</button></form>')
-    main = (page_hero('PRIVATE MOBILITY', 'The journey is part of the experience.', 'Airport pickups, point to point rides and chauffeur service with the car that fits your plans.', photo('1518684079-3c830dcef090', 1600))
+
+
+def tr_enquiry_section(title, text, **kw):
+    return (f'<section id="transfer-enquiry" class="kw-section kw-market-alt"><div class="kw-wrap kw-service-layout"><div>{section_head(title, "YOUR RIDE")}'
+            f'<p>{text}</p><h3>Included in the price</h3><p>{e(INCLUDED_TXT)}. The price is per vehicle, not per person. '
+            f'Our team confirms the final price on WhatsApp before you pay. There is no online payment on the website.</p></div>{tr_form(**kw)}</div></section>')
+
+
+def class_rows(prices, unit='one way', pick=True):
+    """One row per vehicle class with photo, models, capacity and price (links fill the form)."""
+    rows = ''
+    for c in TR_CLASSES:
+        p = prices.get(c['key'])
+        rows += (f'<div class="kw-class-row"><img src="{e(cls_img(c))}" alt="{e(c["car"])}, {e(c["name"])} class" loading="lazy" width="160" height="100">'
+                 f'<div><strong><a href="{cls_href(c)}">{e(c["name"])}</a></strong><small>{e(", ".join(c["models"]))} or similar</small><small>{e(cls_cap(c))}</small></div>'
+                 f'<div class="kw-class-price"><em>{money(p) if p else "Quote on WhatsApp"}</em>{f"<small>{e(unit)}</small>" if p else ""}'
+                 + (f'<a href="#transfer-enquiry" data-pick="{e(c["name"])}">Choose ↗</a>' if pick else '') + '</div></div>')
+    return f'<div class="kw-class-rows">{rows}</div>'
+
+
+def route_rows(routes, key=None):
+    """Route list (price rows that link to each route page)."""
+    out = ''
+    for r in routes:
+        p = r['prices'].get(key) if key else tr_low(r['prices'])
+        out += (f'<a class="kw-price-row" href="{tr_href(r)}"><span><strong>{e(tr_short_from(r))} → {e(r["to"])}</strong><small>{e(r["info"])}</small></span>'
+                f'<em>{("from " if not key else "") + money(p) if p else "Quote"}</em></a>')
+    return f'<div class="kw-price-list">{out}</div>'
+
+
+def tr_service_ld(name, path, desc, prices, service_type, area):
+    offers = [{'@type': 'Offer', 'name': c['name'], 'price': prices[c['key']], 'priceCurrency': 'AED', 'url': SITE + path,
+               'availability': 'https://schema.org/InStock', 'seller': {'@id': SITE + '/#organization'}} for c in TR_CLASSES if prices.get(c['key'])]
+    return {'@context': 'https://schema.org', '@type': 'TaxiService', 'name': name, 'url': SITE + path, 'description': desc,
+            'serviceType': service_type, 'provider': {'@id': SITE + '/#organization'}, 'areaServed': area,
+            'offers': offers}
+
+
+def faq_ld(items):
+    return {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+        {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in items]}
+
+
+def fit(s, n):
+    """Trim a description to at most n characters at a word boundary."""
+    if len(s) <= n:
+        return s
+    return s[:n].rsplit(' ', 1)[0].rstrip(',;') + '.'
+
+
+def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers'):
+    nav = ' / '.join(f'<a href="{h}">{e(n)}</a>' for n, h in crumbs[:-1]) + f' / {e(crumbs[-1][0])}'
+    main = (f'<nav aria-label="Breadcrumb">{nav}</nav><h1>{e(h1)}</h1><p class="kw-detail-meta">{e(sub)}</p>'
+            f'<div class="kw-product-badges"><span>Price per vehicle</span><span>Tolls and parking included</span><span>Book on WhatsApp</span></div>'
+            f'<div class="kw-detail-grid"><div>{body}</div>'
+            f'<aside><div class="kw-selection-card"><span>From</span><strong>{money(aside_price) if aside_price else "Price on request"}</strong>'
+            f'<small>{e(aside_unit)} · no booking or card fees</small><a class="kw-button" href="#transfer-enquiry">Request this transfer</a>'
+            f'<a href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a><p class="kw-seller">Transfers arranged by Kwikar LLC-FZ, United Arab Emirates.</p></div></aside></div>'
+            f'<section class="kw-final-cta"><div><h2>Book your ride</h2><p>{e(cta_text)} Questions? <a href="{e(wa("Hi KWIKAR, I have a transfer question."))}" target="_blank" rel="noopener noreferrer">WhatsApp us on {PHONE_FMT}</a>.</p></div>'
+            f'<div><a class="kw-button" href="#transfer-enquiry">Request a quote</a></div></section>'
+            f'<div class="kw-product-sticky"><div><span>From</span><strong>{money(aside_price) if aside_price else "On request"}</strong><small>{e(aside_unit)}</small></div><a class="kw-button" href="#transfer-enquiry">Request</a></div>')
+    return main
+
+
+def _how_steps(airport):
+    meet = (f'Your chauffeur tracks your flight and waits in the arrivals hall with a name sign. The first {WAIT_A} minutes after landing are free.'
+            if airport else f'Your chauffeur arrives at your pickup point at the agreed time. The first {WAIT_O} minutes of waiting are free.')
+    return info_cards([('', 'Send your trip', 'Use the form or WhatsApp: pickup, drop-off, date, time, guests' + (' and flight number.' if airport else '.')),
+                       ('', 'Get the final price', 'Our team confirms the vehicle class and the final AED price before you pay.'),
+                       ('', 'Meet your chauffeur', meet),
+                       ('', 'Ride direct', 'A private car only for your group, straight to your address. Tolls and parking are already in the price.')], numbered=True)
+
+
+def build_transfer_route(r):
+    path = tr_href(r)
+    low = tr_low(r['prices'])
+    frm, to = r['from'], r['to']
+    sf = tr_short_from(r)
+    ap = next((a for a in TR_AIRPORTS if a['code'] == r['airport']), None)
+    km, mins = (r['info'].split(' · ') + [''])[:2]
+    title = f'{sf} to {to} Transfer from {money(low)}'
+    if len(title) > 60:
+        title = f'{sf} to {to} Private Transfer'
+    if len(title) > 60:
+        title = f'{sf} to {to} Transfer'
+    if len(title) > 60:
+        title = f'{sf} to {to.split(" and ")[0]} Transfer'
+    desc = fit(f'Private {sf} to {to} transfer from {money(low)} per car. Tolls, parking, child seats and free waiting included. '
+               f'Choose your vehicle class and book on WhatsApp.', 160)
+    h1 = f'{sf} to {to} Transfer'
+    sub = f'Private chauffeur transfer · {km} · {mins}'
+    e_p, v_p = r['prices'].get('e'), r['prices'].get('v')
+    quick = (f'A private transfer from {frm} to {to} costs from {money(low)} per car with KWIKAR (Business Sedan, up to 3 guests)'
+             + (f' and {money(v_p)} for a Business Van for up to 7 guests' if v_p else '') + f'. The drive takes {mins} in normal traffic. '
+             + ('Your chauffeur meets you in arrivals with a name sign. ' if ap else '') + 'Tolls and parking are included.')
+    glance = facts([('Distance', e(km.replace('about ', 'About '))), ('Journey time', e(mins) + ' in normal traffic'),
+                    ('Price', f'From {money(low)} per vehicle, one way'), ('Free waiting', f'{WAIT_A if ap else WAIT_O} minutes' + (' after landing' if ap else '')),
+                    ('Included', 'Salik and Darb tolls, parking, child seats'), ('Return trip', 'Same price in the other direction')])
+    cover = (f'<p>We pick you up {"at " + ap["name"] if ap else "anywhere in " + frm} and drive you to {r["areas"]}. '
+             f'The same route also runs the other way, from {to} to {sf}, at the same price.</p>')
+    others = [x for x in TR_ROUTES if x['id'] != r['id'] and (x['airport'] == r['airport'] if r['airport'] else not x['airport'])][:6]
+    to_same = [x for x in TR_ROUTES if x['id'] != r['id'] and x['to'] == to and x not in others][:3]
+    faqs = [
+        (f'How much is a private transfer from {sf} to {to}?',
+         f'From {money(low)} per car in a Business Sedan (up to 3 guests). '
+         + '; '.join(f'{c["name"]} {money(r["prices"][c["key"]])}' for c in TR_CLASSES[1:] if r['prices'].get(c['key']))
+         + f'. Prices are per vehicle, one way, and include {INCLUDED_TXT}.'),
+        (f'How long does the drive from {sf} to {to} take?',
+         f'About {mins.replace("about ", "")} in normal traffic ({km.replace("about ", "about ")}). Allow extra time in the morning and evening rush hours.'),
+        (('Where will the driver meet me at the airport?', f'{ap["note"]} The driver follows your flight, so a delay does not cost you extra; the first {WAIT_A} minutes after landing are free.')
+         if ap else (f'Can you pick me up from my hotel or home in {frm}?', f'Yes. We pick you up from any address, hotel or mall in {frm} and drop you at your address in {to}.')),
+        ('Is the price per person?', 'No. The price is for the whole car, one way. A Business Sedan takes up to 3 guests, a Family SUV up to 6 and a Business Van up to 7.'),
+        ('Which vehicle should I choose for a family with luggage?',
+         f'For 4 to 6 guests with suitcases, the Family SUV ({money(r["prices"]["f"]) if r["prices"].get("f") else "on request"}) is the best value. '
+         f'For 7 guests or a lot of luggage, choose the Business Van ({money(v_p) if v_p else "on request"}).'),
+        ('Are child seats included?', 'Yes, child seats are free. Tell us the age of each child when you book so the right seats are fitted.'),
+        (f'Can I book the return trip from {to} to {sf}?', 'Yes. The return trip costs the same. Send both dates and times in one message and our team confirms both rides.'),
+        ('How do I pay?', 'You send your request on WhatsApp or with the form. Our team confirms the vehicle and the final price before you pay. There is no online payment on this website.'),
+    ]
+    body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>{glance}</section>'
+            f'<section class="kw-detail-block"><h2>Prices by vehicle class</h2><p>Every price is for the whole car, one way. Pick a class and our team sends the car from that class that is free at your time.</p>'
+            f'{class_rows(r["prices"])}</section>'
+            f'<section class="kw-detail-block"><h2>Where we drive</h2>{cover}</section>'
+            f'<section class="kw-detail-block"><h2>How it works</h2>{_how_steps(bool(ap))}</section>'
+            f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>'
+            + (f'<section class="kw-detail-block"><h2>{"More transfers from " + ap["short"] if ap else "More city-to-city transfers"}</h2>{route_rows(others)}</section>' if others else '')
+            + (f'<section class="kw-detail-block"><h2>Other ways to {e(to)}</h2>{route_rows(to_same)}</section>' if to_same else '')
+            + f'<p class="kw-checked">Prices from the KWIKAR transfer rate card, updated {datetime.date.fromisoformat(TR["approved"]).strftime("%-d %b %Y")}.</p>')
+    crumbs = [('Home', '/'), ('Transfers', '/transfers')] + ([(ap['short'], ap_href(ap))] if ap else []) + [(h1, path)]
+    main = tr_page(path, title, desc, h1, sub, body, low, 'per car, one way', crumbs, None,
+                   'Send pickup, drop-off, date, time and guests. Our team replies on WhatsApp with the final price.')
+    main += tr_enquiry_section(f'Request your {sf} to {to} transfer', 'Tell us your date, time and number of guests. We reply on WhatsApp with the final price.',
+                               service='Airport transfer' if ap else 'Point to point', pickup=frm, dropoff=to, wa_title=f'Transfer enquiry: {sf} to {to}')
+    lds = (ld(tr_service_ld(h1, path, desc, r['prices'], 'Airport transfer' if ap else 'Private transfer', [frm, to])) + ld(faq_ld(faqs)))
+    page(path, title, desc, main, active='Transfers', full_title=True, head_extra=lds, crumbs=crumbs, main_class='kw-wrap kw-detail kw-transfer-detail',
+         og_image=cls_img(TR_CLASSES[0]) if cls_img(TR_CLASSES[0]).startswith('http') else '/assets/img/kwikar-share.webp')
+
+
+def build_transfer_airport(a):
+    path = ap_href(a)
+    rs = [r for r in TR_ROUTES if r['airport'] == a['code']]
+    low = min(tr_low(r['prices']) for r in rs)
+    title = f'{a["short"]} Transfers ({a["code"]}) from {money(low)}'
+    desc = fit(f'Private transfers from {a["name"]} to {", ".join(r["to"] for r in rs[:4])} and more. From {money(low)} per car, tolls and parking included.', 160)
+    h1 = f'{a["short"]} ({a["code"]}) Transfers'
+    quick = (f'KWIKAR runs private transfers from {a["name"]} to {len(rs)} popular areas, from {money(low)} per car. '
+             f'Your chauffeur tracks your flight, meets you in arrivals with a name sign and waits {WAIT_A} minutes for free after landing.')
+    faqs = [(f'How much is a transfer from {a["short"]}?', f'From {money(low)} per car. ' + '; '.join(f'{r["to"]} from {money(tr_low(r["prices"]))}' for r in rs) + '. Prices are per vehicle, one way.'),
+            ('Where will my driver wait?', a['note'] + f' The first {WAIT_A} minutes after landing are free.'),
+            ('What if my flight is late?', 'Share your flight number when you book. The driver follows the flight and adjusts the pickup time, so a delay does not cost you extra.'),
+            ('Can I book a transfer to the airport too?', f'Yes. Every route on this page also runs to {a["short"]} at the same price.'),
+            ('Which car is best for a family?', 'Choose the Family SUV for 4 to 6 guests with luggage, or the Business Van for up to 7 guests.')]
+    body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
+            + facts([('Airport', e(a['name'])), ('Meeting point', 'Arrivals hall, name sign'), ('Free waiting', f'{WAIT_A} minutes after landing'), ('Included', 'Tolls, parking, child seats')]) + '</section>'
+            f'<section class="kw-detail-block"><h2>Transfers from {e(a["short"])}</h2><p>Prices from, per car, one way. Open a route for prices by vehicle class.</p>{route_rows(rs)}</section>'
+            f'<section class="kw-detail-block"><h2>Vehicle classes</h2>{class_rows({c["key"]: min(r["prices"][c["key"]] for r in rs if r["prices"].get(c["key"])) for c in TR_CLASSES}, unit="from, one way")}</section>'
+            f'<section class="kw-detail-block"><h2>How it works</h2>{_how_steps(True)}</section>'
+            f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>')
+    crumbs = [('Home', '/'), ('Transfers', '/transfers'), (a['short'], path)]
+    main = tr_page(path, title, desc, h1, f'Private airport transfers · {a["city"]}', body, low, 'per car, one way', crumbs, None,
+                   'Send your flight, drop-off address and guests. Our team replies on WhatsApp with the final price.')
+    main += tr_enquiry_section(f'Request your {a["short"]} transfer', 'Tell us your flight number, drop-off address and number of guests.',
+                               service='Airport transfer', pickup=a['name'], wa_title=f'Transfer enquiry: {a["short"]}')
+    page(path, title, desc, main, active='Transfers', full_title=True, crumbs=crumbs, main_class='kw-wrap kw-detail kw-transfer-detail',
+         head_extra=ld(tr_service_ld(h1, path, desc, {c['key']: min(r['prices'][c['key']] for r in rs if r['prices'].get(c['key'])) for c in TR_CLASSES}, 'Airport transfer', a['city'])) + ld(faq_ld(faqs)))
+
+
+def build_transfer_class(c):
+    path = cls_href(c)
+    k = c['key']
+    rs = [r for r in TR_ROUTES if r['prices'].get(k)]
+    low = min(r['prices'][k] for r in rs)
+    hour = TR['hourly']['prices'].get(k)
+    models = ', '.join(c['models'])
+    title = f'{c["name"]} Chauffeur in Dubai: {c["models"][0]} or Similar'
+    if len(title) > 60:
+        title = f'{c["name"]} Chauffeur Dubai: {c["models"][0]}'
+    if len(title) > 60:
+        title = f'{c["name"]} Chauffeur Service in Dubai'
+    desc = fit(f'Book a {c["name"]} with chauffeur in the UAE: {models} or similar. {cls_cap(c)}. Transfers from {money(low)}, hourly from {money(hour)}.', 160)
+    h1 = f'{c["name"]} with Chauffeur'
+    fleet = [x for x in CARS if x['name'] in c['models'] or any(x['name'].startswith(m) for m in c['models'])]
+    pics = ''.join(f'<figure class="kw-class-fig"><img src="{e(x["img"])}" alt="{e(x["name"])}" loading="lazy" width="320" height="200"><figcaption>{e(x["name"])}</figcaption></figure>' for x in fleet)
+    quick = (f'The {c["name"]} class is a {models} or a similar car with a professional chauffeur. It takes {cls_cap(c).lower()}. '
+             f'{c["best"]} Airport transfers start at {money(low)} per car and hourly bookings at {money(hour)} per hour (minimum {HOUR_MIN} hours).')
+    faqs = [(f'Which cars are in the {c["name"]} class?', f'{models}, or a similar car of the same standard. You book the class; our team sends the car from that class that is free at your time.'),
+            (f'How many people fit in a {c["name"]}?', f'{cls_cap(c)}. Tell us your luggage when you book and we confirm the right car.'),
+            (f'Can I book a {c["name"]} by the hour?', f'Yes, from {money(hour)} per hour with a minimum of {HOUR_MIN} hours. See chauffeur service by the hour.'),
+            ('What is included?', f'The chauffeur, fuel, {INCLUDED_TXT}.'),
+            ('Can I ask for a specific model?', 'Write the model you prefer in your request. We confirm it when it is free; otherwise we offer another car of the same class.')]
+    body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
+            + facts([('Cars', e(models) + ' or similar'), ('Capacity', e(cls_cap(c))), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
+            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div></section>' if pics else '')
+            + f'<section class="kw-detail-block"><h2>{e(c["name"])} transfer prices</h2><p>Per car, one way. Open a route for details.</p>{route_rows(rs, key=k)}</section>'
+            f'<section class="kw-detail-block"><h2>Other vehicle classes</h2><div class="kw-chip-links">'
+            + ''.join(f'<a href="{cls_href(o)}">{e(o["name"])}<span>↗</span></a>' for o in TR_CLASSES if o is not c) + '</div></section>'
+            f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>')
+    crumbs = [('Home', '/'), ('Transfers', '/transfers'), (c['name'], path)]
+    main = tr_page(path, title, desc, h1, f'{models} or similar · {cls_cap(c)}', body, low, 'per car, one way', crumbs, None,
+                   f'Tell us your route, date and guests for a {c["name"]}. Our team replies on WhatsApp with the final price.')
+    main += tr_enquiry_section(f'Request a {c["name"]}', 'Tell us your route or the hours you need.', vehicle=c['name'], wa_title=f'Transfer enquiry: {c["name"]}')
+    offers = {kk: None for kk in ('e', 'f', 's', 'v', 'x')}
+    offers[k] = low
+    page(path, title, desc, main, active='Transfers', full_title=True, crumbs=crumbs, main_class='kw-wrap kw-detail kw-transfer-detail',
+         og_image=cls_img(c) if cls_img(c).startswith('http') else '/assets/img/kwikar-share.webp',
+         head_extra=ld(tr_service_ld(h1, path, desc, offers, 'Chauffeur service', 'United Arab Emirates')) + ld(faq_ld(faqs)))
+
+
+def build_transfer_hourly():
+    path = HOURLY_PATH
+    hp = TR['hourly']['prices']
+    low = tr_low(hp)
+    title = f'Chauffeur Service Dubai by the Hour from {money(low)}'
+    desc = fit(f'Hire a car with a chauffeur in Dubai by the hour: from {money(low)} per hour, minimum {HOUR_MIN} hours. Business Sedan to Luxury SUV. Book on WhatsApp.', 160)
+    h1 = 'Chauffeur Service in Dubai by the Hour'
+    quick = (f'Hire a private car with a chauffeur in Dubai from {money(low)} per hour (Business Sedan), with a minimum of {HOUR_MIN} hours. '
+             f'The car stays with you for meetings, shopping, sightseeing or several stops. Fuel, tolls and parking are included.')
+    uses = info_cards([('', 'Business days', 'Meetings across Dubai with one car and driver waiting between stops.'),
+                       ('', 'Shopping and malls', 'Dubai Mall, Mall of the Emirates and souks, with room for your bags.'),
+                       ('', 'Sightseeing', 'Build your own city tour at your pace: Burj Khalifa, Dubai Frame, the Creek and the beach.'),
+                       ('', 'Events and evenings', 'Weddings, dinners and events, with the car ready when you are.')])
+    faqs = [('How much is a chauffeur per hour in Dubai?', 'From ' + '; '.join(f'{c["name"]} {money(hp[c["key"]])}' for c in TR_CLASSES if hp.get(c['key'])) + ' per hour.'),
+            ('Is there a minimum booking?', f'Yes, {HOUR_MIN} hours. Longer bookings are welcome; tell us your plan and we confirm the price.'),
+            ('Can I go to other emirates?', 'Hourly bookings are for driving within Dubai. For trips to Abu Dhabi, Sharjah or other emirates, see our city-to-city transfers or ask for a full-day quote.'),
+            ('What is included?', f'The chauffeur, fuel, Salik tolls, parking and child seats.'),
+            ('Can I extend on the day?', 'Usually yes, if the chauffeur is free. Extra hours are charged at the same hourly rate.')]
+    body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
+            + facts([('Price', f'From {money(low)} per hour'), ('Minimum', f'{HOUR_MIN} hours'), ('Area', 'Within Dubai'), ('Included', 'Fuel, tolls, parking, child seats')]) + '</section>'
+            f'<section class="kw-detail-block"><h2>Hourly prices by vehicle class</h2>{class_rows(hp, unit="per hour")}</section>'
+            f'<section class="kw-detail-block"><h2>Popular uses</h2>{uses}</section>'
+            f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>'
+            f'<section class="kw-detail-block"><h2>Going further?</h2>{route_rows([r for r in TR_ROUTES if not r["airport"]])}</section>')
+    crumbs = [('Home', '/'), ('Transfers', '/transfers'), ('Chauffeur by the hour', path)]
+    main = tr_page(path, title, desc, h1, f'Private car with driver · minimum {HOUR_MIN} hours', body, low, 'per hour', crumbs, None,
+                   'Send the date, start time, hours and plan. Our team replies on WhatsApp with the final price.')
+    main += tr_enquiry_section('Request a chauffeur by the hour', 'Tell us the date, start time, number of hours and your plan.', service='Hourly chauffeur', wa_title='Hourly chauffeur enquiry')
+    page(path, title, desc, main, active='Transfers', full_title=True, crumbs=crumbs, main_class='kw-wrap kw-detail kw-transfer-detail',
+         head_extra=ld(tr_service_ld(h1, path, desc, hp, 'Chauffeur service by the hour', 'Dubai')) + ld(faq_ld(faqs)))
+
+
+def build_transfers():
+    tabs = ''.join(f'<button type="button" data-service="{v}" class="{"selected" if v == "airport" else ""}" aria-pressed="{"true" if v == "airport" else "false"}">{l_}</button>'
+                   for v, l_ in (('airport', 'Airport transfer'), ('hourly', 'Hourly chauffeur'), ('intercity', 'City to city')))
+    routes = ''.join(f'<option value="{i}">{e(r["name"])}</option>' for i, r in enumerate(EST['airport']))
+    veh = ''.join(f'<option>{v}</option>' for v in EST['vehicles'])
+    r0 = EST['airport'][0]
+    estimator = (f'<section class="kw-section kw-transfer-estimator" data-estimator=\'{e(json.dumps(EST))}\'><div class="kw-wrap"><div class="kw-estimate-head"><div><span class="kw-eyebrow">PRICE CHECK</span><h2>Estimate your transfer</h2>'
+                 f'<p>Select a route and vehicle class to see the price per car. Our team confirms your booking and the final price on WhatsApp. No online payment.</p></div></div>'
+                 f'<div class="kw-estimate-grid"><div><div class="kw-estimate-tabs" role="group" aria-label="Transfer service">{tabs}</div>'
+                 f'<label class="kw-estimate-field" data-route-field>Route<select name="route">{routes}</select></label>'
+                 f'<label class="kw-estimate-field" data-hours-field hidden>Hours (minimum {HOUR_MIN})<input type="number" name="hours" min="{HOUR_MIN}" max="12" value="{HOUR_MIN}"></label>'
+                 f'<label class="kw-estimate-field">Vehicle class<select name="vehicle">{veh}</select></label></div>'
+                 f'<div class="kw-estimate-result"><span>PRICE PER CAR</span><strong data-out>{money(r0["rates"][EST["vehicles"][0]])}</strong><p data-sel>{e(r0["name"])} · {EST["vehicles"][0]}</p>'
+                 f'<p>Includes {e(INCLUDED_TXT)}. Other addresses and extra stops are quoted by our team.</p>'
+                 f'<a href="#transfer-enquiry" data-request>Request this transfer →</a></div></div></div></section>')
+    groups = []
+    for a in TR_AIRPORTS:
+        rs = [r for r in TR_ROUTES if r['airport'] == a['code']]
+        groups.append((a['name'], ap_href(a), rs))
+    groups.append(('City to city', None, [r for r in TR_ROUTES if not r['airport']]))
+    routes_html = ''.join(f'<div class="kw-route-group"><h3>{e(n)}{f" <a href={h} class=kw-text-link>All {e(n.split(" (")[0])} transfers ↗</a>" if h else ""}</h3>{route_rows(rs)}</div>' for n, h, rs in groups)
+    class_cards = ''.join(f'<a class="kw-package kw-car" href="{cls_href(c)}"><img src="{e(cls_img(c))}" alt="{e(c["car"])}" loading="lazy"><div><span class="kw-eyebrow">{e(cls_cap(c))}</span>'
+                          f'<h3>{e(c["name"])}</h3><p>{e(", ".join(c["models"]))} or similar. {e(c["best"])}</p><span class="kw-text-link">From {money(min(r["prices"][c["key"]] for r in TR_ROUTES if r["prices"].get(c["key"])))} ↗</span></div></a>' for c in TR_CLASSES)
+    faqs = [('How much is a private transfer from Dubai Airport?', f'From {money(min(tr_low(r["prices"]) for r in TR_ROUTES if r["airport"] == "DXB"))} per car to Deira and Bur Dubai, and from {money(next(tr_low(r["prices"]) for r in TR_ROUTES if r["id"] == "dxb-downtown"))} to Downtown Dubai. See every route above.'),
+            ('Is the price per person or per car?', 'Per car, one way. A Business Sedan takes up to 3 guests, a Family SUV up to 6 and a Business Van up to 7.'),
+            ('What is included in the price?', INCLUDED_TXT + '.'),
+            ('What happens if my flight is delayed?', f'Share your flight number when you book. The driver follows the flight; the first {WAIT_A} minutes after landing are free.'),
+            ('Do I get the exact car model?', 'You book a vehicle class. Our team sends the car from that class that is free at your time, for example a Mercedes E-Class or a Lexus ES for a Business Sedan.'),
+            ('Can I change or cancel a booking?', 'Tell us as soon as possible. We confirm the change and cancellation terms for your ride before you pay.')]
+    main = (page_hero('PRIVATE TRANSFERS', 'Airport transfers and chauffeur service across the UAE.', 'Fixed prices per car from Dubai, Abu Dhabi and Sharjah airports, between emirates and by the hour. Tolls and parking included.', photo('1518684079-3c830dcef090', 1600))
             + estimator
-            + f'<section class="kw-section"><div class="kw-wrap" data-fleet>{section_head("Find your ride", "OUR FLEET")}<p class="kw-section-intro">Select a vehicle for your enquiry. Standard-route and hourly starting prices are shown in the estimator above.</p><div class="kw-filter-row">{filt}</div><div class="kw-package-grid">{fleet}</div></div></section>'
-            + f'<section id="transfer-enquiry" class="kw-section kw-market-alt"><div class="kw-wrap kw-service-layout"><div>{section_head("Request a transfer quote", "YOUR RIDE")}<p>Tell us your route and any extras. Our team calculates custom journeys privately and sends the final AED quote before payment.</p><h3>What your quote can include</h3><p>Professional chauffeur, vehicle and route details. Fuel, tolls, waiting time and any additional charges will be stated in your confirmed quote.</p></div>{form}</div></section>'
-            + faq_block('Transfer questions', [('What happens if my flight is delayed?', 'Share your flight number when enquiring. We will confirm pickup arrangements and any waiting charges before booking.'),
-                                               ('Can I change or cancel a booking?', 'Tell us as soon as possible. We will confirm the applicable change and cancellation terms for your chosen service before payment.'),
-                                               ('Can I extend my chauffeur booking?', 'Extensions depend on driver availability and will be quoted before you confirm.')]))
-    page('/transfers', 'Private Transfers & Chauffeur', 'Private airport transfers, hourly chauffeur and inter-emirate rides in the UAE. Get a starting price, then send your request to our team on WhatsApp.', main,
-         active='Transfers', crumbs=[('Home', '/'), ('Transfers', '/transfers')])
+            + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
+            + f'<div class="kw-route-group"><h3>By the hour</h3><div class="kw-price-list"><a class="kw-price-row" href="{HOURLY_PATH}"><span><strong>Chauffeur service in Dubai</strong><small>minimum {HOUR_MIN} hours</small></span><em>from {money(tr_low(TR["hourly"]["prices"]))}/hour</em></a></div></div></div></section>'
+            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{section_head("Choose your vehicle class", "OUR FLEET")}<p class="kw-section-intro">You book a class, and we send the car from that class that is free at your time.</p><div class="kw-package-grid">{class_cards}</div></div></section>'
+            + f'<section class="kw-section"><div class="kw-wrap">{seo_head("INCLUDED", "What every price includes")}'
+            + info_cards([('', 'Tolls and parking', 'Salik and Darb road tolls and airport parking are in the price.'),
+                          ('', 'Free waiting', f'{WAIT_A} minutes after your flight lands, {WAIT_O} minutes at other pickups.'),
+                          ('', 'Child seats', 'Free on request. Tell us the age of each child.'),
+                          ('', 'Flight tracking', 'Your driver follows your flight and adjusts the pickup time.')]) + '</div></section>'
+            + tr_enquiry_section('Request a transfer quote', 'Tell us your route and any extras. Our team sends the final AED price before you pay.')
+            + faq_block('Transfer questions', faqs))
+    page('/transfers', 'Dubai Airport Transfers & Chauffeur Service', 'Private airport transfers in Dubai, Abu Dhabi and Sharjah, city-to-city rides and hourly chauffeur. Fixed prices per car, tolls and parking included.', main,
+         active='Transfers', crumbs=[('Home', '/'), ('Transfers', '/transfers')], head_extra=ld(faq_ld(faqs)))
+    for r in TR_ROUTES:
+        build_transfer_route(r)
+    for a in TR_AIRPORTS:
+        build_transfer_airport(a)
+    for c in TR_CLASSES:
+        build_transfer_class(c)
+    build_transfer_hourly()
+
+
+def car_class_href(car):
+    c = next((c for c in TR_CLASSES if car['name'] in c['models'] or any(car['name'].startswith(m) for m in c['models'])), None)
+    return cls_href(c) if c else '/transfers'
+
+
+def transfer_paths():
+    return ([tr_href(r) for r in TR_ROUTES] + [ap_href(a) for a in TR_AIRPORTS] + [cls_href(c) for c in TR_CLASSES] + [HOURLY_PATH])
 
 
 def VISA_FAQS(low_v):
@@ -1488,7 +1815,7 @@ def build_seo_files():
     def urlset(paths):
         return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 + ''.join(f'  <url><loc>{SITE}{p_}</loc><lastmod>{TODAY}</lastmod></url>\n' for p_ in paths) + '</urlset>\n')
-    pages = ['/', '/holidays', '/transfers', '/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy'] + (['/blog'] + [post_href(a) for a in POSTS] if POSTS else [])
+    pages = ['/', '/holidays', '/transfers'] + transfer_paths() + ['/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy'] + (['/blog'] + [post_href(a) for a in POSTS] if POSTS else [])
     hubs = ['/destinations', '/activities'] + [f'/destinations/{l["id"]}' for l in LOCATIONS if l['id'] in LIVE_LOCS] + [f'/activities/{c["slug"]}' for c in LIVE_CATS]
     products = [tour_href(t) for t in ALL_TOURS if tf.visible(t)]
     for name, paths in (('pages', pages), ('hubs', hubs), ('products', products)):

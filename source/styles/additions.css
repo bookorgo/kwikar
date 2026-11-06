@@ -232,3 +232,28 @@
 
 /* Card location label: darker grey for 4.5:1 contrast (approved by Irfan, 6 Nov 2026) */
 .kw-market-info>span{color:#5f6b7a}
+
+/* transfers: vehicle class rows, route groups, class photos */
+.kw-class-rows{display:grid;gap:10px;margin-top:12px}
+.kw-class-row{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 16px;border:1px solid #e4e9ef;border-radius:12px;background:#fff}
+.kw-class-row img{width:120px;height:76px;object-fit:cover;border-radius:8px;background:#f4f6fa}
+.kw-class-row strong{display:block;font:800 16px/1.3 'Manrope',sans-serif;color:#0b1018}
+.kw-class-row strong a{color:inherit}
+.kw-class-row small{display:block;font-size:12.5px;color:#6b7786;margin-top:2px}
+.kw-class-price{text-align:right;display:grid;gap:2px;justify-items:end}
+.kw-class-price em{font-style:normal;font-weight:800;color:#1265e8;font-size:17px;white-space:nowrap}
+.kw-class-price a{font-size:13px;font-weight:700;color:#1265e8}
+.kw-route-group{margin-top:26px}
+.kw-route-group h3{font:800 17px/1.3 'Manrope',sans-serif;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.kw-route-group h3 .kw-text-link{font-size:13px}
+.kw-class-figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kw-class-fig{margin:0}
+.kw-class-fig img{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:10px;background:#f4f6fa}
+.kw-class-fig figcaption{font-size:13px;font-weight:700;margin-top:6px}
+.kw-transfer-detail .kw-detail-block .kw-price-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+a.kw-package{color:inherit}
+@media(max-width:560px){.kw-class-row{grid-template-columns:84px minmax(0,1fr);gap:12px}.kw-class-row img{width:84px;height:56px}.kw-class-price{grid-column:1/-1;grid-template-columns:auto auto;justify-content:space-between;align-items:center;text-align:left}.kw-transfer-detail .kw-detail-block .kw-price-list{grid-template-columns:1fr}}
+.kw-selection-card a.kw-button,.kw-product-sticky a.kw-button,.kw-final-cta a.kw-button{color:#fff;text-align:center;display:block}
+.kw-transfer-detail .kw-info-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:560px){.kw-transfer-detail .kw-info-cards{grid-template-columns:1fr}}
+@media(max-width:560px){.kw-class-price{display:flex;gap:12px;align-items:baseline;justify-content:flex-start}.kw-class-price a{margin-left:auto}}

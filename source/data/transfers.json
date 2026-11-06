@@ -1,0 +1,544 @@
+{
+ "source": "Rate card approved by Irfan on 2026-11-06 (claude.ai artifact VToVyCMfHoEhaLwAn9PrzL)",
+ "approved": "2026-11-06",
+ "settings": {
+  "wait_airport": 45,
+  "wait_other": 15,
+  "hourly_min": 3
+ },
+ "included": [
+  "Salik and Darb road tolls",
+  "Airport parking",
+  "Child seats on request",
+  "Free waiting time"
+ ],
+ "classes": [
+  {
+   "key": "e",
+   "slug": "business-sedan",
+   "name": "Business Sedan",
+   "models": [
+    "Mercedes E-Class",
+    "Lexus ES 300h",
+    "BMW 530i",
+    "BYD Han"
+   ],
+   "guests": 3,
+   "bags": 2,
+   "best": "Everyday airport and city rides for one to three people.",
+   "car": "Mercedes E-Class"
+  },
+  {
+   "key": "f",
+   "slug": "family-suv",
+   "name": "Family SUV",
+   "models": [
+    "Exeed VX",
+    "Tesla Model Y",
+    "BYD Song+"
+   ],
+   "guests": "4–6",
+   "bags": "3–4",
+   "best": "Small families and extra luggage, for less than a van.",
+   "car": "Exeed VX Flagship"
+  },
+  {
+   "key": "s",
+   "slug": "first-class",
+   "name": "First Class",
+   "models": [
+    "Mercedes S-Class",
+    "BMW 7 Series"
+   ],
+   "guests": 3,
+   "bags": 2,
+   "best": "VIP guests, executives and special occasions.",
+   "car": "Mercedes S-Class"
+  },
+  {
+   "key": "v",
+   "slug": "business-van",
+   "name": "Business Van",
+   "models": [
+    "Mercedes V-Class"
+   ],
+   "guests": 7,
+   "bags": 6,
+   "best": "Families and groups of up to seven with luggage.",
+   "car": "Mercedes V-Class"
+  },
+  {
+   "key": "x",
+   "slug": "luxury-suv",
+   "name": "Luxury SUV",
+   "models": [
+    "Cadillac Escalade",
+    "GMC Yukon XL"
+   ],
+   "guests": "6–7",
+   "bags": 5,
+   "best": "Premium groups, VIP arrivals and long trips between emirates.",
+   "car": "Cadillac Escalade"
+  }
+ ],
+ "airports": [
+  {
+   "code": "DXB",
+   "slug": "dubai-airport-dxb",
+   "name": "Dubai International Airport (DXB)",
+   "short": "Dubai Airport",
+   "city": "Dubai",
+   "note": "Terminals 1, 2 and 3. Your driver meets you in the arrivals hall of your terminal with a name sign."
+  },
+  {
+   "code": "DWC",
+   "slug": "al-maktoum-airport-dwc",
+   "name": "Al Maktoum International Airport (DWC)",
+   "short": "Al Maktoum Airport",
+   "city": "Dubai South",
+   "note": "Dubai World Central, in Dubai South. Your driver meets you in the arrivals hall with a name sign."
+  },
+  {
+   "code": "AUH",
+   "slug": "abu-dhabi-airport-auh",
+   "name": "Abu Dhabi International Airport (AUH)",
+   "short": "Abu Dhabi Airport",
+   "city": "Abu Dhabi",
+   "note": "Zayed International Airport. Your driver meets you in the arrivals hall with a name sign."
+  },
+  {
+   "code": "SHJ",
+   "slug": "sharjah-airport-shj",
+   "name": "Sharjah International Airport (SHJ)",
+   "short": "Sharjah Airport",
+   "city": "Sharjah",
+   "note": "Your driver meets you in the arrivals hall with a name sign."
+  }
+ ],
+ "hourly": {
+  "slug": "chauffeur-service-dubai",
+  "prices": {
+   "e": 150,
+   "f": 180,
+   "s": 280,
+   "v": 320,
+   "x": 350
+  }
+ },
+ "routes": [
+  {
+   "id": "dxb-deira",
+   "slug": "dubai-airport-to-deira-bur-dubai",
+   "from": "Dubai Airport (DXB)",
+   "to": "Deira and Bur Dubai",
+   "areas": "Deira, Bur Dubai, Al Rigga, Al Karama and Dubai Creek",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 5–17 km · 10–25 min",
+   "order": 1,
+   "prices": {
+    "e": 120,
+    "f": 140,
+    "s": 200,
+    "v": 220,
+    "x": 250
+   }
+  },
+  {
+   "id": "dxb-downtown",
+   "slug": "dubai-airport-to-downtown-dubai",
+   "from": "Dubai Airport (DXB)",
+   "to": "Downtown Dubai",
+   "areas": "Downtown Dubai, Burj Khalifa, Dubai Mall, DIFC and Business Bay",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 15 km · 15–25 min",
+   "order": 2,
+   "prices": {
+    "e": 150,
+    "f": 180,
+    "s": 220,
+    "v": 250,
+    "x": 280
+   }
+  },
+  {
+   "id": "dxb-barsha",
+   "slug": "dubai-airport-to-al-barsha",
+   "from": "Dubai Airport (DXB)",
+   "to": "Al Barsha and Jumeirah",
+   "areas": "Al Barsha, Mall of the Emirates, Umm Suqeim and Jumeirah Beach Road",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 25 km · 25–35 min",
+   "order": 3,
+   "prices": {
+    "e": 170,
+    "f": 200,
+    "s": 260,
+    "v": 280,
+    "x": 320
+   }
+  },
+  {
+   "id": "dxb-marina",
+   "slug": "dubai-airport-to-dubai-marina",
+   "from": "Dubai Airport (DXB)",
+   "to": "Dubai Marina",
+   "areas": "Dubai Marina, JBR, JLT and Bluewaters",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 35 km · 30–45 min",
+   "order": 4,
+   "prices": {
+    "e": 180,
+    "f": 220,
+    "s": 280,
+    "v": 300,
+    "x": 350
+   }
+  },
+  {
+   "id": "dxb-palm",
+   "slug": "dubai-airport-to-palm-jumeirah",
+   "from": "Dubai Airport (DXB)",
+   "to": "Palm Jumeirah",
+   "areas": "Palm Jumeirah hotels and residences, including Atlantis The Palm",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 35–40 km · 35–45 min",
+   "order": 5,
+   "prices": {
+    "e": 190,
+    "f": 230,
+    "s": 300,
+    "v": 320,
+    "x": 380
+   }
+  },
+  {
+   "id": "dxb-sharjah",
+   "slug": "dubai-airport-to-sharjah",
+   "from": "Dubai Airport (DXB)",
+   "to": "Sharjah",
+   "areas": "Sharjah city, Al Majaz, Al Nahda and Al Khan",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 10–16 km · 15–25 min",
+   "order": 6,
+   "prices": {
+    "e": 140,
+    "f": 170,
+    "s": 230,
+    "v": 250,
+    "x": 290
+   }
+  },
+  {
+   "id": "dxb-ajman",
+   "slug": "dubai-airport-to-ajman",
+   "from": "Dubai Airport (DXB)",
+   "to": "Ajman",
+   "areas": "Ajman city and Ajman Corniche hotels",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 29 km · 30–40 min",
+   "order": 7,
+   "prices": {
+    "e": 180,
+    "f": 220,
+    "s": 280,
+    "v": 300,
+    "x": 350
+   }
+  },
+  {
+   "id": "dxb-abudhabi",
+   "slug": "dubai-airport-to-abu-dhabi",
+   "from": "Dubai Airport (DXB)",
+   "to": "Abu Dhabi",
+   "areas": "Abu Dhabi city, the Corniche, Al Maryah Island and Khalifa City",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 150–160 km · 1 h 30–1 h 45",
+   "order": 8,
+   "prices": {
+    "e": 450,
+    "f": 540,
+    "s": 650,
+    "v": 750,
+    "x": 850
+   }
+  },
+  {
+   "id": "dxb-yas",
+   "slug": "dubai-airport-to-yas-island",
+   "from": "Dubai Airport (DXB)",
+   "to": "Yas Island and Saadiyat",
+   "areas": "Yas Island hotels and theme parks, and Saadiyat Island",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 120–150 km · 1 h 15–1 h 40",
+   "order": 9,
+   "prices": {
+    "e": 450,
+    "f": 540,
+    "s": 650,
+    "v": 750,
+    "x": 850
+   }
+  },
+  {
+   "id": "dxb-rak",
+   "slug": "dubai-airport-to-ras-al-khaimah",
+   "from": "Dubai Airport (DXB)",
+   "to": "Ras Al Khaimah",
+   "areas": "Ras Al Khaimah city, Al Marjan Island and Al Hamra",
+   "airport": "DXB",
+   "group": "Dubai International Airport (DXB)",
+   "info": "about 75–100 km · 1 h 05–1 h 45",
+   "order": 10,
+   "prices": {
+    "e": 400,
+    "f": 480,
+    "s": 600,
+    "v": 650,
+    "x": 750
+   }
+  },
+  {
+   "id": "dwc-marina",
+   "slug": "al-maktoum-airport-to-dubai-marina",
+   "from": "Al Maktoum Airport (DWC)",
+   "to": "Dubai Marina and Palm Jumeirah",
+   "areas": "Dubai Marina, JBR, JLT and Palm Jumeirah",
+   "airport": "DWC",
+   "group": "Al Maktoum International Airport (DWC)",
+   "info": "about 35–45 km · 30–40 min",
+   "order": 11,
+   "prices": {
+    "e": 180,
+    "f": 220,
+    "s": 280,
+    "v": 300,
+    "x": 350
+   }
+  },
+  {
+   "id": "dwc-downtown",
+   "slug": "al-maktoum-airport-to-downtown-dubai",
+   "from": "Al Maktoum Airport (DWC)",
+   "to": "Downtown Dubai",
+   "areas": "Downtown Dubai, DIFC and Business Bay",
+   "airport": "DWC",
+   "group": "Al Maktoum International Airport (DWC)",
+   "info": "about 50–55 km · 40–50 min",
+   "order": 12,
+   "prices": {
+    "e": 220,
+    "f": 260,
+    "s": 320,
+    "v": 350,
+    "x": 400
+   }
+  },
+  {
+   "id": "dwc-abudhabi",
+   "slug": "al-maktoum-airport-to-abu-dhabi",
+   "from": "Al Maktoum Airport (DWC)",
+   "to": "Abu Dhabi",
+   "areas": "Abu Dhabi city and the Corniche",
+   "airport": "DWC",
+   "group": "Al Maktoum International Airport (DWC)",
+   "info": "about 110–120 km · 1 h 10–1 h 20",
+   "order": 13,
+   "prices": {
+    "e": 400,
+    "f": 480,
+    "s": 600,
+    "v": 700,
+    "x": 800
+   }
+  },
+  {
+   "id": "auh-city",
+   "slug": "abu-dhabi-airport-to-abu-dhabi-city",
+   "from": "Abu Dhabi Airport (AUH)",
+   "to": "Abu Dhabi city",
+   "areas": "Abu Dhabi city centre, the Corniche and Al Maryah Island",
+   "airport": "AUH",
+   "group": "Abu Dhabi International Airport (AUH)",
+   "info": "about 30 km · 30–40 min",
+   "order": 14,
+   "prices": {
+    "e": 220,
+    "f": 260,
+    "s": 350,
+    "v": 380,
+    "x": 420
+   }
+  },
+  {
+   "id": "auh-yas",
+   "slug": "abu-dhabi-airport-to-yas-island",
+   "from": "Abu Dhabi Airport (AUH)",
+   "to": "Yas Island",
+   "areas": "Yas Island hotels, Ferrari World, Warner Bros. World and Yas Waterworld",
+   "airport": "AUH",
+   "group": "Abu Dhabi International Airport (AUH)",
+   "info": "about 10–15 km · 15–20 min",
+   "order": 15,
+   "prices": {
+    "e": 200,
+    "f": 240,
+    "s": 320,
+    "v": 350,
+    "x": 400
+   }
+  },
+  {
+   "id": "auh-saadiyat",
+   "slug": "abu-dhabi-airport-to-saadiyat-island",
+   "from": "Abu Dhabi Airport (AUH)",
+   "to": "Saadiyat Island",
+   "areas": "Saadiyat Island hotels, beaches and the Louvre Abu Dhabi",
+   "airport": "AUH",
+   "group": "Abu Dhabi International Airport (AUH)",
+   "info": "about 25–30 km · 25–30 min",
+   "order": 16,
+   "prices": {
+    "e": 220,
+    "f": 260,
+    "s": 350,
+    "v": 380,
+    "x": 420
+   }
+  },
+  {
+   "id": "auh-dubai",
+   "slug": "abu-dhabi-airport-to-dubai",
+   "from": "Abu Dhabi Airport (AUH)",
+   "to": "Dubai",
+   "areas": "Downtown Dubai, Dubai Marina, JBR and Palm Jumeirah",
+   "airport": "AUH",
+   "group": "Abu Dhabi International Airport (AUH)",
+   "info": "about 120–140 km · 1 h 15–1 h 30",
+   "order": 17,
+   "prices": {
+    "e": 450,
+    "f": 540,
+    "s": 650,
+    "v": 750,
+    "x": 850
+   }
+  },
+  {
+   "id": "shj-dubai",
+   "slug": "sharjah-airport-to-dubai",
+   "from": "Sharjah Airport (SHJ)",
+   "to": "Dubai",
+   "areas": "Deira, Bur Dubai and Downtown Dubai",
+   "airport": "SHJ",
+   "group": "Sharjah International Airport (SHJ)",
+   "info": "about 20–35 km · 25–45 min",
+   "order": 18,
+   "prices": {
+    "e": 160,
+    "f": 190,
+    "s": 250,
+    "v": 280,
+    "x": 320
+   }
+  },
+  {
+   "id": "city-abudhabi",
+   "slug": "dubai-to-abu-dhabi",
+   "from": "Dubai",
+   "to": "Abu Dhabi",
+   "areas": "any address in Dubai to any address in Abu Dhabi city",
+   "airport": "",
+   "group": "City to city",
+   "info": "about 140 km · 1 h 15–1 h 30",
+   "order": 19,
+   "prices": {
+    "e": 450,
+    "f": 540,
+    "s": 650,
+    "v": 750,
+    "x": 850
+   }
+  },
+  {
+   "id": "city-sharjah",
+   "slug": "dubai-to-sharjah",
+   "from": "Dubai",
+   "to": "Sharjah",
+   "areas": "any address in Dubai to Sharjah city",
+   "airport": "",
+   "group": "City to city",
+   "info": "about 15–30 km · 20–45 min",
+   "order": 20,
+   "prices": {
+    "e": 140,
+    "f": 170,
+    "s": 230,
+    "v": 250,
+    "x": 290
+   }
+  },
+  {
+   "id": "city-alain",
+   "slug": "dubai-to-al-ain",
+   "from": "Dubai",
+   "to": "Al Ain",
+   "areas": "any address in Dubai to Al Ain city",
+   "airport": "",
+   "group": "City to city",
+   "info": "about 140 km · 1 h 30",
+   "order": 21,
+   "prices": {
+    "e": 500,
+    "f": 600,
+    "s": 750,
+    "v": 800,
+    "x": 900
+   }
+  },
+  {
+   "id": "city-rak",
+   "slug": "dubai-to-ras-al-khaimah",
+   "from": "Dubai",
+   "to": "Ras Al Khaimah",
+   "areas": "any address in Dubai to Ras Al Khaimah, Al Marjan Island and Al Hamra",
+   "airport": "",
+   "group": "City to city",
+   "info": "about 100 km · 1 h 15",
+   "order": 22,
+   "prices": {
+    "e": 400,
+    "f": 480,
+    "s": 600,
+    "v": 650,
+    "x": 750
+   }
+  },
+  {
+   "id": "city-fujairah",
+   "slug": "dubai-to-fujairah",
+   "from": "Dubai",
+   "to": "Fujairah",
+   "areas": "any address in Dubai to Fujairah city and the Fujairah coast hotels",
+   "airport": "",
+   "group": "City to city",
+   "info": "about 130 km · 1 h 30",
+   "order": 23,
+   "prices": {
+    "e": 550,
+    "f": 660,
+    "s": 800,
+    "v": 850,
+    "x": 950
+   }
+  }
+ ]
+}

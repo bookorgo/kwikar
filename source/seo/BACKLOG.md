@@ -5,7 +5,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 ## Open
 
 - [ ] Guide: "Global Village guide: season dates, timings and tips"
-- [ ] Transfers page: SEO content (quick answer, routes and starting prices from the estimator, airports, FAQs) in the existing design
 - [ ] Holidays page: SEO content (what a package includes, how quotes work, FAQs) in the existing design
 - [ ] Ski Dubai (tour 222): full tour-extras content
 - [ ] Guide: "Abu Dhabi day trip from Dubai: what to see and how to get there"
@@ -23,7 +22,13 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] [edit] Alt text for Louvre Abu Dhabi (157), Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) and Dubai Miracle Garden (185: photos 3973, 1954, 1957, 3393) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 and 5 Nov
 - [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read. 5 Nov: WebFetch blocked again (permission prompt unanswered)
 
+- [ ] Guide: "Dubai Airport to the city: taxi, metro or private transfer?" (target: dubai airport transfer, dubai airport taxi fare) linking the /transfers route pages; use only transfer prices from transfers.json
+- [ ] Guide: "Dubai to Abu Dhabi: how to get there" (target: dubai to abu dhabi taxi price) linking /transfers/dubai-to-abu-dhabi
+- [ ] [edit] Transfer pages: add 1–2 checked local facts per airport page (terminals, arrivals hall layout) with sources
+
 ## Needs approval (Irfan)
+
+- More transfer routes (e.g. Dubai Marina to Abu Dhabi, Dubai to Hatta, Dubai to Muscat) need prices in the rate card before pages can be built
 
 - http://www.kwikar.com still goes to https://www first (2 hops) after the approved .htaccess swap was live (6 Nov 00:00 UTC): the http→https 301 is made by Hostinger itself (hcdn / hPanel "Force HTTPS"), before our .htaccess. Irfan: in hPanel → Security → SSL, if "Force HTTPS" is on, turn it off (our .htaccess already forces HTTPS), or leave it (Google follows 2 hops; low impact). Issue #1 (Tech, 6 Nov)
 - Free data keys as GitHub secrets (Settings → Secrets → Actions): GSC_SA_JSON (Search Console service account, add its email as a user in Search Console), BING_API_KEY (Bing Webmaster → Settings → API access), PAGESPEED_API_KEY (Google Cloud, PageSpeed Insights API). Until then the seo-data branch has keyword ideas only
@@ -36,6 +41,8 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - Slug typo: /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" should be "from"; title/H1 already fixed, page is noindex). Renaming needs a `slug` in tour-extras + 301 (Auditor, 5 Nov)
 
 ## Done
+
+- [x] Transfers: 34 new pages (23 routes, 4 airports, 5 vehicle classes, hourly chauffeur) + new /transfers hub from the approved rate card (6 Nov 2026)
 
 - [x] [tech] Approved by Irfan (6 Nov): www → kwikar.com rule now runs before the HTTPS rule, so http://www.kwikar.com reaches https://kwikar.com in one 301 (issue #1); card location label grey #697888 → #5f6b7a (contrast 4.2 → 5.1:1) (6 Nov 2026)
 - [x] [tech] SEO check Action now also checks SSL expiry (problem under 21 days) and http→https / www→non-www 301s; outside GitHub Actions (sandbox proxy) these show as notes, not failures (5 Nov 2026)
