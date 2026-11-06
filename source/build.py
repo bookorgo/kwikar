@@ -266,8 +266,8 @@ def svg(name, size=24, sw=2, cls='', style='', fill='none'):
 
 # ================================================================= header, menus, footer
 NAV = [('Destinations', 'flag', '#ff6a21', '/destinations'), ('Activities', 'mountain', '#08b9bb', '/activities'),
-       ('Holidays', 'plane', '#5969e9', '/holidays'), ('Visas', 'file', '#ff9516', '/visa'),
-       ('Cruises', 'ship', '#406bf2', '/activities/cruises'), ('Transfers', 'car', '#2aba87', '/transfers')]
+       ('Holidays', 'plane', '#5969e9', '/holidays'), ('Transfers', 'car', '#2aba87', '/transfers'),
+       ('Visas', 'file', '#ff9516', '/visa'), ('Cruises', 'ship', '#406bf2', '/activities/cruises')]
 MENU_ITEMS = {
     'Activities': [('Explore activities', [('City tours', '/activities/city-tours'), ('Desert adventures', '/activities/desert-adventures'), ('Theme parks', '/activities/theme-parks'), ('Water activities', '/activities/water-activities')]),
                    ('Popular choices', [('Burj Khalifa', '/search?q=Burj%20Khalifa'), ('Dubai safari', '/search?q=desert%20safari'), ('Abu Dhabi tours', '/destinations/abu-dhabi')])],
