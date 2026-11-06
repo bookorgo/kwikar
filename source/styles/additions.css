@@ -297,3 +297,12 @@ a.kw-package{color:inherit}
 .kw-photo-credits p,.kw-photo-credits li{font-size:13px;color:#5e6672;line-height:1.6;max-width:900px}
 .kw-photo-credits ul{padding-left:18px;list-style:disc;margin-top:8px}
 .kw-photo-credits a{color:#1265e8}
+/* 3D menu icons */
+.kw-icon3d{display:block;flex:none;object-fit:contain}
+.kw-nav-attractions .kw-icon3d{width:24px;height:24px;margin-right:2px;transition:transform .2s}
+.kw-nav-group:hover .kw-icon3d,.kw-nav-group.active .kw-icon3d{transform:translateY(-1px) scale(1.08)}
+.kw-mobile-shortcuts .kw-service-icon,.kw-mobile-extra>summary .kw-service-icon{background:#f3f6fb!important;width:42px;height:42px;border-radius:13px}
+.kw-mobile-shortcuts .kw-service-icon .kw-icon3d{width:30px;height:30px}
+.kw-mobile-extra>summary .kw-service-icon .kw-icon3d{width:28px;height:28px}
+.kw-mobile-more a .kw-icon3d{width:22px;height:22px}
+@media(prefers-reduced-motion:reduce){.kw-nav-attractions .kw-icon3d{transition:none}}

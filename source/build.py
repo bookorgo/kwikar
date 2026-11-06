@@ -311,10 +311,20 @@ def mega_panel(label):
             '<a href="/contact">Contact KWIKAR →</a></div></div>')
 
 
+ICON3D = {'Destinations': 'destinations', 'Activities': 'activities', 'Holidays': 'holidays', 'Visas': 'visas', 'Cruises': 'cruises',
+          'Transfers': 'transfers', 'Events': 'events', 'More': 'more'}
+
+
+def icon3d(label, size, cls=''):
+    f = 'assets/img/icons/' + ICON3D[label] + '.svg'
+    v = hashlib.md5(open(os.path.join(OUT, f), 'rb').read()).hexdigest()[:8] if os.path.exists(os.path.join(OUT, f)) else '1'
+    return f'<img class="kw-icon3d {cls}" src="/{f}?v={v}" width="{size}" height="{size}" alt="" aria-hidden="true">'
+
+
 def header(active):
     groups = ''.join(
         f'<div class="kw-nav-group{" active" if label == active else ""}" data-group="{label}"><a class="kw-nav-attractions" href="{href}">'
-        f'{svg(icon, 19, 2.7, "kw-nav-icon", f"color:{color}")}{label}</a><button type="button" class="kw-nav-toggle" aria-label="Open {label} menu" '
+        f'{icon3d(label, 24, "kw-nav-icon")}{label}</a><button type="button" class="kw-nav-toggle" aria-label="Open {label} menu" '
         f'aria-expanded="false" aria-controls="kw-navigation-menu">{svg("chevron-down", 14)}</button></div>'
         for label, icon, color, href in NAV)
     panels = ''.join(mega_panel(label) for label, _, _, _ in NAV)
@@ -336,13 +346,13 @@ def mobile_nav(path):
         return path == h or path.startswith(h + '/')
     extra_active = any(sel(h) for _, h, _ in extra) or path.startswith('/destinations/')
     tour = path.startswith('/activities/') and path.count('/') >= 3
-    prim = ''.join(f'<a href="{h}"{" class=kw-selected aria-current=page" if sel(h) and not extra_active else ""}><span class="kw-service-icon">{svg(i, 23, 1.9)}</span>{t}</a>' for t, h, i in primary)
-    more = ''.join(f'<a href="{h}"{" aria-current=page" if sel(h) else ""}>{svg(i, 18)}{t}<span aria-hidden="true">→</span></a>' for t, h, i in extra)
+    prim = ''.join(f'<a href="{h}"{" class=kw-selected aria-current=page" if sel(h) and not extra_active else ""}><span class="kw-service-icon">{icon3d(t, 30)}</span>{t}</a>' for t, h, i in primary)
+    more = ''.join(f'<a href="{h}"{" aria-current=page" if sel(h) else ""}>{icon3d(t, 22)}{t}<span aria-hidden="true">→</span></a>' for t, h, i in extra)
     app = '' if tour else ('<nav class="kw-app-bottom-nav" aria-label="Mobile app navigation">' + ''.join(
         f'<a href="{h}"{" aria-current=page" if path == h else ""}>{svg(i, 25, 2.6 if path == h else 1.8, fill="currentColor" if (path == h and t == "Home") else "none")}<span>{t}</span></a>'
         for t, h, i in bottom) + '</nav>')
     return (f'<div class="kw-mobile-shortcut-area{"" if not tour else " kw-tour-mobile-navigation"}"><nav class="kw-mobile-shortcuts" aria-label="Travel services">{prim}'
-            f'<details class="kw-mobile-extra{" kw-selected" if extra_active else ""}"><summary><span class="kw-service-icon">{svg("panels", 23, 1.9)}</span>More</summary>'
+            f'<details class="kw-mobile-extra{" kw-selected" if extra_active else ""}"><summary><span class="kw-service-icon">{icon3d("More", 28)}</span>More</summary>'
             f'<nav class="kw-mobile-more" aria-label="More travel services">{more}</nav></details></nav></div>{app}')
 
 

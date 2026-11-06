@@ -31,3 +31,4 @@
 - 2026-11-06 07:31 UTC — [Setup] Fleet photos replaced with real black photos of current models from Wikimedia Commons (CC BY-SA/CC0), same studio background, plates and a door sticker removed, Lexus photo added; photo credits section on /transfers/fleet and notes on hub/class pages
 - 2026-11-06 07:35 UTC — [Setup] Fleet image URLs get ?v=<hash> so new photos show despite the 6-month image cache
 - 2026-11-06 07:41 UTC — [Setup] V-Class photo replaced with a standard 2024 V 200 d (was a custom Maybach-style V-Class), plate hidden, credit updated
+- 2026-11-06 11:05 UTC — [Setup] Own 3D-style menu icons (globe+pin, hot air balloon, palm island, passport+stamp, dhow, car, ticket, tiles) in assets/img/icons, used in the header and mobile shortcuts
