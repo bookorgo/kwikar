@@ -284,3 +284,9 @@ a.kw-package{color:inherit}
 .kw-hero-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .kw-button.kw-button-ghost{background:#fff;color:#1265e8;border:1px solid #1265e8}
 .kw-fleet-classes-h{font:800 17px/1.3 'Manrope',sans-serif;margin:30px 0 12px;color:#0b1018}
+/* fleet slider on /transfers */
+.kw-fleet-row{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 40px)/3);gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding-bottom:10px;scrollbar-width:thin}
+.kw-fleet-row>.kw-fleet-card{scroll-snap-align:start}
+@media(max-width:1000px){.kw-fleet-row{grid-auto-columns:calc((100% - 20px)/2)}}
+@media(max-width:600px){.kw-fleet-row{grid-auto-columns:86%;gap:14px}}
+@media(prefers-reduced-motion:reduce){.kw-fleet-row{scroll-behavior:auto}}
