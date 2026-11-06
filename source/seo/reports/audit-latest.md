@@ -1,21 +1,21 @@
-# Audit report — 5 Nov 2026 (03:35 UTC)
+# Audit report — 6 Nov 2026 (03:20 UTC)
 
-**Pages check hue:** 170 (har page mobile 390 px + desktop 1300 px). Live sitemap: 136 URLs.
+**Pages check hue:** 170 (har page mobile 390 px + desktop 1300 px), latest feed ke saath build (171 HTML, 107 tour pages). Live sitemap: 136 URLs.
 
 ## Masle
-- **Mile:** 4 (site_audit ke naye check ke saath) + 9 kamzor category titles
-  - 2 category pages ke title mein lafz double tha: "Luxury experiences Experiences", "Cultural experiences Experiences"
-  - Russian-guide Abu Dhabi city tour ke title aur H1 mein supplier ki typo: "City Tour **form** Abu Dhabi"
-  - Baqi 9 category titles bhi ajeeb the ("Cruises Experiences", "Events Experiences" waghera)
-- **Fix hue:** sab. Ab 11 category pages ka title "<Category> in Dubai & the UAE | KWIKAR" hai, aur supplier names mein "tour form" → "tour from" (URL nahi badla).
-- **Abhi khule:** 0 (site_audit 4 → 0, QA OK).
-- site_audit.py ab title/H1 mein double lafz aur "tour form" typo bhi pakarta hai.
+- **Mile:** 0 (site_audit: koi JS error, missing file, sideways scroll, toota image, missing alt, placeholder, ajeeb price, galat WhatsApp/phone link, toota link ya duplicate title/H1/meta nahi).
+- **Fix hue:** 0 (kuch fix karne ki zaroorat nahi thi). QA OK.
+- **Abhi khule:** 0.
+- Extra check: decorative images (menu/card photos ke saath text) par `alt=""` sahi hai; contact page ka "Prefer email?" link JavaScript se bharta hai — dono theek.
 
 ## Live checks
 - seo_check: 136/136 OK (status, canonical, noindex, JSON-LD, robots, purane redirects).
-- http → https: 301 ✔ · Unknown URL: 404 ✔ · robots.txt aur sitemap.xml: 200 ✔ (sitemap index, 3 sitemaps).
-- Latest deploy live ✔ (Refresh tours 01:16 UTC — page par "last checked 5 Nov 2026").
-- **SSL expiry aur www → non-www:** is run mein check nahi ho sake — sandbox ka proxy apna certificate dikhata hai aur www.kwikar.com ko block karta hai. Live site par koi kharabi nazar nahi aayi. [tech] item add kiya: ye do checks GitHub Action se chalein.
+- http → https: 301 ✔ · Unknown URL: 404 ✔ · robots.txt aur sitemap.xml: 200 ✔ (robots rules wahi hain).
+- Latest deploy live ✔ (Refresh tours 6 Nov 01:19 UTC — live pages par "last checked 6 Nov 2026").
+- GitHub Actions pichhle 24 ghante: sab green.
+- SSL: sandbox se check nahi hota (proxy apna certificate dikhata hai). Actions ki SEO check ne kal Let's Encrypt, 42 din bataye — yani ~17 Dec tak, 21 din se zyada ✔.
+- www → non-www: sandbox se block. Issue #1 khula hai (2 hops, Hostinger ka apna HTTPS redirect).
 
 ## Irfan ka faisla chahiye
-- URL mein typo: /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" → "from"). Page noindex hai, is liye asar kam hai; slug badalne ke liye 301 aur aapki approval chahiye.
+- **www redirect (issue #1):** hPanel → Security → SSL → "Force HTTPS" off kar dein (hamari .htaccess pehle se HTTPS force karti hai), ya aise hi chhor dein — asar kam hai.
+- **URL typo:** /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" → "from"). Page noindex hai; slug badalne ke liye 301 aur aapki approval chahiye.
