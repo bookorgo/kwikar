@@ -77,7 +77,13 @@ def download(url, dest):
 
 def search(out):
     allc = {}
+    only = os.environ.get('ONLY_CAR')
+    extra = [q for q in os.environ.get('EXTRA_QUERIES', '').split('|') if q]
     for car, qs in QUERIES.items():
+        if only and car != only:
+            continue
+        if only and extra:
+            qs = extra
         seen = []
         for q in qs:
             d = api({'action': 'query', 'list': 'search', 'srsearch': q + ' filetype:bitmap', 'srnamespace': 6, 'srlimit': 30})

@@ -8,6 +8,14 @@ on:
         description: 'search or fetch'
         required: true
         default: 'search'
+      car:
+        description: 'search only this car (optional)'
+        required: false
+        default: ''
+      queries:
+        description: 'queries for that car, separated by |'
+        required: false
+        default: ''
 permissions:
   contents: write
 jobs:
@@ -20,6 +28,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run
+        env:
+          ONLY_CAR: ${{ github.event.inputs.car }}
+          EXTRA_QUERIES: ${{ github.event.inputs.queries }}
         run: python3 source/fleet_photos.py ${{ github.event.inputs.mode }} /tmp/out/${{ github.event.inputs.mode }}
       - name: Save to the fleet-photos branch
         run: |
