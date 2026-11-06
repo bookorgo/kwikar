@@ -1499,7 +1499,7 @@ def build_transfer_class(c):
             ('Can I ask for a specific model?', 'Write the model you prefer in your request. We confirm it when it is free; otherwise we offer another car of the same class.')]
     body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
             + facts([('Cars', e(models) + ' or similar'), ('Capacity', e(cls_cap(c))), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
-            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div><p><a class="kw-text-link" href="/transfers/fleet">See the full fleet ↗</a></p></section>' if pics else '')
+            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div><p><a class="kw-text-link" href="/transfers/fleet">See the full fleet ↗</a> <span class="kw-photo-note">Example photos. <a href="/transfers/fleet#photo-credits">Photo credits</a></span></p></section>' if pics else '')
             + f'<section class="kw-detail-block"><h2>{e(c["name"])} transfer prices</h2><p>Per car, one way. Open a route for details.</p>{route_rows(rs, key=k)}</section>'
             f'<section class="kw-detail-block"><h2>Other vehicle classes</h2><div class="kw-chip-links">'
             + ''.join(f'<a href="{cls_href(o)}">{e(o["name"])}<span>↗</span></a>' for o in TR_CLASSES if o is not c) + '</div></section>'
@@ -1583,6 +1583,7 @@ def build_transfers():
             + f'<section class="kw-section kw-fleet-section" id="fleet"><div class="kw-wrap">{section_head("Our fleet", "CHOOSE YOUR CAR", action=("Full fleet page", FLEET_PATH), carousel_id="kw-fleet-row")}'
             + f'<p class="kw-section-intro">{len(CARS)} chauffeur-driven cars. Pick the car you like and send your trip; prices are per car and include tolls and parking.</p>'
             + f'<div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{ftabs}</div><div class="kw-fleet-row" id="kw-fleet-row">{fcards}</div>'
+            + f'<p class="kw-photo-note">Example photos of each model. <a href="{FLEET_PATH}#photo-credits">Photo credits</a></p>'
             + f'<h3 class="kw-fleet-classes-h">Prices by vehicle class</h3><div class="kw-chip-links">{class_chips}</div></div></section>'
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
@@ -1607,6 +1608,23 @@ def build_transfers():
 
 
 FLEET_PATH = '/transfers/fleet'
+try:
+    FLEET_CREDITS = json.load(open(os.path.join(ROOT, 'data', 'fleet-credits.json'), encoding='utf-8'))
+except OSError:
+    FLEET_CREDITS = {}
+
+
+def fleet_credits_html():
+    if not FLEET_CREDITS:
+        return ''
+    names = {re.sub(r'[^a-z0-9]+', '-', c['name'].lower()).strip('-'): c['name'] for c in CARS}
+    items = ''.join(f'<li>{e(names.get(k, k))}: photo by {e(v["artist"] or "unknown")}, '
+                    f'<a href="{e(v["page"])}" target="_blank" rel="noopener">Wikimedia Commons</a>, '
+                    + (f'<a href="{e(v["license_url"])}" target="_blank" rel="noopener">{e(v["license"])}</a>' if v.get('license_url') else e(v['license'])) + '</li>'
+                    for k, v in FLEET_CREDITS.items())
+    return (f'<section class="kw-section kw-photo-credits" id="photo-credits"><div class="kw-wrap"><h2>Photo credits</h2>'
+            f'<p>Car photos are example photos of each model from Wikimedia Commons, used under their free licences. We removed the backgrounds and hid the number plates; '
+            f'the edited photos are shared under the same licence. The car sent for your booking may differ in colour and details.</p><ul>{items}</ul></div></section>')
 CAR_INFO = {   # one line per car and the filter groups it belongs to
     'Mercedes E-Class': ('Business sedan for airport runs and city meetings.', ['sedan']),
     'Lexus ES 300h': ('Quiet hybrid business sedan.', ['sedan', 'electric']),
@@ -1670,7 +1688,7 @@ def build_fleet():
             f'<div class="kw-fleet-grid">{cards}</div></div></section>'
             f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{seo_head("CHOOSING A CAR", "Which car suits your journey")}{suits}</div></section>'
             + tr_enquiry_section('Book a car', 'Tell us your route, date and the car you prefer.')
-            + faq_block('Fleet questions', faqs))
+            + faq_block('Fleet questions', faqs) + fleet_credits_html())
     page(path, title, desc, main, active='Transfers', full_title=True, crumbs=[('Home', '/'), ('Transfers', '/transfers'), ('Fleet', path)],
          head_extra=ld(faq_ld(faqs)) + ld({'@context': 'https://schema.org', '@type': 'ItemList', 'name': 'KWIKAR chauffeur fleet',
                                             'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'name': x['name']} for i, x in enumerate(cars)]}))
