@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Holidays page: SEO content (what a package includes, how quotes work, FAQs) in the existing design
 - [ ] Ski Dubai (tour 222): full tour-extras content
 - [ ] Guide: "Abu Dhabi day trip from Dubai: what to see and how to get there"
 - [ ] Lotus Royale Dinner Cruise (tour 28): full tour-extras content
@@ -41,6 +40,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] Holidays page /holidays: SEO content below the package listings (intro + facts, what a package can include, 4-step quote process, which package suits your trip, 7 FAQs with FAQPage schema); title "Dubai Holiday Packages and Trips Abroad" (48), meta 145. No outside facts used: only the catalog and our own booking/refund terms, so no sources needed (6 Nov 2026)
 - [x] Guide: "Global Village Dubai Guide: Season 31 Timings and Tips" /blog/dubai/global-village-dubai-guide (6 Nov 2026). globalvillage.ae blocked again; hours/last entry/Tuesday rule from supplier notes + Arabian Business + Gulf News; Gardens of the World, Dragon Kingdom, Little Wonderers from Gulf News + Khaleej Times. Left out (one source only or not confirmed): end date, bus route numbers, parking prices, banned items, ticket prices. Free entry stated as "past seasons", our team confirms. Linked from the Global Village tour page
 - [x] Transfers: 34 new pages (23 routes, 4 airports, 5 vehicle classes, hourly chauffeur) + new /transfers hub from the approved rate card (6 Nov 2026)
 

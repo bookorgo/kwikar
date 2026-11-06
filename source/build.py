@@ -1288,9 +1288,77 @@ def build_holidays():
         for h in HOLIDAYS if h['country'] == c) + '</div></section>' for c in countries)
     main = (page_hero('TAILORED GETAWAYS', 'Holidays designed around you.', 'Discover destinations and let us help put together the right hotel, activities and transfers for your journey.', photo('1525625293386-3f8f99389edd', 1600))
             + f'<section class="kw-section"><div class="kw-wrap" data-holidays>{section_head("Explore holiday ideas", "WHERE TO NEXT")}<p class="kw-section-intro">Holiday prices will be confirmed by our team for your dates and preferred hotels.</p>'
-            f'<div class="kw-holiday-destinations" aria-label="Holiday destinations">{tiles}</div><div class="kw-filter-row">{filt}</div>{groups}</div></section>')
-    page('/holidays', 'Holiday Packages', 'Holiday package ideas for the UAE, Singapore, Thailand and beyond. Tell us your dates and budget on WhatsApp and our team sends a tailored quote.', main,
-         active='Holidays', main_class='kw-category-service kw-holiday-service', crumbs=[('Home', '/'), ('Holidays', '/holidays')])
+            f'<div class="kw-holiday-destinations" aria-label="Holiday destinations">{tiles}</div><div class="kw-filter-row">{filt}</div>{groups}</div></section>'
+            + holidays_guide())
+    page('/holidays', 'Dubai Holiday Packages and Trips Abroad', 'Dubai and Abu Dhabi holiday packages plus trips to Singapore, Thailand and more. Send your dates on WhatsApp and our team sends a tailored quote.', main,
+         active='Holidays', main_class='kw-category-service kw-holiday-service', crumbs=[('Home', '/'), ('Holidays', '/holidays')], head_extra=ld(faq_ld(HOLIDAY_FAQS)))
+
+
+def _join(xs):
+    xs = list(xs)
+    return xs[0] if len(xs) == 1 else ', '.join(xs[:-1]) + ' and ' + xs[-1]
+
+
+HOLIDAY_FAQS = [
+    ('What is included in a KWIKAR holiday package?', 'A package is built from a hotel stay, the activities and tours you choose and private transfers, for example from the airport to your hotel. Your quote lists exactly what is included. Anything not listed in the quote, such as flights, is not part of the package.'),
+    ('How much does a Dubai holiday package cost?', 'The price depends on your travel dates, the hotel you choose, the number of nights and the ages of your guests, so we do not show fixed package prices. Send your plans on WhatsApp and our team replies with a quote in AED. The confirmed quote is the total, with no separate card or booking fee.'),
+    ('Can I change the hotel, nights or activities?', 'Yes. The packages on this page are starting ideas. Tell us which hotel area, how many nights and which activities you want to add or remove, and our team sends an updated quote before you pay anything.'),
+    ('How do I book a holiday package?', 'Choose a package and tap Request a quote, or message us on WhatsApp with your dates, number of guests and budget. There is no online payment. You pay only after our team has confirmed the hotel, activities, transfers and final price.'),
+    ('Can you help with a UAE tourist visa for my holiday?', 'Yes. We offer UAE tourist visa assistance for 14, 30 or 60 days, which you can add to your Dubai or Abu Dhabi holiday. Visa approval is decided by the issuing authority, not by KWIKAR.'),
+    ('Can you plan a holiday that is not listed here?', 'Yes. Send us the destination, dates and what you would like to do, and our team checks what can be arranged and sends a tailored quote.'),
+    ('What if I need to cancel my holiday?', 'Holiday packages can have different cancellation terms depending on the hotel and activities. We share the terms that apply with your quote, before we ask for payment, so you can check them first.'),
+]
+
+
+def holidays_guide():
+    """SEO content for /holidays, placed below the package listings."""
+    uae = [h for h in HOLIDAYS if h['country'] == 'UAE']
+    abroad = [c for c in dict.fromkeys(h['country'] for h in HOLIDAYS) if c != 'UAE']
+    n_min, n_max = min(h['nights'] for h in HOLIDAYS), max(h['nights'] for h in HOLIDAYS)
+    by_name = {h['name']: h for h in HOLIDAYS}
+    def pick(*names):
+        return [by_name[n] for n in names if n in by_name]
+    def names(hs):
+        return _join(f'<strong>{e(h["name"])}</strong> ({h["nights"]} nights)' for h in hs)
+    picks = [(label, hs) for label, hs in [
+        ('Short break', [h for h in HOLIDAYS if h['country'] == 'UAE' and h['nights'] <= 3][:3]),
+        ('First time in Dubai', pick('Ultimate Dubai Explorer', 'Dubai Sky High Thrills Holiday')),
+        ('Dubai and Abu Dhabi', pick('Abu Dhabi Explorer And Dubai Iconic Tour', 'Abu Dhabi Grand Experiences with Dubai Day Tour')),
+        ('New Year', pick('Dubai New Year Celebration with Gala Dinner')),
+        ('Families', pick('Gardens to Galaxies: A Family Voyage in Singapore')),
+        ('Couples', pick('Sweet Escapes: Honeymoon Singapore Getaway', 'Love Across Borders: Singapore & Malaysia for Two')),
+    ] if hs]
+    return (f'<section class="kw-section kw-market-alt"><div class="kw-wrap">'
+            + seo_head('HOLIDAY PACKAGES', 'Dubai and UAE holiday packages, planned around you')
+            + f'<div class="kw-seo-prose"><p>KWIKAR plans holiday packages in Dubai and Abu Dhabi, plus trips to {e(_join(abroad))}. '
+              f'There are {len(uae)} UAE packages on this page, from {min(h["nights"] for h in uae)} to {max(h["nights"] for h in uae)} nights, and each one is a starting point: '
+              'we put together the hotel, activities and transfers for your dates, then our team sends one quote for the whole trip.</p>'
+              '<p>Because hotel rates change with the season and the number of guests, we do not show fixed package prices. '
+              'You see the full price in AED, with what is included, before you decide.</p></div>'
+            + facts([('Destinations', e(_join(['UAE'] + abroad))),
+                     ('Length', f'{n_min} to {n_max} nights, or the number of nights you need'),
+                     ('Price', 'Quoted for your dates, hotel and guests; no card or booking fee'),
+                     ('Booking', 'On WhatsApp; you pay only after our team confirms'),
+                     ('Changes', 'Ask to swap the hotel, add nights or change activities')])
+            + '</div></section>'
+            + f'<section class="kw-section"><div class="kw-wrap">{seo_head("INCLUDED", "What a holiday package can include")}'
+            + info_cards([('⌂', 'Hotel stay', 'A hotel in the area you prefer, from comfortable to luxury. Tell us your budget and we suggest options.'),
+                          ('★', 'Tours and activities', 'Attractions, cruises and desert safaris from our <a href="/activities">activities</a>, chosen for your dates.'),
+                          ('➜', 'Private transfers', 'Airport pickup and transfers between cities by private car with chauffeur. See our <a href="/transfers">transfers</a>.'),
+                          ('✓', 'UAE visa help', 'For UAE holidays we can add <a href="/visa">tourist visa assistance</a> for 14, 30 or 60 days.')])
+            + '</div></section>'
+            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{seo_head("HOW IT WORKS", "How a holiday quote works", "No account and no online payment. You pay once our team has confirmed everything.")}'
+            + info_cards([('', 'Pick an idea', 'Choose a package above, or tell us the destination you have in mind.'),
+                          ('', 'Send your details', 'Share your dates, number of adults and children, hotel area and budget on WhatsApp.'),
+                          ('', 'Get one quote', 'Our team sends the final AED price with the hotel, activities, transfers and terms listed.'),
+                          ('', 'Confirm and pay', 'Ask for changes until it fits, then pay and receive your confirmation.')], numbered=True)
+            + '</div></section>'
+            + f'<section class="kw-section"><div class="kw-wrap">{seo_head("CHOOSING", "Which package suits your trip")}'
+            + facts([(e(label), names(hs)) for label, hs in picks])
+            + '<div class="kw-seo-prose"><p>Planning a Dubai trip yourself? Our <a href="/blog/dubai/3-days-in-dubai-itinerary">3-day Dubai itinerary</a> and '
+              '<a href="/blog/dubai/dubai-with-kids">Dubai with kids guide</a> show how to plan the days, and you can send the plan to us for a quote.</p></div>'
+            + '</div></section>'
+            + faq_block('Holiday package questions', HOLIDAY_FAQS))
 
 
 TR_CLASSES = TR['classes']
