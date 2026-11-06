@@ -30,3 +30,4 @@
 - 2026-11-06 07:15 UTC — [Setup] Fleet photos made black with plates removed (uniform look like the GMC photo, Irfan's request); /transfers fleet is now a left/right slider with arrows (3 cards desktop, swipe on mobile), arrow step = one card
 - 2026-11-06 07:31 UTC — [Setup] Fleet photos replaced with real black photos of current models from Wikimedia Commons (CC BY-SA/CC0), same studio background, plates and a door sticker removed, Lexus photo added; photo credits section on /transfers/fleet and notes on hub/class pages
 - 2026-11-06 07:35 UTC — [Setup] Fleet image URLs get ?v=<hash> so new photos show despite the 6-month image cache
+- 2026-11-06 07:41 UTC — [Setup] V-Class photo replaced with a standard 2024 V 200 d (was a custom Maybach-style V-Class), plate hidden, credit updated
