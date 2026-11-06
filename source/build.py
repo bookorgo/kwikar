@@ -1633,7 +1633,7 @@ def fleet_credits_html():
                     + (f'<a href="{e(v["license_url"])}" target="_blank" rel="noopener">{e(v["license"])}</a>' if v.get('license_url') else e(v['license'])) + '</li>'
                     for k, v in FLEET_CREDITS.items())
     return (f'<section class="kw-section kw-photo-credits" id="photo-credits"><div class="kw-wrap"><h2>Photo credits</h2>'
-            f'<p>Car photos are example photos of each model from Wikimedia Commons, used under their free licences. We removed the backgrounds and hid the number plates; '
+            f'<p>Car photos are example photos of each model from Wikimedia Commons, used under their free licences. We cropped the photos and hid the number plates; '
             f'the edited photos are shared under the same licence. The car sent for your booking may differ in colour and details.</p><ul>{items}</ul></div></section>')
 CAR_INFO = {   # one line per car and the filter groups it belongs to
     'Mercedes E-Class': ('Business sedan for airport runs and city meetings.', ['sedan']),

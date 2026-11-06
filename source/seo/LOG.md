@@ -32,3 +32,4 @@
 - 2026-11-06 07:35 UTC — [Setup] Fleet image URLs get ?v=<hash> so new photos show despite the 6-month image cache
 - 2026-11-06 07:41 UTC — [Setup] V-Class photo replaced with a standard 2024 V 200 d (was a custom Maybach-style V-Class), plate hidden, credit updated
 - 2026-11-06 11:05 UTC — [Setup] Own 3D-style menu icons (globe+pin, hot air balloon, palm island, passport+stamp, dhow, car, ticket, tiles) in assets/img/icons, used in the header and mobile shortcuts
+- 2026-11-06 11:24 UTC — [Setup] Fleet photos switched from studio cut-outs to the real photos with their natural backgrounds (16:10 crop), plates hidden (Irfan: cut-outs looked 3D)
