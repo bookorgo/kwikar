@@ -12,8 +12,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
-- [ ] [tech] Homepage slider dots fail Lighthouse "touch target size" on mobile (Tech PageSpeed run, 5 Nov). Enlarge the tap area invisibly (padding or ::before hit area), keep the dots looking the same
-- [ ] [tech] Check the first live IndexNow ping in the next "Update deploy branch" / "Refresh tours" run log (expect HTTP 200/202). If it fails with 403, the key file https://kwikar.com/f3bbea1224a94f12916805548158854f.txt is not served (Tech, 5 Nov)
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
@@ -40,6 +38,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] [tech] Homepage slider dots are now 24×24 px tap targets (dot drawn by ::before, same look); local Lighthouse mobile accessibility 91 → 100, target-size passes. IndexNow verified live: "IndexNow: HTTP 200 for 188 URLs" in the Update deploy branch run of 6 Nov 17:42 UTC (6 Nov 2026)
 - [x] Holidays page /holidays: SEO content below the package listings (intro + facts, what a package can include, 4-step quote process, which package suits your trip, 7 FAQs with FAQPage schema); title "Dubai Holiday Packages and Trips Abroad" (48), meta 145. No outside facts used: only the catalog and our own booking/refund terms, so no sources needed (6 Nov 2026)
 - [x] Guide: "Global Village Dubai Guide: Season 31 Timings and Tips" /blog/dubai/global-village-dubai-guide (6 Nov 2026). globalvillage.ae blocked again; hours/last entry/Tuesday rule from supplier notes + Arabian Business + Gulf News; Gardens of the World, Dragon Kingdom, Little Wonderers from Gulf News + Khaleej Times. Left out (one source only or not confirmed): end date, bus route numbers, parking prices, banned items, ticket prices. Free entry stated as "past seasons", our team confirms. Linked from the Global Village tour page
 - [x] Transfers: 34 new pages (23 routes, 4 airports, 5 vehicle classes, hourly chauffeur) + new /transfers hub from the approved rate card (6 Nov 2026)
