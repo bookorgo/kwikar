@@ -89,6 +89,20 @@
     });
   });
 
+  /* side arrows: disable at the start / end of a row */
+  document.querySelectorAll('.kw-fleet-slider').forEach(function (wrap) {
+    var row = wrap.querySelector('.kw-fleet-row'), prev = wrap.querySelector('.kw-slide-prev'), next = wrap.querySelector('.kw-slide-next');
+    if (!row) return;
+    var sync = function () {
+      if (prev) prev.disabled = row.scrollLeft <= 4;
+      if (next) next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+    };
+    row.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    document.addEventListener('click', function (e) { if (e.target.closest('[data-fleet-tab]')) setTimeout(sync, 60); });
+    sync();
+  });
+
   /* ---------- home hero slider ---------- */
   var slider = document.querySelector('.kw-slider[data-slider]');
   if (slider) {

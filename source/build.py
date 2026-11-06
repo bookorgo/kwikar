@@ -1592,7 +1592,9 @@ def build_transfers():
                       extra='<a class="kw-button" href="#fleet">See our fleet ↓</a>')
             + f'<section class="kw-section kw-fleet-section" id="fleet"><div class="kw-wrap">{section_head("Our fleet", "CHOOSE YOUR CAR", action=("Full fleet page", FLEET_PATH), carousel_id="kw-fleet-row")}'
             + f'<p class="kw-section-intro">{len(CARS)} chauffeur-driven cars. Pick the car you like and send your trip; prices are per car and include tolls and parking.</p>'
-            + f'<div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{ftabs}</div><div class="kw-fleet-row" id="kw-fleet-row">{fcards}</div>'
+            + f'<div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{ftabs}</div><div class="kw-fleet-slider"><button type="button" class="kw-slide-btn kw-slide-prev" data-scroll="kw-fleet-row" data-dir="-1" aria-label="Previous cars" disabled>‹</button>'
+            + f'<div class="kw-fleet-row" id="kw-fleet-row">{fcards}</div>'
+            + '<button type="button" class="kw-slide-btn kw-slide-next" data-scroll="kw-fleet-row" data-dir="1" aria-label="Next cars">›</button></div>'
             + f'<h3 class="kw-fleet-classes-h">Prices by vehicle class</h3><div class="kw-chip-links">{class_chips}</div></div></section>'
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'

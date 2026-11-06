@@ -35,3 +35,4 @@
 - 2026-11-06 11:24 UTC — [Setup] Fleet photos switched from studio cut-outs to the real photos with their natural backgrounds (16:10 crop), plates hidden (Irfan: cut-outs looked 3D)
 - 2026-11-06 11:32 UTC — [Setup] 12 car detail pages /transfers/fleet/<car> (photo, class, guests/bags, prices, popular trips, FAQs, form with preferred car); fleet card photo and title link to them; home and class pages link cars to them
 - 2026-11-06 11:34 UTC — [Setup] Photo credit notes removed from transfer/fleet/car pages (Irfan); credits kept on /photo-credits (noindex), linked once in the footer, because CC BY-SA requires attribution
+- 2026-11-06 11:36 UTC — [Setup] Fleet slider: big round prev/next arrows on the sides (desktop), hidden at the start/end, swipe stays on mobile

@@ -315,3 +315,13 @@ a.kw-package{color:inherit}
 .kw-fleet-body h3 a{color:inherit}
 .kw-fleet-body h3 a:hover{color:#1265e8}
 @media(prefers-reduced-motion:reduce){.kw-fleet-photo img{transition:none}}
+/* big side arrows on the fleet slider */
+.kw-fleet-slider{position:relative}
+.kw-slide-btn{position:absolute;top:calc(12.5% + 60px);z-index:3;width:52px;height:52px;border-radius:50%;border:1px solid #dfe6ee;background:#fff;color:#0b1018;font-size:32px;line-height:1;display:grid;place-items:center;padding:0 0 4px;cursor:pointer;box-shadow:0 10px 26px rgba(12,29,54,.18);transition:background .2s,color .2s,opacity .2s,transform .2s}
+.kw-slide-btn:hover{background:#1265e8;color:#fff;border-color:#1265e8;transform:scale(1.06)}
+.kw-slide-btn:focus-visible{outline:3px solid #1265e8;outline-offset:2px}
+.kw-slide-btn:disabled{opacity:0;pointer-events:none}
+.kw-slide-prev{left:-22px}
+.kw-slide-next{right:-22px}
+@media(max-width:1340px){.kw-slide-prev{left:8px}.kw-slide-next{right:8px}}
+@media(max-width:600px){.kw-slide-btn{display:none}}
