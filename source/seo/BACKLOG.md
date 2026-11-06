@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Guide: "Global Village guide: season dates, timings and tips"
 - [ ] Holidays page: SEO content (what a package includes, how quotes work, FAQs) in the existing design
 - [ ] Ski Dubai (tour 222): full tour-extras content
 - [ ] Guide: "Abu Dhabi day trip from Dubai: what to see and how to get there"
@@ -42,6 +41,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] Guide: "Global Village Dubai Guide: Season 31 Timings and Tips" /blog/dubai/global-village-dubai-guide (6 Nov 2026). globalvillage.ae blocked again; hours/last entry/Tuesday rule from supplier notes + Arabian Business + Gulf News; Gardens of the World, Dragon Kingdom, Little Wonderers from Gulf News + Khaleej Times. Left out (one source only or not confirmed): end date, bus route numbers, parking prices, banned items, ticket prices. Free entry stated as "past seasons", our team confirms. Linked from the Global Village tour page
 - [x] Transfers: 34 new pages (23 routes, 4 airports, 5 vehicle classes, hourly chauffeur) + new /transfers hub from the approved rate card (6 Nov 2026)
 
 - [x] [tech] Approved by Irfan (6 Nov): www → kwikar.com rule now runs before the HTTPS rule, so http://www.kwikar.com reaches https://kwikar.com in one 301 (issue #1); card location label grey #697888 → #5f6b7a (contrast 4.2 → 5.1:1) (6 Nov 2026)
