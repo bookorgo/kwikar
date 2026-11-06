@@ -37,10 +37,12 @@ LOCATIONS = cat['locations']                       # includes 'other' (shown as 
 REAL_LOCATIONS = [l for l in LOCATIONS if l['id'] != 'other']
 HOLIDAYS, CARS, VISAS = cat['holidays'], cat['cars'], cat['visas']
 TR = json.load(open(os.path.join(ROOT, 'data', 'transfers.json'), encoding='utf-8'))
-for _c in CARS:   # use the local copy made by fetch_images.py when it exists
-    _local = 'assets/img/cars/' + re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-') + '.webp'
-    if os.path.exists(os.path.join(OUT, _local)):
-        _c['img'] = '/' + _local
+for _c in CARS:   # uniform fleet photo (assets/img/fleet) first, then the local copy made by fetch_images.py
+    _slug = re.sub(r'[^a-z0-9]+', '-', _c['name'].lower()).strip('-')
+    for _local in ('assets/img/fleet/' + _slug + '.webp', 'assets/img/cars/' + _slug + '.webp'):
+        if os.path.exists(os.path.join(OUT, _local)):
+            _c['img'] = '/' + _local
+            break
 CAT_DESC = {   # meta descriptions for category hubs (120–160 chars)
     'city-tours': 'City tours of Dubai, Abu Dhabi, Ras Al Khaimah and Fujairah, with guided day tours and private options. Compare current prices and ask us on WhatsApp.',
     'theme-parks': 'Theme park tickets for Dubai and Abu Dhabi, including Yas Island parks and waterparks. Compare current prices and send your request on WhatsApp.',
@@ -277,7 +279,7 @@ MENU_ITEMS = {
     'Transfers': [('Airport transfers', [(a['short'] + ' (' + a['code'] + ')', '/transfers/' + a['slug']) for a in TR['airports']]),
                   ('Popular routes', [(r['to'] + ' from ' + r['airport'], '/transfers/' + r['slug']) for r in TR['routes'] if r['id'] in ('dxb-downtown', 'dxb-marina', 'dxb-palm', 'dxb-abudhabi')]
                    + [('Dubai to Abu Dhabi', '/transfers/dubai-to-abu-dhabi'), ('Chauffeur by the hour', '/transfers/' + TR['hourly']['slug'])]),
-                  ('Vehicle classes', [(c['name'], '/transfers/vehicles/' + c['slug']) for c in TR['classes']])],
+                  ('Vehicle classes', [(c['name'], '/transfers/vehicles/' + c['slug']) for c in TR['classes']] + [('Our full fleet', '/transfers/fleet')])],
 }
 MENU_CITIES = ['dubai', 'abu-dhabi', 'sharjah', 'ras-al-khaimah', 'singapore', 'bali', 'thailand', 'malaysia']
 EXPERIENCE_TERMS = [('City Tours', 'city tour'), ('Theme Parks', 'theme park'), ('Desert Adventures', 'desert'), ('Water Activities', 'water'),
@@ -1497,7 +1499,7 @@ def build_transfer_class(c):
             ('Can I ask for a specific model?', 'Write the model you prefer in your request. We confirm it when it is free; otherwise we offer another car of the same class.')]
     body = (f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
             + facts([('Cars', e(models) + ' or similar'), ('Capacity', e(cls_cap(c))), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
-            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div></section>' if pics else '')
+            + (f'<section class="kw-detail-block"><h2>Cars in this class</h2><div class="kw-class-figs">{pics}</div><p><a class="kw-text-link" href="/transfers/fleet">See the full fleet ↗</a></p></section>' if pics else '')
             + f'<section class="kw-detail-block"><h2>{e(c["name"])} transfer prices</h2><p>Per car, one way. Open a route for details.</p>{route_rows(rs, key=k)}</section>'
             f'<section class="kw-detail-block"><h2>Other vehicle classes</h2><div class="kw-chip-links">'
             + ''.join(f'<a href="{cls_href(o)}">{e(o["name"])}<span>↗</span></a>' for o in TR_CLASSES if o is not c) + '</div></section>'
@@ -1578,7 +1580,7 @@ def build_transfers():
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
             + f'<div class="kw-route-group"><h3>By the hour</h3><div class="kw-price-list"><a class="kw-price-row" href="{HOURLY_PATH}"><span><strong>Chauffeur service in Dubai</strong><small>minimum {HOUR_MIN} hours</small></span><em>from {money(tr_low(TR["hourly"]["prices"]))}/hour</em></a></div></div></div></section>'
-            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{section_head("Choose your vehicle class", "OUR FLEET")}<p class="kw-section-intro">You book a class, and we send the car from that class that is free at your time.</p><div class="kw-package-grid">{class_cards}</div></div></section>'
+            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{section_head("Choose your vehicle class", "OUR FLEET")}<p class="kw-section-intro">You book a class, and we send the car from that class that is free at your time. <a class="kw-text-link" href="/transfers/fleet">See all {len(CARS)} cars in our fleet ↗</a></p><div class="kw-package-grid">{class_cards}</div></div></section>'
             + f'<section class="kw-section"><div class="kw-wrap">{seo_head("INCLUDED", "What every price includes")}'
             + info_cards([('', 'Tolls and parking', 'Salik and Darb road tolls and airport parking are in the price.'),
                           ('', 'Free waiting', f'{WAIT_A} minutes after your flight lands, {WAIT_O} minutes at other pickups.'),
@@ -1595,6 +1597,72 @@ def build_transfers():
     for c in TR_CLASSES:
         build_transfer_class(c)
     build_transfer_hourly()
+    build_fleet()
+
+
+FLEET_PATH = '/transfers/fleet'
+CAR_INFO = {   # one line per car and the filter groups it belongs to
+    'Mercedes E-Class': ('Business sedan for airport runs and city meetings.', ['sedan']),
+    'Lexus ES 300h': ('Quiet hybrid business sedan.', ['sedan', 'electric']),
+    'BMW 530i': ('Executive sedan with a smooth, quiet ride.', ['sedan']),
+    'BYD Han Flagship': ('Electric flagship sedan with no tailpipe emissions.', ['sedan', 'electric']),
+    'Tesla Model Y': ('Electric SUV with a large boot.', ['suv', 'electric']),
+    'BYD Song+ Flagship': ('Electric SUV for small families.', ['suv', 'electric']),
+    'Exeed VX Flagship': ('Spacious premium SUV for families with luggage.', ['suv']),
+    'BMW 7 Series': ('Flagship sedan for VIP guests.', ['sedan', 'luxury']),
+    'Mercedes S-Class': ('The classic luxury sedan for executives and special days.', ['sedan', 'luxury']),
+    'Mercedes V-Class': ('Business van for families and groups of up to seven.', ['van']),
+    'GMC Yukon XL': ('Full-size SUV with room for seven and their bags.', ['suv', 'luxury']),
+    'Cadillac Escalade': ('Luxury SUV for VIP arrivals and long trips.', ['suv', 'luxury']),
+}
+FLEET_TABS = [('all', 'All'), ('sedan', 'Sedan'), ('suv', 'SUV'), ('van', 'Van'), ('electric', 'Electric & hybrid'), ('luxury', 'Luxury')]
+
+
+def car_class(car):
+    return next((c for c in TR_CLASSES if car['name'] in c['models'] or any(car['name'].startswith(m) for m in c['models'])), None)
+
+
+def class_low(c):
+    return min(r['prices'][c['key']] for r in TR_ROUTES if r['prices'].get(c['key']))
+
+
+def build_fleet():
+    path = FLEET_PATH
+    order = [c['key'] for c in TR_CLASSES]
+    cars = sorted(CARS, key=lambda x: (order.index(car_class(x)['key']) if car_class(x) else 9))
+    tabs = ''.join(f'<button type="button" data-fleet-tab="{k}"{" class=selected aria-pressed=true" if k == "all" else " aria-pressed=false"}>{e(n)}</button>' for k, n in FLEET_TABS)
+    cards = ''
+    for x in cars:
+        c = car_class(x)
+        line, tags = CAR_INFO.get(x['name'], ('', []))
+        hour = TR['hourly']['prices'].get(c['key']) if c else None
+        cards += (f'<article class="kw-fleet-card" data-tags="{" ".join(tags)}"><div class="kw-fleet-photo"><img src="{e(x["img"])}" alt="{e(x["name"])}" loading="lazy" width="600" height="375"></div>'
+                  f'<div class="kw-fleet-body"><span class="kw-eyebrow">{e(c["name"]) if c else e(x["type"])}</span><h3>{e(x["name"])}</h3><p>{e(line)}</p>'
+                  f'<p class="kw-fleet-cap">Up to {x["pax"]} guests · {c["bags"] if c else "–"} bags</p>'
+                  f'<dl class="kw-fleet-prices"><div><dt>From / trip</dt><dd>{money(class_low(c)) if c else "On request"}</dd></div><div><dt>From / hour</dt><dd>{money(hour) if hour else "On request"}</dd></div></dl>'
+                  f'<div class="kw-fleet-actions"><a href="{cls_href(c) if c else "/transfers"}">{e(c["name"]) if c else "Details"} prices</a>'
+                  f'<a class="kw-button" href="#transfer-enquiry" data-pick="{e(c["name"]) if c else ""}" data-model="{e(x["name"])}">Book this car</a></div></div></article>')
+    suits = info_cards([('', '1 to 3 guests', f'<a href="{cls_href(TR_CLASSES[0])}">Business Sedan</a> for everyday rides, or <a href="{cls_href(TR_CLASSES[2])}">First Class</a> for VIP guests.'),
+                        ('', '4 to 6 guests', f'<a href="{cls_href(TR_CLASSES[1])}">Family SUV</a> for families with luggage, or <a href="{cls_href(TR_CLASSES[4])}">Luxury SUV</a> for a premium ride.'),
+                        ('', '7 guests', f'<a href="{cls_href(TR_CLASSES[3])}">Business Van</a> or a GMC Yukon XL from the Luxury SUV class.'),
+                        ('', 'More than 7', 'Two cars, or ask us about a larger van for your group.')])
+    faqs = [('Will I get the exact car I book?', 'You book a vehicle class, and you can name the car you prefer. We confirm that car when it is free; otherwise we send another car from the same class.'),
+            ('Are the prices per car?', 'Yes. Trip prices are per car, one way, and hourly prices are per car per hour (minimum ' + str(HOUR_MIN) + ' hours).'),
+            ('What is included?', INCLUDED_TXT + '.'),
+            ('Do you have electric cars?', 'Yes: the Tesla Model Y, BYD Han and BYD Song+ are electric, and the Lexus ES 300h is a hybrid.')]
+    title = f'Chauffeur Fleet in Dubai: {len(CARS)} Cars with Driver'
+    desc = fit(f'See the KWIKAR chauffeur fleet: Mercedes E-Class, S-Class and V-Class, BMW, Lexus, Tesla, BYD, GMC and Cadillac Escalade. Prices per car from {money(class_low(TR_CLASSES[0]))}.', 160)
+    main = (f'<section class="kw-fleet-head"><div class="kw-wrap"><nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/transfers">Transfers</a> / Fleet</nav>'
+            f'<span class="kw-eyebrow">OUR FLEET</span><h1>A car for every journey</h1>'
+            f'<p>{len(CARS)} chauffeur-driven cars in five vehicle classes, from business sedans to seven-seat vans. Every price includes {e(INCLUDED_TXT)}.</p></div></section>'
+            f'<section class="kw-section kw-fleet-section"><div class="kw-wrap"><div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{tabs}</div>'
+            f'<div class="kw-fleet-grid">{cards}</div></div></section>'
+            f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{seo_head("CHOOSING A CAR", "Which car suits your journey")}{suits}</div></section>'
+            + tr_enquiry_section('Book a car', 'Tell us your route, date and the car you prefer.')
+            + faq_block('Fleet questions', faqs))
+    page(path, title, desc, main, active='Transfers', full_title=True, crumbs=[('Home', '/'), ('Transfers', '/transfers'), ('Fleet', path)],
+         head_extra=ld(faq_ld(faqs)) + ld({'@context': 'https://schema.org', '@type': 'ItemList', 'name': 'KWIKAR chauffeur fleet',
+                                            'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'name': x['name']} for i, x in enumerate(cars)]}))
 
 
 def car_class_href(car):
@@ -1603,7 +1671,7 @@ def car_class_href(car):
 
 
 def transfer_paths():
-    return ([tr_href(r) for r in TR_ROUTES] + [ap_href(a) for a in TR_AIRPORTS] + [cls_href(c) for c in TR_CLASSES] + [HOURLY_PATH])
+    return ([tr_href(r) for r in TR_ROUTES] + [ap_href(a) for a in TR_AIRPORTS] + [cls_href(c) for c in TR_CLASSES] + [HOURLY_PATH, FLEET_PATH])
 
 
 def VISA_FAQS(low_v):
