@@ -82,7 +82,10 @@
   document.querySelectorAll('[data-scroll]').forEach(function (b) {
     b.addEventListener('click', function () {
       var row = document.getElementById(b.dataset.scroll);
-      if (row) row.scrollBy({ left: 310 * Number(b.dataset.dir), behavior: 'smooth' });
+      if (!row) return;
+      var card = Array.prototype.find.call(row.children, function (c) { return !c.hidden; });
+      var step = card ? card.getBoundingClientRect().width + (parseFloat(getComputedStyle(row).columnGap) || 0) : 310;
+      row.scrollBy({ left: step * Number(b.dataset.dir), behavior: 'smooth' });
     });
   });
 
@@ -299,6 +302,7 @@
         var t = b.dataset.fleetTab;
         fleetTabs.querySelectorAll('[data-fleet-tab]').forEach(function (x) { x.classList.toggle('selected', x === b); x.setAttribute('aria-pressed', String(x === b)); });
         document.querySelectorAll('.kw-fleet-card').forEach(function (c) { c.hidden = t !== 'all' && (' ' + c.dataset.tags + ' ').indexOf(' ' + t + ' ') < 0; });
+        var fr = document.getElementById('kw-fleet-row'); if (fr) fr.scrollLeft = 0;
       });
     });
   }
