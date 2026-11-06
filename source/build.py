@@ -456,9 +456,9 @@ def section_head(title, eyebrow=None, action=None, carousel_id=None):
     return f'<div class="kw-section-head"><div>{eb}<h2>{e(title)}</h2></div>{acts}</div>'
 
 
-def page_hero(eyebrow, title, subtitle, image):
+def page_hero(eyebrow, title, subtitle, image, extra=''):
     return (f'<section class="kw-page-hero"><div class="kw-wrap kw-page-hero-grid"><div><span class="kw-eyebrow">{e(eyebrow)}</span><h1>{e(title)}</h1><p>{e(subtitle)}</p>'
-            f'<a class="kw-button" href="{e(wa(f"Hi KWIKAR, I would like to enquire about {title}"))}" target="_blank" rel="noopener noreferrer">Plan with us ↗</a></div>'
+            f'<div class="kw-hero-actions">{extra}<a class="kw-button{" kw-button-ghost" if extra else ""}" href="{e(wa(f"Hi KWIKAR, I would like to enquire about {title}"))}" target="_blank" rel="noopener noreferrer">Plan with us ↗</a></div></div>'
             f'<div class="kw-page-hero-photo" style="background-image:url(\'{e(image)}\')" role="img" aria-label="{e(title)}"></div></div></section>')
 
 
@@ -1576,11 +1576,17 @@ def build_transfers():
             ('What happens if my flight is delayed?', f'Share your flight number when you book. The driver follows the flight; the first {WAIT_A} minutes after landing are free.'),
             ('Do I get the exact car model?', 'You book a vehicle class. Our team sends the car from that class that is free at your time, for example a Mercedes E-Class or a Lexus ES for a Business Sedan.'),
             ('Can I change or cancel a booking?', 'Tell us as soon as possible. We confirm the change and cancellation terms for your ride before you pay.')]
-    main = (page_hero('PRIVATE TRANSFERS', 'Airport transfers and chauffeur service across the UAE.', 'Fixed prices per car from Dubai, Abu Dhabi and Sharjah airports, between emirates and by the hour. Tolls and parking included.', photo('1518684079-3c830dcef090', 1600))
+    ftabs, fcards, _ = fleet_cards()
+    class_chips = ''.join(f'<a href="{cls_href(c)}">{e(c["name"])} · from {money(class_low(c))}<span>↗</span></a>' for c in TR_CLASSES)
+    main = (page_hero('PRIVATE TRANSFERS', 'Airport transfers and chauffeur service across the UAE.', 'Fixed prices per car from Dubai, Abu Dhabi and Sharjah airports, between emirates and by the hour. Tolls and parking included.', photo('1518684079-3c830dcef090', 1600),
+                      extra='<a class="kw-button" href="#fleet">See our fleet ↓</a>')
+            + f'<section class="kw-section kw-fleet-section" id="fleet"><div class="kw-wrap">{section_head("Our fleet", "CHOOSE YOUR CAR", action=("Full fleet page", FLEET_PATH))}'
+            + f'<p class="kw-section-intro">{len(CARS)} chauffeur-driven cars. Pick the car you like and send your trip; prices are per car and include tolls and parking.</p>'
+            + f'<div class="kw-filter-row kw-fleet-tabs" role="group" aria-label="Filter the fleet">{ftabs}</div><div class="kw-fleet-grid">{fcards}</div>'
+            + f'<h3 class="kw-fleet-classes-h">Prices by vehicle class</h3><div class="kw-chip-links">{class_chips}</div></div></section>'
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
             + f'<div class="kw-route-group"><h3>By the hour</h3><div class="kw-price-list"><a class="kw-price-row" href="{HOURLY_PATH}"><span><strong>Chauffeur service in Dubai</strong><small>minimum {HOUR_MIN} hours</small></span><em>from {money(tr_low(TR["hourly"]["prices"]))}/hour</em></a></div></div></div></section>'
-            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{section_head("Choose your vehicle class", "OUR FLEET")}<p class="kw-section-intro">You book a class, and we send the car from that class that is free at your time. <a class="kw-text-link" href="/transfers/fleet">See all {len(CARS)} cars in our fleet ↗</a></p><div class="kw-package-grid">{class_cards}</div></div></section>'
             + f'<section class="kw-section"><div class="kw-wrap">{seo_head("INCLUDED", "What every price includes")}'
             + info_cards([('', 'Tolls and parking', 'Salik and Darb road tolls and airport parking are in the price.'),
                           ('', 'Free waiting', f'{WAIT_A} minutes after your flight lands, {WAIT_O} minutes at other pickups.'),
@@ -1626,8 +1632,7 @@ def class_low(c):
     return min(r['prices'][c['key']] for r in TR_ROUTES if r['prices'].get(c['key']))
 
 
-def build_fleet():
-    path = FLEET_PATH
+def fleet_cards():
     order = [c['key'] for c in TR_CLASSES]
     cars = sorted(CARS, key=lambda x: (order.index(car_class(x)['key']) if car_class(x) else 9))
     tabs = ''.join(f'<button type="button" data-fleet-tab="{k}"{" class=selected aria-pressed=true" if k == "all" else " aria-pressed=false"}>{e(n)}</button>' for k, n in FLEET_TABS)
@@ -1642,6 +1647,12 @@ def build_fleet():
                   f'<dl class="kw-fleet-prices"><div><dt>From / trip</dt><dd>{money(class_low(c)) if c else "On request"}</dd></div><div><dt>From / hour</dt><dd>{money(hour) if hour else "On request"}</dd></div></dl>'
                   f'<div class="kw-fleet-actions"><a href="{cls_href(c) if c else "/transfers"}">{e(c["name"]) if c else "Details"} prices</a>'
                   f'<a class="kw-button" href="#transfer-enquiry" data-pick="{e(c["name"]) if c else ""}" data-model="{e(x["name"])}">Book this car</a></div></div></article>')
+    return tabs, cards, cars
+
+
+def build_fleet():
+    path = FLEET_PATH
+    tabs, cards, cars = fleet_cards()
     suits = info_cards([('', '1 to 3 guests', f'<a href="{cls_href(TR_CLASSES[0])}">Business Sedan</a> for everyday rides, or <a href="{cls_href(TR_CLASSES[2])}">First Class</a> for VIP guests.'),
                         ('', '4 to 6 guests', f'<a href="{cls_href(TR_CLASSES[1])}">Family SUV</a> for families with luggage, or <a href="{cls_href(TR_CLASSES[4])}">Luxury SUV</a> for a premium ride.'),
                         ('', '7 guests', f'<a href="{cls_href(TR_CLASSES[3])}">Business Van</a> or a GMC Yukon XL from the Luxury SUV class.'),
