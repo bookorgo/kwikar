@@ -832,6 +832,49 @@ def build_listings():
              crumbs=[('Home', '/'), ('Activities', '/activities'), (c['name'], f'/activities/{slug}')])
 
 
+
+def dest_extras(l):
+    """Holidays, transfers and visas for a destination page (only what matches that city)."""
+    lid, name = l['id'], l['name']
+    key = {'abu-dhabi': ['Abu Dhabi', 'Yas', 'Saadiyat'], 'ras-al-khaimah': ['Ras Al Khaimah'], 'oman': ['Oman', 'Musandam']}.get(lid, [name])
+    has = lambda txt: any(k.lower() in (txt or '').lower() for k in key)
+    sections, chips = [], []
+    # holidays
+    hols = [h for h in HOLIDAYS if has(h['name']) or (l['group'] != 'uae' and h['country'].lower() == name.lower())]
+    if hols:
+        country = hols[0]['country']
+        cards = ''.join(f'<article class="kw-package"><img src="{e(h["img"])}" alt="{e(h["name"])}" loading="lazy"><div><span class="kw-eyebrow">{h["nights"]} nights / {h["days"]} days</span><h3>{e(h["name"])}</h3>'
+                        f'<p>Hotel, activities and transfers planned for your dates.</p><a href="{e(wa(f"Hi KWIKAR, please quote {h['name']} for my travel dates."))}" target="_blank" rel="noopener noreferrer">Request a quote ↗</a></div></article>' for h in hols[:6])
+        sections.append(('holidays', 'Holidays', f'<section class="kw-market-section kw-dest-extra" id="dest-holidays"><div class="kw-market-wrap">'
+                         f'{section_head(f"{name} holiday packages", "HOLIDAYS", action=("All holiday packages", "/holidays?country=" + quote(country)))}'
+                         f'<p class="kw-section-intro">Package ideas with hotel, activities and transfers. Our team sends a tailored quote for your dates.</p><div class="kw-package-grid">{cards}</div></div></section>'))
+    # transfers
+    if l['group'] == 'uae':
+        rs = [r for r in TR_ROUTES if has(r['from']) or has(r['to']) or has(r['areas'])]
+        aps = [a for a in TR_AIRPORTS if has(a['name']) or has(a['city'])]
+        if rs:
+            extra_links = ''.join(f'<a href="{ap_href(a)}">{e(a["short"])} transfers<span>↗</span></a>' for a in aps)
+            extra_links += f'<a href="{FLEET_PATH}">Our fleet<span>↗</span></a>' + (f'<a href="{HOURLY_PATH}">Chauffeur by the hour<span>↗</span></a>' if lid == 'dubai' else '')
+            sections.append(('transfers', 'Transfers', f'<section class="kw-market-section kw-market-alt kw-dest-extra" id="dest-transfers"><div class="kw-market-wrap">'
+                             f'{section_head(f"Transfers in {name}", "PRIVATE TRANSFERS", action=("All transfers", "/transfers"))}'
+                             f'<p class="kw-section-intro">Private car with chauffeur, price per car. Tolls, parking and child seats included.</p>{route_rows(rs[:9])}'
+                             f'<div class="kw-chip-links kw-dest-chips">{extra_links}</div></div></section>'))
+    # visas
+    vis = [v for v in VISAS if ('UAE' in v['name'] and l['group'] == 'uae') or (l['group'] != 'uae' and has(v['name']))]
+    if vis:
+        rows = ''.join(f'<a class="kw-price-row" href="/visa?type={quote(v["name"])}#visa-enquiry"><span><strong>{e(v["name"])}</strong><small>Stay {e(v["stay"])} · about {e(v["processing"])}</small></span>'
+                       f'<em>{("from " + money(v["price"])) if v.get("price") else "Ask us"}</em></a>' for v in vis[:6])
+        sections.append(('visa', 'Visa', f'<section class="kw-market-section kw-dest-extra" id="dest-visa"><div class="kw-market-wrap">'
+                         f'{section_head(f"Visa for {name}" if l["group"] != "uae" else f"UAE visa for your {name} trip", "VISA", action=("Visa details", "/visa"))}'
+                         f'<p class="kw-section-intro">We help you apply and check the documents for your nationality. Approval is decided by the issuing authority.</p>'
+                         f'<div class="kw-price-list">{rows}</div></div></section>'))
+    nav = ''
+    if sections:
+        nav = ('<div class="kw-market-wrap kw-dest-jump"><span>On this page</span><a href="#kw-page-results">Activities</a>'
+               + ''.join(f'<a href="#dest-{k}">{e(lbl)}</a>' for k, lbl, _ in sections) + '</div>')
+    return nav, ''.join(h for _, _, h in sections)
+
+
 def build_destinations():
     # /destinations hub (previously /attractions)
     live = [l for l in LOCATIONS if l['id'] in LIVE_LOCS]
@@ -866,8 +909,12 @@ def build_destinations():
                     f'<span class="kw-eyebrow">{"UNITED ARAB EMIRATES" if l["group"] == "uae" else "WORLDWIDE EXPERIENCES"}</span><h1>{e(heading)}</h1><p>We don\'t have {e(name)} experiences listed right now. Tell us your dates and our team will check options for you.</p>'
                     f'<a class="kw-lead-action" href="{e(wa(f"Hi KWIKAR, I am looking for experiences in {name}."))}" target="_blank" rel="noopener noreferrer">Ask on WhatsApp ↗</a></div>'
                     f'<div class="kw-destination-lead-photo"><img src="{e(l.get("img") or "/assets/img/hero-dubai.webp")}" alt="Explore {e(name)}"></div></div></section>')
-            page(f'/destinations/{lid}', heading, f'Ask KWIKAR about experiences in {name}.', main, active='Destinations', noindex=True,
-                 main_class='kw-list-page kw-list-destination')
+            dx_nav, dx_html = dest_extras(l) if lid != 'other' else ('', '')
+            main += dx_html
+            page(f'/destinations/{lid}', heading, f'Ask KWIKAR about experiences in {name}.' if not dx_html else
+                 fit(f'Plan your {name} trip with KWIKAR: holiday packages, private transfers and visa help. Tell us your dates on WhatsApp and our team sends a quote.', 160),
+                 main, active='Destinations', noindex=not dx_html, main_class='kw-list-page kw-list-destination',
+                 crumbs=[('Home', '/'), ('Destinations', '/destinations'), (crumb_label, f'/destinations/{lid}')])
             continue
         img = (l.get('img') if l['group'] == 'uae' else None) or items[0].get('img') or '/assets/img/hero-dubai.webp'
         themes = list(dict.fromkeys(c for t in items for c in (t.get('cats') or []) if c))[:5]
@@ -875,6 +922,7 @@ def build_destinations():
         if themes:
             themes_html = f'<div class="kw-market-wrap kw-destination-themes"><span>Popular themes in {e(name)}</span>' + ''.join(
                 f'<a href="/search?destination={quote(lid)}&amp;q={quote(t_)}">{e(t_)} ↗</a>' for t_ in themes) + '</div>'
+        dx_nav, dx_html = dest_extras(l) if lid != 'other' else ('', '')
         others = [x for x in LOCATIONS if x['id'] != lid and x['group'] == l['group'] and x['id'] in LIVE_LOCS and x['id'] != 'other'][:3]
         rel = ''
         if others:
@@ -885,7 +933,7 @@ def build_destinations():
                 f'<p>Explore experiences in {e("the UAE" if lid == "other" else name)}, compare options and enquire for your preferred travel date.</p>'
                 f'<a class="kw-lead-action" href="#kw-page-results">Browse {len(items)} experiences ↓</a>{list_search()}</div>'
                 f'<div class="kw-destination-lead-photo"><img src="{e(img)}" alt="Explore {e(name)}"></div></div></section>'
-                f'{themes_html}{list_body(items, location=lid, kind="destination")}'
+                f'{dx_nav}{themes_html}{list_body(items, location=lid, kind="destination")}{dx_html}'
                 f'{hub_intro(f"dest:{lid}", "Experiences across the UAE" if lid == "other" else f"Visiting {name}", items, "" if lid == "other" else f" in {name}", eyebrow="GOOD TO KNOW")}{rel}')
         page(f'/destinations/{lid}', heading,
              f'{heading}: compare {len(items)} tours, attraction tickets and experiences with current prices. Book with KWIKAR on WhatsApp.', main,
@@ -1996,7 +2044,7 @@ def build_seo_files():
         return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 + ''.join(f'  <url><loc>{SITE}{p_}</loc><lastmod>{TODAY}</lastmod></url>\n' for p_ in paths) + '</urlset>\n')
     pages = ['/', '/holidays', '/transfers'] + transfer_paths() + ['/visa', '/contact', '/about', '/privacy', '/terms', '/booking-information', '/refund-policy'] + (['/blog'] + [post_href(a) for a in POSTS] if POSTS else [])
-    hubs = ['/destinations', '/activities'] + [f'/destinations/{l["id"]}' for l in LOCATIONS if l['id'] in LIVE_LOCS] + [f'/activities/{c["slug"]}' for c in LIVE_CATS]
+    hubs = ['/destinations', '/activities'] + [f'/destinations/{l["id"]}' for l in LOCATIONS if l['id'] in LIVE_LOCS or (l['id'] != 'other' and dest_extras(l)[1])] + [f'/activities/{c["slug"]}' for c in LIVE_CATS]
     products = [tour_href(t) for t in ALL_TOURS if tf.visible(t)]
     for name, paths in (('pages', pages), ('hubs', hubs), ('products', products)):
         open(os.path.join(OUT, f'sitemap-{name}.xml'), 'w').write(urlset(paths))

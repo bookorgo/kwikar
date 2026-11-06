@@ -325,3 +325,10 @@ a.kw-package{color:inherit}
 .kw-slide-next{right:-22px}
 @media(max-width:1340px){.kw-slide-prev{left:8px}.kw-slide-next{right:8px}}
 @media(max-width:600px){.kw-slide-btn{display:none}}
+/* destination pages: holidays, transfers, visa */
+.kw-dest-jump{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px}
+.kw-dest-jump span{font-size:12px;font-weight:700;color:#6b7786;text-transform:uppercase;letter-spacing:.08em;margin-right:4px}
+.kw-dest-jump a{border:1px solid #dfe6ee;border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:700;color:#18324f;background:#fff}
+.kw-dest-jump a:hover{border-color:#1265e8;color:#1265e8}
+.kw-dest-chips{margin-top:16px}
+.kw-dest-extra .kw-package-grid{margin-top:6px}

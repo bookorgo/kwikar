@@ -36,3 +36,4 @@
 - 2026-11-06 11:32 UTC — [Setup] 12 car detail pages /transfers/fleet/<car> (photo, class, guests/bags, prices, popular trips, FAQs, form with preferred car); fleet card photo and title link to them; home and class pages link cars to them
 - 2026-11-06 11:34 UTC — [Setup] Photo credit notes removed from transfer/fleet/car pages (Irfan); credits kept on /photo-credits (noindex), linked once in the footer, because CC BY-SA requires attribution
 - 2026-11-06 11:36 UTC — [Setup] Fleet slider: big round prev/next arrows on the sides (desktop), hidden at the start/end, swipe stays on mobile
+- 2026-11-06 11:42 UTC — [Setup] Destination pages now show matching holiday packages, private transfers (routes, airports, fleet) and visa options, with an 'On this page' jump bar; Sharjah, Singapore, Thailand and Malaysia pages indexed now that they have content
