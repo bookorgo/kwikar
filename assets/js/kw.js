@@ -285,8 +285,23 @@
     a.addEventListener('click', function () {
       var form = document.querySelector('.kw-form[data-wa]');
       setFormValue(form, form && form.elements.vehicle ? 'vehicle' : 'type', a.dataset.pick);
+      if (a.dataset.model && form && form.elements.special) {
+        var sp = form.elements.special, line = 'Preferred car: ' + a.dataset.model;
+        sp.value = sp.value.replace(/^Preferred car: .*(\n|$)/, '');
+        sp.value = line + (sp.value ? '\n' + sp.value : '');
+      }
     });
   });
+  var fleetTabs = document.querySelector('.kw-fleet-tabs');
+  if (fleetTabs) {
+    fleetTabs.querySelectorAll('[data-fleet-tab]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var t = b.dataset.fleetTab;
+        fleetTabs.querySelectorAll('[data-fleet-tab]').forEach(function (x) { x.classList.toggle('selected', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+        document.querySelectorAll('.kw-fleet-card').forEach(function (c) { c.hidden = t !== 'all' && (' ' + c.dataset.tags + ' ').indexOf(' ' + t + ' ') < 0; });
+      });
+    });
+  }
   var est = document.querySelector('[data-estimator]');
   if (est) {
     var E = JSON.parse(est.dataset.estimator), service = 'airport';
