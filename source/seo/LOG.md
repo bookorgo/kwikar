@@ -47,3 +47,4 @@
 - 2026-11-07 07:13 UTC — [Setup] Mercedes E-Class and BMW 530i: from AED 150 per trip and AED 180 per hour (Irfan), via car_overrides in transfers.json; car pages floor route prices at the car's starting price
 - 2026-11-07 09:04 UTC — [Setup] Destination hub now lists every city page with content (fixes 5 orphan pages found by the deep crawl); new weekly Deep crawl workflow
 - 2026-11-07 09:14 UTC — [Setup] Search Console fixes: 301s for old-site URLs (news, car, page, tour search, Arabic /ar, set_currency/set_lang params, ':code' suffix URLs), 410 for /space; old car pages go to the matching fleet page. Tested on local Apache
+- 2026-11-07 09:23 UTC — [Setup] Search Console: validation started for Not found (404), Server error (5xx) and Duplicate without user-selected canonical; sitemap resubmitted (Success, 183→188 URLs); re-indexing requested for /transfers, /transfers/fleet, /transfers/dubai-airport-to-dubai-marina
