@@ -338,3 +338,5 @@ a.kw-package{color:inherit}
 .kw-dest-jump a:hover{border-color:#1265e8;color:#1265e8}
 .kw-dest-chips{margin-top:16px}
 .kw-dest-extra .kw-package-grid{margin-top:6px}
+/* keep the WhatsApp bubble above the sticky price bar on mobile */
+@media(max-width:800px){body:has(.kw-product-sticky) .kw-floating-chat{bottom:calc(158px + env(safe-area-inset-bottom))}}

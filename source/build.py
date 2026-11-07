@@ -1434,7 +1434,10 @@ def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_
             f'<label>Pickup location<input required name="pickup" data-label="Pickup" value="{e(pickup)}" placeholder="Hotel, address or airport terminal"></label>'
             f'<label>Drop-off location<input required name="dropoff" data-label="Drop-off" value="{e(dropoff)}" placeholder="Hotel or address"></label>'
             f'<div class="kw-two-fields"><label>Date<input required type="date" name="date" data-label="Date"></label><label>Time<input required type="time" name="time" data-label="Time"></label></div>'
-            f'<div class="kw-two-fields"><label>Passengers<input required type="number" min="1" value="1" name="pax" data-label="Passengers"></label><label>Your name<input required name="name" data-label="Name"></label></div>'
+            f'<div class="kw-two-fields"><label>Passengers<input required type="number" min="1" max="50" value="1" name="pax" data-label="Passengers"></label>'
+            f'<label>Large suitcases<input type="number" min="0" max="30" value="1" name="bags" data-label="Large suitcases" inputmode="numeric"></label></div>'
+            f'<div class="kw-two-fields"><label>Hand bags<input type="number" min="0" max="30" value="0" name="handbags" data-label="Hand bags" inputmode="numeric"></label>'
+            f'<label>Your name<input required name="name" data-label="Name"></label></div>'
             f'<label>Flight number (airport pickups)<input name="flight" data-label="Flight number" placeholder="For example EK 202"></label>'
             f'<label>Child seats, extra stops or special requests<textarea name="special" data-label="Special requirements" placeholder="Child ages for seats, luggage, extra stops">{e(special)}</textarea></label>'
             f'<button class="kw-button" type="submit">Send enquiry on WhatsApp ↗</button></form>')
