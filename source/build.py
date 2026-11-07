@@ -336,15 +336,15 @@ def header(active):
 
 
 def mobile_nav(path):
-    primary = [('Activities', '/activities', 'ferris'), ('Holidays', '/holidays', 'luggage'), ('Transfers', '/transfers', 'taxi'), ('Visas', '/visa', 'book-user')]
-    extra = [('Destinations', '/destinations', 'flag'), ('Cruises', '/activities/cruises', 'ship')]
+    primary = [('Destinations', '/destinations', 'flag'), ('Activities', '/activities', 'ferris'), ('Holidays', '/holidays', 'luggage'), ('Transfers', '/transfers', 'taxi'), ('Visas', '/visa', 'book-user')]
+    extra = [('Cruises', '/activities/cruises', 'ship')]
     if CAT_COUNT.get('events'):
         extra.append(('Events', '/activities/events', 'calendar'))
     bottom = [('Home', '/', 'house'), ('Activities', '/activities', 'ticket'), ('Search', '/search', 'search'), ('Help', '/contact', 'message')]
 
     def sel(h):
         return path == h or path.startswith(h + '/')
-    extra_active = any(sel(h) for _, h, _ in extra) or path.startswith('/destinations/')
+    extra_active = any(sel(h) for _, h, _ in extra)
     tour = path.startswith('/activities/') and path.count('/') >= 3
     prim = ''.join(f'<a href="{h}"{" class=kw-selected aria-current=page" if sel(h) and not extra_active else ""}><span class="kw-service-icon">{icon3d(t, 30)}</span>{t}</a>' for t, h, i in primary)
     more = ''.join(f'<a href="{h}"{" aria-current=page" if sel(h) else ""}>{icon3d(t, 22)}{t}<span aria-hidden="true">→</span></a>' for t, h, i in extra)
