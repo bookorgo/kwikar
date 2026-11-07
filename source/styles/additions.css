@@ -340,6 +340,6 @@ a.kw-package{color:inherit}
 .kw-dest-extra .kw-package-grid{margin-top:6px}
 /* keep the WhatsApp bubble above the sticky price bar on mobile */
 @media(max-width:800px){body:has(.kw-product-sticky) .kw-floating-chat{bottom:calc(158px + env(safe-area-inset-bottom))}}
-/* Mobile service bar: Destinations first, same order as desktop (6 columns incl. More) */
-@media(max-width:800px){.kw-mobile-shortcuts{grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding-inline:4px}.kw-mobile-shortcuts a,.kw-mobile-extra>summary{font-size:10.5px;letter-spacing:-.2px}}
+/* Mobile service bar: same order as desktop (Destinations first, Cruises visible); one column per item */
+@media(max-width:800px){.kw-mobile-shortcuts{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding-inline:4px}.kw-mobile-shortcuts a,.kw-mobile-extra>summary{font-size:10.5px;letter-spacing:-.2px}}
 @media(max-width:380px){.kw-mobile-shortcuts a,.kw-mobile-extra>summary{font-size:9.5px;letter-spacing:-.3px}.kw-mobile-shortcuts .kw-service-icon,.kw-mobile-extra>summary .kw-service-icon{width:38px;height:38px}}

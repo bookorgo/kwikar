@@ -336,13 +336,15 @@ def header(active):
 
 
 def mobile_nav(path):
-    primary = [('Destinations', '/destinations', 'flag'), ('Activities', '/activities', 'ferris'), ('Holidays', '/holidays', 'luggage'), ('Transfers', '/transfers', 'taxi'), ('Visas', '/visa', 'book-user')]
-    extra = [('Cruises', '/activities/cruises', 'ship')]
+    primary = [('Destinations', '/destinations', 'flag'), ('Activities', '/activities', 'ferris'), ('Holidays', '/holidays', 'luggage'), ('Transfers', '/transfers', 'taxi'), ('Visas', '/visa', 'book-user'), ('Cruises', '/activities/cruises', 'ship')]
+    extra = []
     if CAT_COUNT.get('events'):
         extra.append(('Events', '/activities/events', 'calendar'))
     bottom = [('Home', '/', 'house'), ('Activities', '/activities', 'ticket'), ('Search', '/search', 'search'), ('Help', '/contact', 'message')]
 
     def sel(h):
+        if h == '/activities' and (path == '/activities/cruises' or path.startswith('/activities/cruises/')):
+            return False   # the cruises page highlights Cruises only
         return path == h or path.startswith(h + '/')
     extra_active = any(sel(h) for _, h, _ in extra)
     tour = path.startswith('/activities/') and path.count('/') >= 3
@@ -351,9 +353,10 @@ def mobile_nav(path):
     app = '' if tour else ('<nav class="kw-app-bottom-nav" aria-label="Mobile app navigation">' + ''.join(
         f'<a href="{h}"{" aria-current=page" if path == h else ""}>{svg(i, 25, 2.6 if path == h else 1.8, fill="currentColor" if (path == h and t == "Home") else "none")}<span>{t}</span></a>'
         for t, h, i in bottom) + '</nav>')
+    more_html = '' if not extra else (f'<details class="kw-mobile-extra{" kw-selected" if extra_active else ""}"><summary><span class="kw-service-icon">{icon3d("More", 28)}</span>More</summary>'
+            f'<nav class="kw-mobile-more" aria-label="More travel services">{more}</nav></details>')
     return (f'<div class="kw-mobile-shortcut-area{"" if not tour else " kw-tour-mobile-navigation"}"><nav class="kw-mobile-shortcuts" aria-label="Travel services">{prim}'
-            f'<details class="kw-mobile-extra{" kw-selected" if extra_active else ""}"><summary><span class="kw-service-icon">{icon3d("More", 28)}</span>More</summary>'
-            f'<nav class="kw-mobile-more" aria-label="More travel services">{more}</nav></details></nav></div>{app}')
+            f'{more_html}</nav></div>{app}')
 
 
 FOOTER_LINKS = [('/destinations', 'Destinations'), ('/activities', 'Activities'), ('/destinations/dubai', 'Dubai'), ('/holidays', 'Holidays'),
