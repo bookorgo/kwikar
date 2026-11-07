@@ -366,11 +366,31 @@ RewriteRule ^privacy-policy/?$ /privacy [R=301,L]
 RewriteRule ^(bookings|account|wishlist)(/.*)?$ /contact [R=301,L]
 RewriteRule ^(pay|booking)(/.*)?$ /contact [R=301,L]
 RewriteRule ^(admin|staff)(/.*)?$ / [R=301,L]
-RewriteRule ^ar/car/.*$ /transfers [R=301,L]
-RewriteRule ^car/.*$ /transfers [R=301,L]
+# Old car pages -> the fleet (known models -> their own page)
+RewriteRule ^(?:ar/)?car/(mercedes-vito|mercedes-v-class)/?$ /transfers/fleet/mercedes-v-class [R=301,L]
+RewriteRule ^(?:ar/)?car/(bmw-740i|bmw-7-series)/?$ /transfers/fleet/bmw-7-series [R=301,L]
+RewriteRule ^(?:ar/)?car/(mercedes-s-class|mercedes-benz-s-class)/?$ /transfers/fleet/mercedes-s-class [R=301,L]
+RewriteRule ^(?:ar/)?car/(mercedes-e-class|mercedes-benz-e-class)/?$ /transfers/fleet/mercedes-e-class [R=301,L]
+RewriteRule ^(?:ar/)?car/(cadillac-escalade|gmc-yukon-xl|tesla-model-y|lexus-es-300h|bmw-530i)/?$ /transfers/fleet/$1 [R=301,L]
+RewriteRule ^(?:ar/)?car(/.*)?$ /transfers/fleet [R=301,L]
 RewriteRule ^location/([a-z-]+)/?$ /destinations/$1 [R=301,L]
 RewriteRule ^attractions/?$ /destinations [R=301,L]
 RewriteRule ^api/sitemap-tours\.php$ /sitemap-products.xml [R=301,L]
+# Old blog, tour search and info pages
+RewriteRule ^(?:ar/)?news(/.*)?$ /blog? [R=301,L]
+RewriteRule ^(?:ar/)?tour/?$ /activities? [R=301,L]
+RewriteRule ^(?:ar/)?page/become-a-vendor/?$ /contact [R=301,L]
+RewriteRule ^(?:ar/)?page/.*$ /about? [R=301,L]
+# Old currency / language switches -> the same page without them
+RewriteCond %{QUERY_STRING} (^|&)(set_currency|set_lang)= [NC]
+RewriteRule ^(.*)$ /$1? [R=301,L]
+# Odd addresses with a ":code" suffix -> the clean address
+RewriteRule ^(.+?):[a-z0-9:]+$ /$1 [R=301,L]
+# Arabic section of the old site -> the English page
+RewriteRule ^ar/?$ / [R=301,L]
+RewriteRule ^ar/(.+)$ /$1 [R=301,L]
+# Pages removed for good
+RewriteRule ^space/?$ - [G,L]
 
 
 # --- Clean addresses without a trailing slash (/holidays, /destinations/dubai) ---
