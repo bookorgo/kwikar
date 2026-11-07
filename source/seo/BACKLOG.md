@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Ski Dubai (tour 222): full tour-extras content
 - [ ] Guide: "Abu Dhabi day trip from Dubai: what to see and how to get there"
 - [ ] Lotus Royale Dinner Cruise (tour 28): full tour-extras content
 - [ ] Dubai Water Canal Dhow Cruise (tour 227): full tour-extras content
@@ -15,7 +14,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
 
-- [ ] [edit] Alt text for Louvre Abu Dhabi (157), Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) and Dubai Miracle Garden (185: photos 3973, 1954, 1957, 3393) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 and 5 Nov. 6 Nov: CDN still blocked (proxy rejects the host)
+- [ ] [edit] Alt text for Louvre Abu Dhabi (157), Dubai Frame (175), Dubai Aquarium (144), Aquaventure (142) and Ferrari World (161) and Dubai Miracle Garden (185: photos 3973, 1954, 1957, 3393), Ski Dubai (222: photos 1321–1326) photos, plus the Dubai with Kids guide hero (photo 2407, alt is just the H1). Image CDN still 403 from the sandbox on 4 and 5 Nov. 6 Nov: CDN still blocked (proxy rejects the host)
 - [ ] [edit] Global Village (102): add season end date, free-entry age rules and transport once an official source can be fetched. 3 Nov: globalvillage.ae still blocked. Khaleej Times (15 Sep) says season runs "through May 2027", exact end date not announced; free entry "usually" under 3, 65+ and People of Determination (Gulf News: "senior citizens", no age); buses 102/103/104/106 (one source only). KT also gives Mon–Thu midnight / weekends 1am, which conflicts with our checked Sun–Wed / Thu–Sat split — keep ours until the official page can be read. 5 Nov: WebFetch blocked again (permission prompt unanswered). 6 Nov: all four sources (globalvillage.ae, Arabian Business, Gulf News, Khaleej Times) blocked; feed offer notes still confirm Sun–Wed 4pm–midnight, Thu–Sat 4pm–1am, gates close 30 min before, Tuesday families/ladies/couples
 
 - [ ] Guide: "Dubai Airport to the city: taxi, metro or private transfer?" (target: dubai airport transfer, dubai airport taxi fare) linking the /transfers route pages; use only transfer prices from transfers.json
@@ -38,6 +37,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Done
 
+- [x] Ski Dubai (tour 222) full content (7 Nov 2026). Hours, last ticket, under-2/under-14/helmet rules, slope level 2 + waiver, -4°C and food rule from skidxb.com (snow-park-adnoc, slope pass, passes page) cross-checked with experiences.visitdubai.com; pass contents from supplier notes. Left out: ID/AED 25 card deposit, Mountain Thriller specs, ticket validity, hats (sources disagree or old). Supplier durations (1 h / 4 h) hidden. Photo alt text still to do
 - [x] [tech] Homepage slider dots are now 24×24 px tap targets (dot drawn by ::before, same look); local Lighthouse mobile accessibility 91 → 100, target-size passes. IndexNow verified live: "IndexNow: HTTP 200 for 188 URLs" in the Update deploy branch run of 6 Nov 17:42 UTC (6 Nov 2026)
 - [x] Holidays page /holidays: SEO content below the package listings (intro + facts, what a package can include, 4-step quote process, which package suits your trip, 7 FAQs with FAQPage schema); title "Dubai Holiday Packages and Trips Abroad" (48), meta 145. No outside facts used: only the catalog and our own booking/refund terms, so no sources needed (6 Nov 2026)
 - [x] Guide: "Global Village Dubai Guide: Season 31 Timings and Tips" /blog/dubai/global-village-dubai-guide (6 Nov 2026). globalvillage.ae blocked again; hours/last entry/Tuesday rule from supplier notes + Arabian Business + Gulf News; Gardens of the World, Dragon Kingdom, Little Wonderers from Gulf News + Khaleej Times. Left out (one source only or not confirmed): end date, bus route numbers, parking prices, banned items, ticket prices. Free entry stated as "past seasons", our team confirms. Linked from the Global Village tour page
