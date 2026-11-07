@@ -1788,6 +1788,23 @@ def class_low(c):
     return min(r['prices'][c['key']] for r in TR_ROUTES if r['prices'].get(c['key']))
 
 
+CAR_OVERRIDES = {k: v for k, v in TR.get('car_overrides', {}).items() if not k.startswith('_')}
+
+
+def car_trip_low(x):
+    """Starting trip price for one car: Irfan's per-car price when set, else the class price."""
+    c = car_class(x)
+    base = class_low(c) if c else None
+    o = CAR_OVERRIDES.get(x['name'], {})
+    return max(base or 0, o['trip_from']) if o.get('trip_from') else base
+
+
+def car_hour(x):
+    c = car_class(x)
+    o = CAR_OVERRIDES.get(x['name'], {})
+    return o.get('hour') or (TR['hourly']['prices'].get(c['key']) if c else None)
+
+
 def fleet_cards():
     order = [c['key'] for c in TR_CLASSES]
     cars = sorted(CARS, key=lambda x: (order.index(car_class(x)['key']) if car_class(x) else 9))
@@ -1796,11 +1813,11 @@ def fleet_cards():
     for x in cars:
         c = car_class(x)
         line, tags = CAR_INFO.get(x['name'], ('', []))
-        hour = TR['hourly']['prices'].get(c['key']) if c else None
+        hour = car_hour(x)
         cards += (f'<article class="kw-fleet-card" data-tags="{" ".join(tags)}"><a class="kw-fleet-photo" href="{car_href(x)}" aria-label="{e(x["name"])} details"><img src="{e(x["img"])}" alt="{e(car_alt(x))}" loading="lazy" width="600" height="375"></a>'
                   f'<div class="kw-fleet-body"><span class="kw-eyebrow">{e(c["name"]) if c else e(x["type"])}</span><h3><a href="{car_href(x)}">{e(x["name"])}</a></h3><p>{e(line)}</p>'
                   f'<p class="kw-fleet-cap">Up to {x["pax"]} guests · {c["bags"] if c else "–"} bags</p>'
-                  f'<dl class="kw-fleet-prices"><div><dt>From / trip</dt><dd>{money(class_low(c)) if c else "On request"}</dd></div><div><dt>From / hour</dt><dd>{money(hour) if hour else "On request"}</dd></div></dl>'
+                  f'<dl class="kw-fleet-prices"><div><dt>From / trip</dt><dd>{money(car_trip_low(x)) if c else "On request"}</dd></div><div><dt>From / hour</dt><dd>{money(hour) if hour else "On request"}</dd></div></dl>'
                   f'<div class="kw-fleet-actions"><a href="{cls_href(c) if c else "/transfers"}">{e(c["name"]) if c else "Details"} prices</a>'
                   f'<a class="kw-button" href="#transfer-enquiry" data-pick="{e(c["name"]) if c else ""}" data-model="{e(x["name"])}">Book this car</a></div></div></article>')
     return tabs, cards, cars
@@ -1858,8 +1875,8 @@ def build_car_page(x):
     c = car_class(x)
     k = c['key']
     line, tags = CAR_INFO.get(x['name'], ('', []))
-    low = class_low(c)
-    hour = TR['hourly']['prices'].get(k)
+    low = car_trip_low(x)
+    hour = car_hour(x)
     name = x['name']
     title = f'{name} with Chauffeur in Dubai from {money(low)}'
     if len(title) > 60:
@@ -1874,7 +1891,7 @@ def build_car_page(x):
     quick = (f'Book a {name} with a professional chauffeur in Dubai and across the UAE. {line} It is in our {cls_word(c)} and takes up to {x["pax"]} guests and '
              f'{c["bags"]} bags. Airport and city transfers start at {money(low)} per car, and hourly hire at {money(hour)} per hour (minimum {HOUR_MIN} hours). '
              f'Tolls, parking and child seats are included.')
-    rs = sorted([r for r in TR_ROUTES if r['prices'].get(k)], key=lambda r: r['prices'][k])
+    rs = sorted([dict(r, prices=dict(r['prices'], **{k: max(r['prices'][k], low)})) for r in TR_ROUTES if r['prices'].get(k)], key=lambda r: r['prices'][k])
     popular = [r for r in rs if r['id'] in ('dxb-downtown', 'dxb-marina', 'dxb-palm', 'dxb-abudhabi', 'city-abudhabi', 'auh-city', 'dxb-sharjah', 'city-alain')]
     same = [o for o in CARS if o is not x and car_class(o) is c]
     others = [o for o in CARS if car_class(o) is not c][:6]
@@ -1885,12 +1902,12 @@ def build_car_page(x):
             (f'How many people and bags fit in the {name}?', f'Up to {x["pax"]} guests and about {c["bags"]} suitcases. Tell us your luggage when you book and we confirm the right car.'),
             ('Is the photo the exact car?', 'The photo shows this model. The car sent for your booking may differ in colour, year or details.'),
             ('How do I book?', 'Send your route, date, time and guests with the form or on WhatsApp. Our team confirms the car and the final price before you pay. There is no online payment.')]
-    car_cards = lambda lst: ''.join(f'<a class="kw-price-row" href="{car_href(o)}"><span><strong>{e(o["name"])}</strong><small>{e(car_class(o)["name"])} · up to {o["pax"]} guests</small></span><em>from {money(class_low(car_class(o)))}</em></a>' for o in lst)
+    car_cards = lambda lst: ''.join(f'<a class="kw-price-row" href="{car_href(o)}"><span><strong>{e(o["name"])}</strong><small>{e(car_class(o)["name"])} · up to {o["pax"]} guests</small></span><em>from {money(car_trip_low(o))}</em></a>' for o in lst)
     body = (f'<div class="kw-car-hero"><img src="{e(x["img"])}" alt="{e(car_alt(x))}" width="1200" height="750" fetchpriority="high"></div>'
             f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
             + facts([('Vehicle class', f'<a href="{cls_href(c)}">{e(c["name"])}</a>'), ('Guests', f'Up to {x["pax"]}'), ('Bags', f'About {c["bags"]}'),
                      ('Type', e(kind_txt or x['type'])), ('Transfers', f'From {money(low)} per car'), ('By the hour', f'{money(hour)} per hour, {HOUR_MIN} hours minimum')]) + '</section>'
-            f'<section class="kw-detail-block"><h2>Popular trips in the {e(name)}</h2><p>Prices per car, one way, for the {e(cls_word(c))}.</p>{route_rows(popular or rs[:8], key=k)}'
+            f'<section class="kw-detail-block"><h2>Popular trips in the {e(name)}</h2><p>Prices per car, one way{"" if name in CAR_OVERRIDES else ", for the " + e(cls_word(c))}.</p>{route_rows(popular or rs[:8], key=k)}'
             f'<p><a class="kw-text-link" href="{cls_href(c)}">All {e(c["name"])} prices ↗</a> · <a class="kw-text-link" href="{HOURLY_PATH}">Chauffeur by the hour ↗</a></p></section>'
             f'<section class="kw-detail-block"><h2>How it works</h2>{_how_steps(True)}</section>'
             f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>'

@@ -540,5 +540,16 @@
     "x": 950
    }
   }
- ]
+ ],
+ "car_overrides": {
+  "_note": "Per-car starting prices set by Irfan on 2026-11-07 (trip_from = from price per trip, hour = per hour)",
+  "Mercedes E-Class": {
+   "trip_from": 150,
+   "hour": 180
+  },
+  "BMW 530i": {
+   "trip_from": 150,
+   "hour": 180
+  }
+ }
 }
