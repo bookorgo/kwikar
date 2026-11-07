@@ -877,12 +877,17 @@ def dest_extras(l):
 
 def build_destinations():
     # /destinations hub (previously /attractions)
-    live = [l for l in LOCATIONS if l['id'] in LIVE_LOCS]
+    live = [l for l in LOCATIONS if l['id'] in LIVE_LOCS or (l['id'] != 'other' and dest_extras(l)[1])]
     uae = [l for l in live if l['group'] == 'uae']
     world = [l for l in live if l['group'] != 'uae' and l['id'] != 'other']
 
     def count(lid):
-        return f'{sum(1 for t in TOURS if t["loc"] == lid)} experiences'
+        n = sum(1 for t in TOURS if t['loc'] == lid)
+        if n:
+            return f'{n} experiences'
+        l_ = loc(lid)
+        has_h = any(k for k, _, _ in [(x, 0, 0) for x in ('holidays',)] if 'id="dest-holidays"' in dest_extras(l_)[1])
+        return 'Holidays' + (' & transfers' if 'id="dest-transfers"' in dest_extras(l_)[1] else '') if has_h else 'Transfers & visa'
     uae_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in uae)
     w_opts = ''.join(f'<option value="{l["id"]}">{e(l["name"])}</option>' for l in world)
     search = (f'<form class="kw-discover-form" action="/search" method="get" role="search"><label>Destination<span><select name="destination"><option value="">All destinations</option>'
