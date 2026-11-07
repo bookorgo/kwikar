@@ -1,0 +1,33 @@
+# Deep live crawl for indexing problems (redirects, 404s, canonicals, sitemap gaps).
+# The report goes to the "seo-crawl" branch and the run summary. Nothing on the site is changed.
+name: Deep crawl
+on:
+  schedule:
+    - cron: '53 3 * * 2'   # Tuesdays 03:53 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Crawl kwikar.com
+        run: |
+          python3 source/deep_crawl.py /tmp/crawl
+          cat /tmp/crawl/crawl-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Save to the seo-crawl branch
+        run: |
+          cd /tmp/crawl
+          git init -q -b seo-crawl
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Deep crawl $(date -u +%F)"
+          for i in 1 2 3 4 5; do
+            git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" seo-crawl:seo-crawl && exit 0
+            sleep $((i*15))
+          done
+          exit 1
