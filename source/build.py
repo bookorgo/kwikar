@@ -1533,7 +1533,11 @@ def fit(s, n):
     """Trim a description to at most n characters at a word boundary."""
     if len(s) <= n:
         return s
-    return s[:n].rsplit(' ', 1)[0].rstrip(',;') + '.'
+    cut = s[:n + 1]
+    end = cut.rfind('. ')  # prefer ending on a whole sentence when it stays long enough for a meta
+    if end + 1 >= 120:
+        return cut[:end + 1]
+    return s[:n].rsplit(' ', 1)[0].rstrip(',;:.') + '.'
 
 
 def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers'):
