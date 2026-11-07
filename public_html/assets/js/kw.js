@@ -485,16 +485,18 @@
         return '<div class="kw-guest-row"><div><strong>' + label + '</strong><small>' + hint + '</small></div><div class="kw-stepper"><button type="button" data-dec="' + key + '"' + (s[key] <= min ? ' disabled' : '') +
           ' aria-label="Remove ' + label + '">−</button><output>' + s[key] + '</output><button type="button" data-inc="' + key + '"' + (s[key] >= max ? ' disabled' : '') + ' aria-label="Add ' + label + '">+</button></div></div>';
       };
+      var ca = t.childAges || null, ageMin = ca ? ca.min : 0, ageMax = ca ? ca.max : 17;
+      s.ages = s.ages.map(function (a) { return a >= ageMin && a <= ageMax ? a : -1; });
       while (s.ages.length < s.children) s.ages.push(-1);
       s.ages.length = s.children;
       var ages = s.children ? '<div class="kw-child-age-list">' + s.ages.map(function (a, i) {
         var opts = '<option value="">Select age</option>';
-        for (var y = 0; y <= 17; y++) opts += '<option value="' + y + '"' + (a === y ? ' selected' : '') + '>' + y + ' years</option>';
+        for (var y = ageMin; y <= ageMax; y++) opts += '<option value="' + y + '"' + (a === y ? ' selected' : '') + '>' + y + ' years</option>';
         return '<label>Age of child ' + (i + 1) + '<select required data-age="' + i + '">' + opts + '</select></label>';
       }).join('') + '</div>' : '';
       var ready = s.ages.every(function (a) { return a >= 0; });
-      body.innerHTML = '<div class="kw-sheet-content">' + row('adults', 'Adults', 'Lead traveller must be an adult', 1) + row('children', 'Children', 'Supplier age eligibility will be confirmed', 0) + ages +
-        row('infants', 'Infants', 'Age and price eligibility confirmed by our team', 0) + '<p class="kw-guest-note">Option limits are checked by our team before you pay. Child ages are required.</p>' +
+      body.innerHTML = '<div class="kw-sheet-content">' + row('adults', 'Adults', 'Lead traveller must be an adult', 1) + row('children', 'Children', ca ? 'Ages ' + ageMin + '–' + ageMax + (ageMin > 0 ? '. Under ' + ageMin + ' add as infants' : '') + '. ' + (ageMax + 1) + '+ book as adults' : 'Supplier age eligibility will be confirmed', 0) + ages +
+        row('infants', 'Infants', ca && ageMin > 0 ? 'Under ' + ageMin + ' years' : 'Age and price eligibility confirmed by our team', 0) + '<p class="kw-guest-note">Option limits are checked by our team before you pay. Child ages are required.</p>' +
         '<button class="kw-button" type="button" data-next' + (ready ? '' : ' disabled') + '>See options</button></div>';
       body.querySelectorAll('[data-inc]').forEach(function (b) { b.addEventListener('click', function () { s[b.dataset.inc]++; save(); renderGuests(); }); });
       body.querySelectorAll('[data-dec]').forEach(function (b) { b.addEventListener('click', function () { s[b.dataset.dec]--; save(); renderGuests(); }); });

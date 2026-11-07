@@ -1016,6 +1016,41 @@ def short_title(name, limit=51):
     return ' '.join(words).rstrip(' ,(-–')
 
 
+def child_age_range(d, x):
+    """(min, max) child age for the booking form, or None when the supplier gives no clear rule.
+    Order: tour-extras "child_ages" [min, max] > the supplier's child-policy FAQ from the API.
+    A range is used only when the supplier states one (e.g. "children 3-10 ... 10 and above adult" -> 3-9)."""
+    if x.get('child_ages'):
+        a, b = x['child_ages']
+        return int(a), int(b)
+    txt = ' '.join(_plain(f.get('a') or '') for f in (d.get('faq') or [])
+                   if re.search(r'(?i)child|kid|age|infant|minor', f.get('q') or ''))
+    txt = re.sub(r'\s+', ' ', txt.replace('–', '-').replace('—', '-')).replace('\xa0', ' ')
+    if not txt:
+        return None
+    if re.search(r'(?i)pays? (?:the )?full adult (?:fare|price|rate)', txt):   # children pay as adults: no child age band
+        return None
+    N = r'(\d{1,2})'
+    m = (re.search(r'(?i)(?:child(?:ren)?|kids?)\b[^.;\d]{0,30}?' + N + r'\s*(?:-|to)\s*' + N + r'(?!\s*(?:m\b|cm|kg))', txt)
+         or re.search(r'(?i)from\s+' + N + r'\s*(?:-|to)\s*' + N + r'\s*(?:years?|yrs?)?[^.;]{0,25}?child', txt))
+    if not m:
+        return None
+    lo, hi = int(m.group(1)), int(m.group(2))
+    adult = None
+    for pat, add in ((N + r'\s*(?:years?|yrs?)?\s*(?:old\s*)?(?:and|&)\s*(?:above|up|over|older)[^.;]{0,40}?adult', 0),
+                     (r'(?:from|ages?)\s*(?:age\s*)?(?:of\s*)?' + N + r'\s*(?:years?|yrs?)?(?:\s*old)?\s*(?:and\s*above\s*)?[-,:]?\s*(?:an?\s*|the\s*)?adult', 0),
+                     (r'(?:over|above|older than)\s*' + N + r'\s*(?:years?|yrs?)?[^.;]{0,40}?adult', 1)):
+        a = re.search('(?i)' + pat, txt)
+        if a:
+            adult = int(a.group(1)) + add
+            break
+    if adult is not None:
+        hi = min(hi, adult - 1)
+    if lo > hi or hi > 17:
+        return None
+    return lo, hi
+
+
 def build_product(t, d):
     tid = str(t['id'])
     x = EXTRAS.get(tid, {})
@@ -1198,7 +1233,9 @@ def build_product(t, d):
     cta_h = x.get('cta_heading') or f'Ready to book {name}?'
     cta_t = x.get('cta_text') or 'Send your date and guests. Our team replies on WhatsApp with availability and the final price.'
     wa_q = wa(f'Hi KWIKAR, I would like to book {name}. Please share availability.')
+    ages = child_age_range(d, x)
     sheet_data = {'id': t['id'], 'name': name, 'url': SITE + path, 'cancellation': [_plain(c) for c in cancel],
+                  'childAges': {'min': ages[0], 'max': ages[1]} if ages else None,
                   'offers': [{k: o.get(k) for k in ('name', 'hours', 'price', 'unit', 'child', 'tripFee', 'adultBase', 'minPeople', 'maxPeople', 'daysOffered', 'pricingPeriods', 'transferKind', 'transferPricingMode', 'pickupRequired', 'childrenAllowed')} for o in offers]}
     city_link = dest_href(lid)
     main = f'''<nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/activities">Activities</a> / <a href="{city_link}">{e("More" if lid == "other" else cname)}</a> / {e(name)}</nav>
