@@ -3,18 +3,15 @@ User-agent: *
 Allow: /
 Disallow: /search
 Disallow: /api/
-Disallow: /confirmation/
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /search
 Disallow: /api/
-Disallow: /confirmation/
 
 User-agent: GPTBot
 Allow: /
 Disallow: /search
 Disallow: /api/
-Disallow: /confirmation/
 
 Sitemap: https://kwikar.com/sitemap.xml
