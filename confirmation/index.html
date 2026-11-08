@@ -299,7 +299,7 @@ const COMPANY = {
   website:   "kwikar.com",
   // Full address where THIS file is hosted on your site
   // Leave empty to use the current page address automatically.
-  baseUrl:   "https://kwikar.com/confirmation/"
+  baseUrl:   "https://kwikar.com/confirmation"
 };
 /* ========================================================================== */
 
@@ -314,6 +314,8 @@ document.querySelectorAll("[data-tag]").forEach(e=>e.textContent=COMPANY.tagline
 function enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let s="";b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
 function dec(t){t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";const s=atob(t);return JSON.parse(new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0))));}
 
+async function encZ(o){try{const cs=new CompressionStream("deflate-raw");const w=cs.writable.getWriter();w.write(new TextEncoder().encode(JSON.stringify(o)));w.close();const buf=new Uint8Array(await new Response(cs.readable).arrayBuffer());let s="";buf.forEach(x=>s+=String.fromCharCode(x));return "c="+btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}catch(e){return "b="+enc(o);}}
+async function decZ(t){t=t.replace(/-/g,"+").replace(/_/g,"/");while(t.length%4)t+="=";const bytes=Uint8Array.from(atob(t),c=>c.charCodeAt(0));const ds=new DecompressionStream("deflate-raw");const w=ds.writable.getWriter();w.write(bytes);w.close();return JSON.parse(await new Response(ds.readable).text());}
 function newRef(){const d=new Date();return "BK"+String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"-"+Math.floor(1000+Math.random()*9000);}
 
 function formData(){const o={};new FormData($("f")).forEach((v,k)=>{v=String(v).trim();if(v)o[k]=v;});return o;}
@@ -392,10 +394,10 @@ function resetForm(){$("f").reset();$("f").ref.value=newRef();$("out").classList
 
 function base(){if(COMPANY.baseUrl)return COMPANY.baseUrl;return location.origin+location.pathname;}
 
-$("f").addEventListener("submit",e=>{
+$("f").addEventListener("submit",async e=>{
   e.preventDefault();
   const b=formData();
-  const link=base()+"?b="+enc(b);
+  const link=base()+"?"+(await encZ(b));
   const dt=b.dt?new Date(b.dt):null;
   const when=dt?dt.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+" at "+dt.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
   const msg=`Dear ${b.cn||"Guest"},
@@ -425,12 +427,12 @@ function copy(id){const t=$(id);t.select();(navigator.clipboard?navigator.clipbo
 function toast(m){$("toast").textContent=m;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800);}
 
 // ---- boot ----
-(function(){
-  let b=null;
-  try{const p=new URLSearchParams(location.search).get("b");if(p)b=dec(p);}catch(e){}
+(async function(){
+  let b=null;const qs=new URLSearchParams(location.search);const hadData=qs.has("b")||qs.has("c");
+  try{if(qs.get("c"))b=await decZ(qs.get("c"));else if(qs.get("b"))b=dec(qs.get("b"));}catch(e){}
   if(b){showCustomer(b,false);}
   else if(location.protocol.startsWith("http")&&location.hostname.endsWith("kwikar.com")&&location.hash!=="#create"){
-    document.body.innerHTML='<div class="hero" style="padding-bottom:40px"><img class="logo" src="'+document.querySelector(".logo").src+'" alt="Kwikar"><h1 style="margin-top:20px">Booking link not found</h1><p>Please open the full link we sent you, or contact us.</p><div class="btns" style="max-width:360px;margin:20px auto 0"><a class="btn btn-gold" href="tel:'+COMPANY.phone.replace(/\s/g,"")+'">Call</a><a class="btn btn-wa" href="https://wa.me/'+digits(COMPANY.whatsapp)+'">WhatsApp</a></div><p style="margin-top:12px">'+esc(COMPANY.phone)+' · '+esc(COMPANY.email)+'</p></div>';
+    document.body.innerHTML='<div class="hero" style="padding-bottom:40px"><img class="logo" src="'+document.querySelector(".logo").src+'" alt="Kwikar"><h1 style="margin-top:20px">'+(hadData?"This link is incomplete":"Booking link not found")+'</h1><p>'+(hadData?"Part of the link seems to be missing. Please open the complete link from our message, or contact us.":"Please open the full link we sent you, or contact us.")+'</p><div class="btns" style="max-width:360px;margin:20px auto 0"><a class="btn btn-gold" href="tel:'+COMPANY.phone.replace(/\s/g,"")+'">Call</a><a class="btn btn-wa" href="https://wa.me/'+digits(COMPANY.whatsapp)+'">WhatsApp</a></div><p style="margin-top:12px">'+esc(COMPANY.phone)+' · '+esc(COMPANY.email)+'</p></div>';
   }
   else{
     $("admin").classList.remove("hide");$("f").ref.value=newRef();
