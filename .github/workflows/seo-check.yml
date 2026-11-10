@@ -29,4 +29,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue create --title "Weekly SEO check - problems found $(date -u +%F)" --body-file seo-report.md
+          # Reuse the oldest open weekly-check issue (comment on it) instead of opening a duplicate every week
+          open_no=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title | startswith("Weekly SEO check"))] | sort_by(.number) | .[0].number // empty')
+          if [ -n "$open_no" ]; then
+            gh issue comment "$open_no" --body-file seo-report.md
+          else
+            gh issue create --title "Weekly SEO check - problems found $(date -u +%F)" --body-file seo-report.md
+          fi
