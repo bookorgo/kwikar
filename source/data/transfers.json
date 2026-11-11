@@ -551,5 +551,300 @@
    "trip_from": 150,
    "hour": 180
   }
+ },
+ "tours": {
+  "_note": "Private chauffeur tours with the KWIKAR fleet. Prices are per car for the whole tour. PROPOSED by Claude on 2026-11-11, waiting for Irfan's approval (set approved to the date when approved). Extra hours use the hourly price of the vehicle class.",
+  "approved": null,
+  "slug": "private-tours",
+  "prices": {
+   "half": {
+    "e": 650,
+    "f": 790,
+    "s": 1190,
+    "v": 1290,
+    "x": 1450
+   },
+   "full": {
+    "e": 1150,
+    "f": 1390,
+    "s": 2090,
+    "v": 2290,
+    "x": 2590
+   }
+  },
+  "hours": {
+   "half": 5,
+   "full": 10
+  },
+  "list": [
+   {
+    "id": "dubai",
+    "slug": "dubai-city-tour",
+    "name": "Private Dubai City Tour",
+    "kind": "half",
+    "area": "Dubai",
+    "line": "Old Dubai and new Dubai in one afternoon or morning, at your own pace.",
+    "intro": "See the Dubai of the 1950s and the Dubai of today in one private tour. Your chauffeur picks you up at your hotel, drives you between the sights and waits while you explore. You decide how long to stay at each stop.",
+    "stops": [
+     [
+      "Al Fahidi Historical Neighbourhood",
+      "Wind-tower houses, small museums and quiet lanes by the Creek."
+     ],
+     [
+      "Dubai Creek and the souks",
+      "Cross the Creek by abra (a short boat ride, small fare on the day) to the Gold and Spice Souks in Deira."
+     ],
+     [
+      "Jumeirah Mosque",
+      "Photo stop at one of the city's best-known mosques."
+     ],
+     [
+      "Burj Al Arab view",
+      "Beach stop for the classic photo of the sail-shaped hotel."
+     ],
+     [
+      "Palm Jumeirah",
+      "Drive along the Palm to Atlantis for the view back to the skyline."
+     ],
+     [
+      "Dubai Marina",
+      "Towers, yachts and the waterfront walk."
+     ],
+     [
+      "Burj Khalifa and Dubai Mall",
+      "Finish downtown. Add At the Top tickets or stay for the fountain show."
+     ]
+    ],
+    "good": "First-time visitors, families and anyone with only one free half day."
+   },
+   {
+    "id": "abu-dhabi",
+    "slug": "abu-dhabi-day-tour",
+    "name": "Private Abu Dhabi Day Tour from Dubai",
+    "kind": "full",
+    "area": "Abu Dhabi",
+    "line": "The Grand Mosque, the palaces and the Corniche of the UAE capital.",
+    "intro": "A full day in Abu Dhabi with your own car and chauffeur, starting from your Dubai hotel. The drive takes about 90 minutes each way, so a private car lets you rest between the sights and choose where to spend more time.",
+    "stops": [
+     [
+      "Sheikh Zayed Grand Mosque",
+      "White marble, 82 domes and one of the largest carpets in the world. Entry is free; modest dress is required."
+     ],
+     [
+      "Qasr Al Watan",
+      "The working presidential palace, open to visitors (ticket on the day)."
+     ],
+     [
+      "Emirates Palace",
+      "Photo stop at the landmark hotel and its gardens."
+     ],
+     [
+      "Corniche and Heritage Village",
+      "Beachfront drive and a look at life before oil."
+     ],
+     [
+      "Louvre Abu Dhabi",
+      "Optional museum visit on Saadiyat Island (ticket extra)."
+     ],
+     [
+      "Yas Island",
+      "Drive past Ferrari World and the Yas Marina Circuit on the way back."
+     ]
+    ],
+    "good": "Culture lovers and anyone who wants to see the capital without a group coach."
+   },
+   {
+    "id": "sharjah",
+    "slug": "sharjah-culture-tour",
+    "name": "Private Sharjah Culture Tour",
+    "kind": "half",
+    "area": "Sharjah",
+    "line": "Museums, old souks and the heritage quarter of the UAE's cultural capital.",
+    "intro": "Sharjah is 30 minutes from Dubai and full of restored old buildings, museums and markets. This private half day shows its historic centre and waterfront with a chauffeur who waits at every stop.",
+    "stops": [
+     [
+      "Heart of Sharjah",
+      "Restored coral-stone houses, old souks and the Al Hisn fort."
+     ],
+     [
+      "Central Souq",
+      "The blue-tiled market for carpets, gold and handicrafts."
+     ],
+     [
+      "Museum of Islamic Civilization",
+      "Science, art and history of the Islamic world (ticket on the day)."
+     ],
+     [
+      "Al Noor Mosque",
+      "Photo stop at the Ottoman-style mosque on Khalid Lagoon."
+     ],
+     [
+      "Al Majaz Waterfront",
+      "Lagoon walk with fountain views and cafes."
+     ]
+    ],
+    "good": "Families and travellers interested in history, art and traditional markets."
+   },
+   {
+    "id": "ajman-uaq",
+    "slug": "ajman-umm-al-quwain-tour",
+    "name": "Private Ajman & Umm Al Quwain Tour",
+    "kind": "half",
+    "area": "Ajman and Umm Al Quwain",
+    "line": "Two small emirates with old forts, dhow builders and calm mangrove shores.",
+    "intro": "North of Sharjah, Ajman and Umm Al Quwain show a slower side of the UAE. This private half day links their forts, beaches and boatyards, away from the big-city crowds.",
+    "stops": [
+     [
+      "Ajman Museum",
+      "An 18th-century fort turned into a museum of local life (ticket on the day)."
+     ],
+     [
+      "Ajman Corniche",
+      "Long, quiet beach road for a walk and photos."
+     ],
+     [
+      "Dhow yard",
+      "See wooden dhows still built by hand, when the yard is working."
+     ],
+     [
+      "Umm Al Quwain Fort and old town",
+      "The old fort, now a museum, and the restored heritage area."
+     ],
+     [
+      "Mangrove shore",
+      "Stop at the lagoons and mangroves of Umm Al Quwain."
+     ]
+    ],
+    "good": "Repeat visitors and photographers who want something different."
+   },
+   {
+    "id": "hatta",
+    "slug": "hatta-mountain-tour",
+    "name": "Private Hatta Mountain Tour",
+    "kind": "full",
+    "area": "Hatta (Dubai)",
+    "line": "Turquoise dam lake, mountain views and a heritage village in Dubai's mountains.",
+    "intro": "Hatta is Dubai's mountain town, about 90 minutes from the city. Your chauffeur drives you through the desert into the Hajar Mountains and stays with you all day, so you can kayak, hike or just enjoy the views.",
+    "stops": [
+     [
+      "Hatta Dam",
+      "The turquoise lake between the mountains. Kayaks and pedal boats can be hired there."
+     ],
+     [
+      "Hatta Heritage Village",
+      "Restored stone houses, towers and a small fort."
+     ],
+     [
+      "Hatta Hill Park",
+      "Short climb for views over the town and wadis."
+     ],
+     [
+      "Hatta Honey Bee Garden",
+      "Learn about mountain honey and taste it (entry fee on the day)."
+     ],
+     [
+      "Leem Lake",
+      "A quieter lake and picnic spot on the way back."
+     ]
+    ],
+    "good": "Nature lovers, families and anyone wanting a break from the city."
+   },
+   {
+    "id": "fujairah",
+    "slug": "fujairah-east-coast-tour",
+    "name": "Private Fujairah & East Coast Tour",
+    "kind": "full",
+    "area": "Fujairah",
+    "line": "Mountain roads, the UAE's oldest mosque and the beaches of the Gulf of Oman.",
+    "intro": "Cross the country to the east coast, where the Hajar Mountains meet the Gulf of Oman. A private car and chauffeur make the two-hour drive comfortable and let you stop wherever you like on the way.",
+    "stops": [
+     [
+      "Masafi market",
+      "Roadside stalls with fruit, pottery and carpets."
+     ],
+     [
+      "Al Bidya Mosque",
+      "The oldest mosque in the UAE, built of stone and mud bricks."
+     ],
+     [
+      "Fujairah Fort",
+      "Restored fort and heritage area in Fujairah city."
+     ],
+     [
+      "Khor Fakkan",
+      "Beach, corniche and the mountain viewpoint above the bay."
+     ],
+     [
+      "Beach time",
+      "Time at the beach near Dibba or Al Aqah. Hotel day passes and snorkelling are extra."
+     ]
+    ],
+    "good": "Beach lovers and travellers who want to see the mountains and the other coast."
+   },
+   {
+    "id": "ras-al-khaimah",
+    "slug": "ras-al-khaimah-jebel-jais-tour",
+    "name": "Private Ras Al Khaimah & Jebel Jais Tour",
+    "kind": "full",
+    "area": "Ras Al Khaimah",
+    "line": "The highest peak in the UAE, old forts and a ghost village by the sea.",
+    "intro": "Drive up the switchback road of Jebel Jais, the UAE's highest mountain, then explore the history of Ras Al Khaimah. In summer the top of the mountain is several degrees cooler than the coast.",
+    "stops": [
+     [
+      "Jebel Jais mountain road",
+      "The famous road to the viewing deck at about 1,300 metres."
+     ],
+     [
+      "Jais Flight zipline",
+      "Optional: one of the longest ziplines in the world (book in advance, ticket extra)."
+     ],
+     [
+      "Dhayah Fort",
+      "The only hilltop fort in the UAE, with views over palm groves."
+     ],
+     [
+      "Al Jazirat Al Hamra",
+      "Abandoned pearling village of coral-stone houses."
+     ],
+     [
+      "National Museum of Ras Al Khaimah",
+      "The old ruler's fort, now a museum (ticket on the day)."
+     ]
+    ],
+    "good": "Adventure seekers and anyone who wants mountain views."
+   },
+   {
+    "id": "al-ain",
+    "slug": "al-ain-garden-city-tour",
+    "name": "Private Al Ain Garden City Tour",
+    "kind": "full",
+    "area": "Al Ain (Abu Dhabi)",
+    "line": "UNESCO oasis, desert forts and the mountain road of Jebel Hafeet.",
+    "intro": "Al Ain is the green inland city of Abu Dhabi, the birthplace of Sheikh Zayed and a UNESCO World Heritage site. This private day trip from Dubai combines palm oases, forts and the drive up Jebel Hafeet.",
+    "stops": [
+     [
+      "Al Ain Oasis",
+      "Shady paths through thousands of date palms and old falaj water channels."
+     ],
+     [
+      "Al Jahili Fort",
+      "One of the largest forts in the UAE, with a small exhibition."
+     ],
+     [
+      "Al Ain Palace Museum",
+      "Sheikh Zayed's former home, now a museum."
+     ],
+     [
+      "Camel market",
+      "One of the last traditional camel markets in the country (mornings)."
+     ],
+     [
+      "Jebel Hafeet",
+      "Drive the mountain road to the top for the sunset view, past the Green Mubazzarah hot springs."
+     ]
+    ],
+    "good": "History lovers and travellers who want to see the UAE away from the coast."
+   }
+  ]
  }
 }

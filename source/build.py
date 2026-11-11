@@ -279,7 +279,9 @@ MENU_ITEMS = {
     'Transfers': [('Airport transfers', [(a['short'] + ' (' + a['code'] + ')', '/transfers/' + a['slug']) for a in TR['airports']]),
                   ('Popular routes', [(r['to'] + ' from ' + r['airport'], '/transfers/' + r['slug']) for r in TR['routes'] if r['id'] in ('dxb-downtown', 'dxb-marina', 'dxb-palm', 'dxb-abudhabi')]
                    + [('Dubai to Abu Dhabi', '/transfers/dubai-to-abu-dhabi'), ('Chauffeur by the hour', '/transfers/' + TR['hourly']['slug'])]),
-                  ('Vehicle classes', [(c['name'], '/transfers/vehicles/' + c['slug']) for c in TR['classes']] + [('Our full fleet', '/transfers/fleet')])],
+                  ('Vehicle classes', [(c['name'], '/transfers/vehicles/' + c['slug']) for c in TR['classes']] + [('Our full fleet', '/transfers/fleet')])]
+                 + ([('Private tours', [(t['name'].replace('Private ', '').replace(' from Dubai', ''), '/transfers/' + TR['tours']['slug'] + '/' + t['slug']) for t in TR['tours']['list']]
+                      + [('All private tours', '/transfers/' + TR['tours']['slug'])])] if TR.get('tours', {}).get('list') else []),
 }
 MENU_CITIES = ['dubai', 'abu-dhabi', 'sharjah', 'ras-al-khaimah', 'singapore', 'bali', 'thailand', 'malaysia']
 EXPERIENCE_TERMS = [('City Tours', 'city tour'), ('Theme Parks', 'theme park'), ('Desert Adventures', 'desert'), ('Water Activities', 'water'),
@@ -1473,7 +1475,7 @@ def faq_block(title, items):
 
 def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_title='Transfer enquiry', special=''):
     opts = ''.join(f'<option{" selected" if c["name"] == vehicle else ""}>{e(c["name"])}</option>' for c in TR_CLASSES)
-    svc = ''.join(f'<option{" selected" if s == service else ""}>{s}</option>' for s in ('Airport transfer', 'Point to point', 'Hourly chauffeur'))
+    svc = ''.join(f'<option{" selected" if s == service else ""}>{s}</option>' for s in ('Airport transfer', 'Point to point', 'Hourly chauffeur', 'Private tour'))
     return (f'<form class="kw-form" data-wa="{e(wa_title)}"><label>Service type<select name="service" data-label="Service" data-prefill="service">{svc}</select></label>'
             f'<label>Vehicle class<select name="vehicle" data-label="Vehicle class">{opts}</select></label>'
             f'<label>Pickup location<input required name="pickup" data-label="Pickup" value="{e(pickup)}" placeholder="Hotel, address or airport terminal"></label>'
@@ -1488,9 +1490,9 @@ def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_
             f'<button class="kw-button" type="submit">Send enquiry on WhatsApp ↗</button></form>')
 
 
-def tr_enquiry_section(title, text, **kw):
+def tr_enquiry_section(title, text, included=None, **kw):
     return (f'<section id="transfer-enquiry" class="kw-section kw-market-alt"><div class="kw-wrap kw-service-layout"><div>{section_head(title, "YOUR RIDE")}'
-            f'<p>{text}</p><h3>Included in the price</h3><p>{e(INCLUDED_TXT)}. The price is per vehicle, not per person. '
+            f'<p>{text}</p><h3>Included in the price</h3><p>{e(included or INCLUDED_TXT)}. The price is per vehicle, not per person. '
             f'Our team confirms the final price on WhatsApp before you pay. There is no online payment on the website.</p></div>{tr_form(**kw)}</div></section>')
 
 
@@ -1540,14 +1542,14 @@ def fit(s, n):
     return s[:n].rsplit(' ', 1)[0].rstrip(',;:.') + '.'
 
 
-def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers'):
+def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers', cta_label='Request this transfer', seller='Transfers'):
     nav = ' / '.join(f'<a href="{h}">{e(n)}</a>' for n, h in crumbs[:-1]) + f' / {e(crumbs[-1][0])}'
     main = (f'<nav aria-label="Breadcrumb">{nav}</nav><h1>{e(h1)}</h1><p class="kw-detail-meta">{e(sub)}</p>'
             f'<div class="kw-product-badges"><span>Price per vehicle</span><span>Tolls and parking included</span><span>Book on WhatsApp</span></div>'
             f'<div class="kw-detail-grid"><div>{body}</div>'
             f'<aside><div class="kw-selection-card"><span>From</span><strong>{money(aside_price) if aside_price else "Price on request"}</strong>'
-            f'<small>{e(aside_unit)} · no booking or card fees</small><a class="kw-button" href="#transfer-enquiry">Request this transfer</a>'
-            f'<a href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a><p class="kw-seller">Transfers arranged by Kwikar LLC-FZ, United Arab Emirates.</p></div></aside></div>'
+            f'<small>{e(aside_unit)} · no booking or card fees</small><a class="kw-button" href="#transfer-enquiry">{e(cta_label)}</a>'
+            f'<a href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a><p class="kw-seller">{e(seller)} arranged by Kwikar LLC-FZ, United Arab Emirates.</p></div></aside></div>'
             f'<section class="kw-final-cta"><div><h2>Book your ride</h2><p>{e(cta_text)} Questions? <a href="{e(wa("Hi KWIKAR, I have a transfer question."))}" target="_blank" rel="noopener noreferrer">WhatsApp us on {PHONE_FMT}</a>.</p></div>'
             f'<div><a class="kw-button" href="#transfer-enquiry">Request a quote</a></div></section>'
             f'<div class="kw-product-sticky"><div><span>From</span><strong>{money(aside_price) if aside_price else "On request"}</strong><small>{e(aside_unit)}</small></div><a class="kw-button" href="#transfer-enquiry">Request</a></div>')
@@ -1769,6 +1771,9 @@ def build_transfers():
             + f'<div class="kw-fleet-row" id="kw-fleet-row">{fcards}</div>'
             + '<button type="button" class="kw-slide-btn kw-slide-next" data-scroll="kw-fleet-row" data-dir="1" aria-label="Next cars">›</button></div>'
             + f'<h3 class="kw-fleet-classes-h">Prices by vehicle class</h3><div class="kw-chip-links">{class_chips}</div></div></section>'
+            + (f'<section class="kw-section kw-market-alt" id="private-tours"><div class="kw-wrap">{section_head("Private city tours", "WITH YOUR OWN CHAUFFEUR", action=("All private tours", TOURS_PATH), carousel_id="kw-ptour-row")}'
+               f'<p class="kw-section-intro">See Dubai and the other emirates in a private car from our fleet. One price per car for the whole tour: half day from {money(tr_low(TT["prices"]["half"]))}, full day from {money(tr_low(TT["prices"]["full"]))}.</p>'
+               f'<div class="kw-home-row kw-ptour-row" id="kw-ptour-row">{ptour_cards()}</div></div></section>' if TOURS_PRIV else '')
             + estimator
             + f'<section class="kw-section"><div class="kw-wrap">{section_head("Popular transfer routes", "PRICES PER CAR")}<p class="kw-section-intro">Starting prices for a Business Sedan, one way. Open a route to see every vehicle class.</p>{routes_html}'
             + f'<div class="kw-route-group"><h3>By the hour</h3><div class="kw-price-list"><a class="kw-price-row" href="{HOURLY_PATH}"><span><strong>Chauffeur service in Dubai</strong><small>minimum {HOUR_MIN} hours</small></span><em>from {money(tr_low(TR["hourly"]["prices"]))}/hour</em></a></div></div></div></section>'
@@ -1788,6 +1793,7 @@ def build_transfers():
     for c in TR_CLASSES:
         build_transfer_class(c)
     build_transfer_hourly()
+    build_private_tours()
     build_fleet()
     build_photo_credits()
     for x in CARS:
@@ -1811,7 +1817,20 @@ def fleet_credits_html():
                     for k, v in FLEET_CREDITS.items())
     return (f'<section class="kw-section kw-photo-credits"><div class="kw-wrap"><h1>Photo credits</h1>'
             f'<p>Car photos are example photos of each model from Wikimedia Commons, used under their free licences. We cropped the photos and hid the number plates; '
-            f'the edited photos are shared under the same licence. The car sent for your booking may differ in colour and details.</p><ul>{items}</ul></div></section>')
+            f'the edited photos are shared under the same licence. The car sent for your booking may differ in colour and details.</p><ul>{items}</ul>'
+            + tour_credits_html() + '</div></section>')
+
+
+def tour_credits_html():
+    if not TOUR_CREDITS:
+        return ''
+    names = {t['id']: t['name'] for t in TOURS_PRIV}
+    items = ''.join(f'<li>{e(names.get(k, k))}: photo by {e(v["artist"] or "unknown")}, '
+                    f'<a href="{e(v["page"])}" target="_blank" rel="noopener">Wikimedia Commons</a>, '
+                    + (f'<a href="{e(v["license_url"])}" target="_blank" rel="noopener">{e(v["license"])}</a>' if v.get('license_url') else e(v['license'])) + '</li>'
+                    for k, v in TOUR_CREDITS.items())
+    return (f'<h2>Private tour photos</h2><p>Photos on the private tour pages come from Wikimedia Commons under their free licences. '
+            f'We cropped them; the cropped photos are shared under the same licence.</p><ul>{items}</ul>')
 CAR_INFO = {   # one line per car and the filter groups it belongs to
     'Mercedes E-Class': ('Business sedan for airport runs and city meetings.', ['sedan']),
     'Lexus ES 300h': ('Quiet hybrid business sedan.', ['sedan', 'electric']),
@@ -1874,7 +1893,7 @@ def fleet_cards():
 
 def build_photo_credits():
     if FLEET_CREDITS:
-        page('/photo-credits', 'Photo Credits', 'Credits and licences for the car photos on the KWIKAR fleet and transfer pages: each photo comes from Wikimedia Commons under a free licence.', fleet_credits_html(),
+        page('/photo-credits', 'Photo Credits', 'Credits and licences for the car and tour photos on the KWIKAR fleet, transfer and private tour pages: each photo comes from Wikimedia Commons under a free licence.', fleet_credits_html(),
              noindex=True, crumbs=[('Home', '/'), ('Photo credits', '/photo-credits')])
 
 
@@ -1974,13 +1993,153 @@ def build_car_page(x):
          head_extra=ld(tr_service_ld(h1, path, desc, offers, 'Chauffeur service', 'United Arab Emirates')) + ld(faq_ld(faqs)))
 
 
+# ---------------------------------------------------------------- private chauffeur tours (own fleet)
+TT = TR.get('tours') or {}
+TOURS_PRIV = TT.get('list', [])
+TOURS_PATH = '/transfers/' + TT.get('slug', 'private-tours')
+TOUR_KIND = {'half': ('Half day', TT.get('hours', {}).get('half', 5)), 'full': ('Full day', TT.get('hours', {}).get('full', 10))}
+try:
+    TOUR_CREDITS = json.load(open(os.path.join(ROOT, 'data', 'tour-photo-credits.json'), encoding='utf-8'))
+except OSError:
+    TOUR_CREDITS = {}
+TOUR_INCLUDED = 'your own car and chauffeur for the whole tour, hotel pickup and drop-off in Dubai, fuel, Salik and Darb tolls, parking and child seats'
+TOUR_EXCLUDED = 'entrance tickets, food and drinks, optional activities and a licensed tour guide (your chauffeur drives; he is not a guide)'
+
+
+def ptour_href(t):
+    return TOURS_PATH + '/' + t['slug']
+
+
+def ptour_prices(t):
+    return TT['prices'][t['kind']]
+
+
+def ptour_img(t, big=False):
+    f = os.path.join(OUT, 'assets', 'img', 'tours', t['id'] + '.webp')
+    if os.path.exists(f):
+        return f'/assets/img/tours/{t["id"]}.webp?v={hashlib.md5(open(f, "rb").read()).hexdigest()[:8]}'
+    return photo('1518684079-3c830dcef090', 1600 if big else 800)
+
+
+def ptour_alt(t):
+    c = TOUR_CREDITS.get(t['id'], {})
+    return c.get('alt') or f'{t["area"]}, United Arab Emirates'
+
+
+def ptour_meta(t, area=True):
+    k, h = TOUR_KIND[t['kind']]
+    return f'{k} · {h} hours' + (f' · {t["area"]}' if area else '')
+
+
+def ptour_cards(lst=None):
+    return ''.join(f'<a class="kw-package kw-ptour" href="{ptour_href(t)}"><img src="{e(ptour_img(t))}" alt="{e(ptour_alt(t))}" loading="lazy" width="600" height="375">'
+                   f'<div><span class="kw-eyebrow">{e(ptour_meta(t, False))}</span><h3>{e(t["name"])}</h3><p>{e(t["line"])}</p>'
+                   f'<span class="kw-text-link">From {money(tr_low(ptour_prices(t)))} per car ↗</span></div></a>' for t in (lst or TOURS_PRIV))
+
+
+def ptour_price_rows():
+    rows = ''
+    for c in TR_CLASSES:
+        h, f = TT['prices']['half'].get(c['key']), TT['prices']['full'].get(c['key'])
+        rows += (f'<div class="kw-class-row"><img src="{e(cls_img(c))}" alt="{e(c["car"])}, {e(cls_word(c))}" loading="lazy" width="160" height="100">'
+                 f'<div><strong><a href="{cls_href(c)}">{e(c["name"])}</a></strong><small>{e(", ".join(c["models"]))} or similar</small><small>{e(cls_cap(c))}</small></div>'
+                 f'<div class="kw-class-price kw-two-prices"><em>{money(h)}</em><small>half day ({TOUR_KIND["half"][1]} h)</small>'
+                 f'<em>{money(f)}</em><small>full day ({TOUR_KIND["full"][1]} h)</small>'
+                 f'<a href="#transfer-enquiry" data-pick="{e(c["name"])}">Choose ↗</a></div></div>')
+    return f'<div class="kw-class-rows">{rows}</div>'
+
+
+def ptour_faqs():
+    hp = TR['hourly']['prices']
+    return [('Is the price per person or per car?', 'Per car, for the whole tour. A Business Sedan takes up to 3 guests, a Family SUV up to 6, and a Business Van or Luxury SUV up to 7.'),
+            ('Is a tour guide included?', 'No. Your chauffeur drives you and waits at every stop, and can suggest places, but he is not a licensed guide. We can add a licensed guide on request at extra cost.'),
+            ('What is not included?', TOUR_EXCLUDED[0].upper() + TOUR_EXCLUDED[1:] + '.'),
+            ('Can I change the stops?', 'Yes. It is a private tour, so you can skip stops, add others or spend longer where you like, as long as it fits in the booked hours.'),
+            ('What if the tour runs longer?', 'Extra time is charged at the hourly price of your vehicle class, from ' + money(tr_low(hp)) + ' per hour for a Business Sedan.'),
+            ('Can you pick us up outside Dubai?', 'Yes. Pickups in Sharjah, Ajman, Abu Dhabi and other emirates are possible; tell us your address and we confirm the price.')]
+
+
+def build_private_tour(t):
+    path = ptour_href(t)
+    pr = ptour_prices(t)
+    low = tr_low(pr)
+    kind, hrs = TOUR_KIND[t['kind']]
+    title = fit(f'{t["name"]} with Chauffeur', 60)
+    if len(title) > 60 or not title.endswith('Chauffeur'):
+        title = t['name']
+    desc = fit(f'{t["name"]}: {kind.lower()} ({hrs} hours) in your own car with a chauffeur, from {money(low)} per car. {t["line"]} Tolls and parking included.', 160)
+    quick = (f'{t["intro"]} {kind} tour of up to {hrs} hours, from {money(low)} per car (Business Sedan). '
+             f'Included: {TOUR_INCLUDED}. Not included: {TOUR_EXCLUDED}.')
+    stops = info_cards([('', n, e(d)) for n, d in t['stops']], numbered=True)
+    others = [o for o in TOURS_PRIV if o is not t]
+    faqs = [(f'How much is the {t["name"].replace("Private ", "private ")}?', f'From {money(low)} per car for up to {hrs} hours: '
+             + '; '.join(f'{c["name"]} {money(pr[c["key"]])}' for c in TR_CLASSES if pr.get(c['key'])) + '. Tolls and parking are included; entrance tickets are not.')] + ptour_faqs()
+    body = (f'<div class="kw-car-hero"><img src="{e(ptour_img(t, True))}" alt="{e(ptour_alt(t))}" width="1200" height="750" fetchpriority="high"></div>'
+            f'<section class="kw-detail-block kw-quick" aria-label="Quick answer"><p>{e(quick)}</p>'
+            + facts([('Duration', f'{kind}, up to {hrs} hours'), ('Price', f'From {money(low)} per car'), ('Pickup', 'Your hotel or home in Dubai'),
+                      ('Best for', e(t['good'])), ('Included', 'Car, chauffeur, fuel, tolls, parking'), ('Not included', 'Tickets, meals, guide')]) + '</section>'
+            f'<section class="kw-detail-block"><h2>Suggested stops</h2><p>A private tour: change the order, skip stops or stay longer where you like.</p>{stops}</section>'
+            f'<section class="kw-detail-block"><h2>Price per car by vehicle</h2><p>For the whole tour, up to {hrs} hours. Extra time at the <a href="{HOURLY_PATH}">hourly price</a> of your vehicle class.</p>{class_rows(pr, unit=f"per car, {hrs} hours")}</section>'
+            f'<section class="kw-detail-block" id="faq"><h2>Questions</h2>{faq_cards(faqs, open_all=False)}</section>'
+            f'<section class="kw-detail-block"><h2>More private tours</h2><div class="kw-price-list">'
+            + ''.join(f'<a class="kw-price-row" href="{ptour_href(o)}"><span><strong>{e(o["name"])}</strong><small>{e(ptour_meta(o))}</small></span><em>from {money(tr_low(ptour_prices(o)))}</em></a>' for o in others[:5])
+            + f'</div><p><a class="kw-text-link" href="{TOURS_PATH}">All private tours ↗</a></p></section>')
+    crumbs = [('Home', '/'), ('Transfers', '/transfers'), ('Private tours', TOURS_PATH), (t['name'], path)]
+    main = tr_page(path, title, desc, t['name'], ptour_meta(t), body, low, f'per car, {hrs} hours', crumbs, None,
+                   'Send the date, pickup time, guests and the car you prefer. Our team replies on WhatsApp with the final price.', cta_label='Request this tour', seller='Private tours')
+    main += tr_enquiry_section(f'Book the {t["name"].replace("Private ", "private ")}', 'Tell us the date, pickup time, number of guests and any stops you want to add.',
+                               included=TOUR_INCLUDED[0].upper() + TOUR_INCLUDED[1:], service='Private tour', wa_title=f'Private tour enquiry: {t["name"]}', special=f'Tour: {t["name"]} ({kind.lower()}, {hrs} hours)')
+    og = SITE + ptour_img(t, True).split('?')[0]
+    tour_ld = {'@context': 'https://schema.org', '@type': 'TouristTrip', 'name': t['name'], 'url': SITE + path, 'description': desc,
+               'provider': {'@id': SITE + '/#organization'}, 'touristType': t['good'],
+               'itinerary': {'@type': 'ItemList', 'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'item': {'@type': 'TouristAttraction', 'name': n}} for i, (n, _) in enumerate(t['stops'])]},
+               'offers': [{'@type': 'Offer', 'name': c['name'], 'price': pr[c['key']], 'priceCurrency': 'AED', 'url': SITE + path, 'availability': 'https://schema.org/InStock'}
+                          for c in TR_CLASSES if pr.get(c['key'])]}
+    page(path, title, desc, main, active='Transfers', full_title=True, crumbs=crumbs, main_class='kw-wrap kw-detail kw-transfer-detail', og_image=og,
+         head_extra=ld(tour_ld) + ld(faq_ld(faqs)))
+
+
+def build_private_tours():
+    if not TOURS_PRIV:
+        return
+    path = TOURS_PATH
+    low_h, low_f = tr_low(TT['prices']['half']), tr_low(TT['prices']['full'])
+    faqs = ptour_faqs()
+    half = [t for t in TOURS_PRIV if t['kind'] == 'half']
+    full = [t for t in TOURS_PRIV if t['kind'] == 'full']
+    main = (page_hero('PRIVATE TOURS', 'Private city tours with your own chauffeur.',
+                      f'Explore Dubai and the other emirates in a private car from our fleet. Half day from {money(low_h)}, full day from {money(low_f)} per car, tolls and parking included.',
+                      ptour_img(TOURS_PRIV[0], True), extra='<a class="kw-button" href="#tours">See the tours ↓</a>')
+            + f'<section class="kw-section" id="tours"><div class="kw-wrap">{section_head("Half-day tours", f"UP TO {TOUR_KIND["half"][1]} HOURS")}<div class="kw-package-grid">{ptour_cards(half)}</div>'
+            + f'{section_head("Full-day tours", f"UP TO {TOUR_KIND["full"][1]} HOURS")}<div class="kw-package-grid">{ptour_cards(full)}</div></div></section>'
+            + f'<section class="kw-section kw-market-alt"><div class="kw-wrap">{section_head("Tour prices per car", "SAME PRICE FOR EVERY TOUR")}'
+            + f'<p class="kw-section-intro">One price per car for the whole tour, whichever tour you choose. Extra time at the <a href="{HOURLY_PATH}">hourly price</a>.</p>{ptour_price_rows()}</div></section>'
+            + f'<section class="kw-section"><div class="kw-wrap">{seo_head("HOW IT WORKS", "Your day, your way")}'
+            + info_cards([('', 'Pick a tour', 'Choose a half-day or full-day tour, or send us your own plan.'),
+                          ('', 'Choose your car', 'From a business sedan for two to a seven-seat van for the family.'),
+                          ('', 'Get the final price', 'Our team confirms the car, pickup time and price on WhatsApp before you pay.'),
+                          ('', 'Enjoy the day', 'Your chauffeur picks you up, drives you between the stops and waits while you explore.')], numbered=True)
+            + f'<div class="kw-seo-prose"><p><strong>Included:</strong> {e(TOUR_INCLUDED)}. <strong>Not included:</strong> {e(TOUR_EXCLUDED)}. '
+              f'Prefer a shared group tour with a guide? See our <a href="/activities/city-tours">city tours</a>.</p></div></div></section>'
+            + tr_enquiry_section('Request a private tour', 'Tell us which tour, the date, pickup time and number of guests.', included=TOUR_INCLUDED[0].upper() + TOUR_INCLUDED[1:], service='Private tour', wa_title='Private tour enquiry')
+            + faq_block('Private tour questions', faqs))
+    title = 'Private Chauffeur Tours in Dubai & the UAE'
+    desc = fit(f'Private city tours with your own car and chauffeur: Dubai, Abu Dhabi, Sharjah, Hatta, Fujairah, Ras Al Khaimah and Al Ain. Half day from {money(low_h)} per car.', 160)
+    page(path, title, desc, main, active='Transfers', crumbs=[('Home', '/'), ('Transfers', '/transfers'), ('Private tours', path)],
+         head_extra=ld(faq_ld(faqs)) + ld({'@context': 'https://schema.org', '@type': 'ItemList', 'name': 'KWIKAR private chauffeur tours',
+                                            'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'url': SITE + ptour_href(t), 'name': t['name']} for i, t in enumerate(TOURS_PRIV)]}))
+    for t in TOURS_PRIV:
+        build_private_tour(t)
+
+
 def car_class_href(car):
     c = next((c for c in TR_CLASSES if car['name'] in c['models'] or any(car['name'].startswith(m) for m in c['models'])), None)
     return cls_href(c) if c else '/transfers'
 
 
 def transfer_paths():
-    return ([tr_href(r) for r in TR_ROUTES] + [ap_href(a) for a in TR_AIRPORTS] + [cls_href(c) for c in TR_CLASSES] + [HOURLY_PATH, FLEET_PATH] + [car_href(x) for x in CARS])
+    return ([tr_href(r) for r in TR_ROUTES] + [ap_href(a) for a in TR_AIRPORTS] + [cls_href(c) for c in TR_CLASSES] + [HOURLY_PATH, FLEET_PATH] + [car_href(x) for x in CARS]
+            + ([TOURS_PATH] + [ptour_href(t) for t in TOURS_PRIV] if TOURS_PRIV else []))
 
 
 def VISA_FAQS(low_v):
