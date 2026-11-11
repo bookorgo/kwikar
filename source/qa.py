@@ -6,7 +6,8 @@ import glob, html, json, os, re, sys
 OUT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public_html'))
 os.chdir(OUT)
 problems = []
-for f in [x for x in glob.glob('**/*.html', recursive=True) if not re.match(r'google[0-9a-f]+\.html$', x)]:
+for f in [x for x in glob.glob('**/*.html', recursive=True) if not re.match(r'google[0-9a-f]+\.html$', x)
+          and not x.startswith('confirmation/')]:  # hand-made noindex booking page (not built, JS writes a 2nd h1)
     s = open(f, encoding='utf-8').read()
     for h in re.findall(r'href="(/[^"#?]*)', s):
         if h != '/' and not (os.path.exists(h.strip('/') + '/index.html') or os.path.exists(h.strip('/'))):

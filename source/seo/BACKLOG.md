@@ -4,7 +4,6 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 
 ## Open
 
-- [ ] Guide: "Ferrari World vs Warner Bros. World vs Yas Waterworld"
 - [ ] Vintage G-Class Heritage Safari (tour 204): full tour-extras content
 - [ ] Guide: "Best time to visit Dubai: month by month"
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
@@ -33,6 +32,8 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - Slug typo: /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" should be "from"; title/H1 already fixed, page is noindex). Renaming needs a `slug` in tour-extras + 301 (Auditor, 5 Nov)
 
 ## Done
+
+- [x] Guide: "Ferrari World vs Warner Bros. World vs Yas Waterworld" (11 Nov 2026, Writer) — /blog/abu-dhabi/ferrari-world-vs-warner-bros-world-vs-yas-waterworld
 
 - [x] Dubai Water Canal Dhow Cruise (tour 227) full content (11 Nov 2026). Boarding point (Dubai Festival City waterfront next to IMAGINE), 6:15pm boarding / 7pm departure, smart casual, outside food rule from supplier notes cross-checked with bemyguest.ae and Platinumlist; return 9:30pm from supplier + bemyguest (Platinumlist says 9pm). Canal length 3.2 km / 2016 from Wikipedia, waterfall bridge from Khaleej Times. Left out: child age bands (supplier under 4 free/4–11 vs others 3–10), exact inauguration date, bus routes, vegan/gluten-free claim. Photo alt text still to do
 - [x] [tech] Weekly SEO check Action comments on the oldest open "Weekly SEO check" issue instead of opening a duplicate every Monday (#3 was a copy of #1) (10 Nov 2026)
