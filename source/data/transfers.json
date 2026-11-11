@@ -553,8 +553,8 @@
   }
  },
  "tours": {
-  "_note": "Private chauffeur tours with the KWIKAR fleet. Prices are per car for the whole tour. PROPOSED by Claude on 2026-11-11, waiting for Irfan's approval (set approved to the date when approved). Extra hours use the hourly price of the vehicle class.",
-  "approved": null,
+  "_note": "Private chauffeur tours with the KWIKAR fleet. Prices are per car for the whole tour, approved by Irfan on 2026-11-11. Extra hours use the hourly price of the vehicle class.",
+  "approved": "2026-11-11",
   "slug": "private-tours",
   "prices": {
    "half": {
