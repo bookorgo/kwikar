@@ -87,7 +87,11 @@ def search(out):
             qs = extra
         seen = []
         for q in qs:
-            if q.startswith('cat:'):   # all files in a Commons category, e.g. cat:Exterior of X
+            if q.startswith('page:'):   # images used on an English Wikipedia article, e.g. page:Sheikh_Zayed_Mosque
+                u = 'https://en.wikipedia.org/w/api.php?' + urllib.parse.urlencode({'action': 'parse', 'page': q[5:], 'prop': 'images', 'format': 'json', 'formatversion': 2})
+                d = json.load(urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40))
+                seen += ['File:' + t.replace('_', ' ') for t in d['parse']['images'] if 'File:' + t.replace('_', ' ') not in seen]
+            elif q.startswith('cat:'):   # all files in a Commons category, e.g. cat:Exterior of X
                 d = api({'action': 'query', 'list': 'categorymembers', 'cmtitle': 'Category:' + q[4:], 'cmtype': 'file', 'cmlimit': 60})
                 seen += [r['title'] for r in d['query']['categorymembers'] if r['title'] not in seen]
             else:
