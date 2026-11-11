@@ -2379,7 +2379,7 @@ def build_seo_files():
     open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + ''.join(f'  <sitemap><loc>{SITE}/sitemap-{n}.xml</loc><lastmod>{TODAY}</lastmod></sitemap>\n' for n in ('pages', 'hubs', 'products')) + '</sitemapindex>\n')
-    rules = 'Disallow: /search\nDisallow: /api/\n'
+    rules = 'Disallow: /search\nDisallow: /api/\nDisallow: /confirmation\n'
     open(os.path.join(OUT, 'robots.txt'), 'w').write(
         f'# Search engines and AI search (ChatGPT search = OAI-SearchBot) may crawl the site.\nUser-agent: *\nAllow: /\n{rules}\n'
         f'User-agent: OAI-SearchBot\nAllow: /\n{rules}\nUser-agent: GPTBot\nAllow: /\n{rules}\nSitemap: {SITE}/sitemap.xml\n')
@@ -2401,7 +2401,7 @@ def build_seo_files():
 
 
 def clean_output():
-    keep = {'assets', 'api'}
+    keep = {'assets', 'api', 'confirmation'}   # confirmation/ = hand-made booking confirmation page, not built here
     for name in os.listdir(OUT):
         full = os.path.join(OUT, name)
         if os.path.isdir(full) and name not in keep and not name.startswith('.'):
