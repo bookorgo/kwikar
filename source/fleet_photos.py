@@ -87,8 +87,12 @@ def search(out):
             qs = extra
         seen = []
         for q in qs:
-            d = api({'action': 'query', 'list': 'search', 'srsearch': q + ' filetype:bitmap', 'srnamespace': 6, 'srlimit': 30})
-            seen += [r['title'] for r in d['query']['search'] if r['title'] not in seen]
+            if q.startswith('cat:'):   # all files in a Commons category, e.g. cat:Exterior of X
+                d = api({'action': 'query', 'list': 'categorymembers', 'cmtitle': 'Category:' + q[4:], 'cmtype': 'file', 'cmlimit': 60})
+                seen += [r['title'] for r in d['query']['categorymembers'] if r['title'] not in seen]
+            else:
+                d = api({'action': 'query', 'list': 'search', 'srsearch': q + ' filetype:bitmap', 'srnamespace': 6, 'srlimit': 30})
+                seen += [r['title'] for r in d['query']['search'] if r['title'] not in seen]
             time.sleep(1)
         meta = info(seen, 900)
         cands = []
@@ -101,7 +105,7 @@ def search(out):
             m['score'] = (0 if os.environ.get('QUERIES_JSON') else 3 if DARK.search(t + ' ' + m['desc']) else 0) + (1 if (m['w'] or 0) >= 2500 else 0) + (1 if re.search(r'front|vorne|IMG_', t, re.I) else 0)
             cands.append(m)
         cands.sort(key=lambda m: -m['score'])
-        cands = cands[:12]
+        cands = cands[:int(os.environ.get('MAX_CANDS') or 12)]
         os.makedirs(os.path.join(out, car), exist_ok=True)
         for i, m in enumerate(cands):
             m['file'] = f'{car}/{i:02d}.jpg'
