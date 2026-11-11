@@ -16,6 +16,14 @@ on:
         description: 'queries for that car, separated by |'
         required: false
         default: ''
+      queries_json:
+        description: 'JSON {"key": ["query", ...]} to search any subject (e.g. tour places)'
+        required: false
+        default: ''
+      picks:
+        description: 'picks file in source/data for fetch (default fleet-photos.json)'
+        required: false
+        default: ''
 permissions:
   contents: write
 jobs:
@@ -31,6 +39,8 @@ jobs:
         env:
           ONLY_CAR: ${{ github.event.inputs.car }}
           EXTRA_QUERIES: ${{ github.event.inputs.queries }}
+          QUERIES_JSON: ${{ github.event.inputs.queries_json }}
+          PICKS: ${{ github.event.inputs.picks }}
         run: python3 source/fleet_photos.py ${{ github.event.inputs.mode }} /tmp/out/${{ github.event.inputs.mode }}
       - name: Save to the fleet-photos branch
         run: |

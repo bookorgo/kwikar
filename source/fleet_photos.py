@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Finds freely licensed photos of the KWIKAR fleet models on Wikimedia Commons
+Finds freely licensed photos of the KWIKAR fleet models (or, with QUERIES_JSON, any subject such as tour places) on Wikimedia Commons
 (run by .github/workflows/fleet-photos.yml; the build container cannot reach Commons).
 
   python3 source/fleet_photos.py search OUTDIR   -> candidates/<car>/<n>.jpg + candidates.json
@@ -77,9 +77,10 @@ def download(url, dest):
 
 def search(out):
     allc = {}
+    queries = json.loads(os.environ['QUERIES_JSON']) if os.environ.get('QUERIES_JSON') else QUERIES
     only = os.environ.get('ONLY_CAR')
     extra = [q for q in os.environ.get('EXTRA_QUERIES', '').split('|') if q]
-    for car, qs in QUERIES.items():
+    for car, qs in queries.items():
         if only and car != only:
             continue
         if only and extra:
@@ -95,9 +96,9 @@ def search(out):
             m = meta.get(t)
             if not m or m['mime'] != 'image/jpeg' or (m['w'] or 0) < 1400 or not GOOD_LIC.match(m['license'] or ''):
                 continue
-            if BAD.search(t):
+            if BAD.search(t) and not os.environ.get('QUERIES_JSON'):
                 continue
-            m['score'] = (3 if DARK.search(t + ' ' + m['desc']) else 0) + (1 if (m['w'] or 0) >= 2500 else 0) + (1 if re.search(r'front|vorne|IMG_', t, re.I) else 0)
+            m['score'] = (0 if os.environ.get('QUERIES_JSON') else 3 if DARK.search(t + ' ' + m['desc']) else 0) + (1 if (m['w'] or 0) >= 2500 else 0) + (1 if re.search(r'front|vorne|IMG_', t, re.I) else 0)
             cands.append(m)
         cands.sort(key=lambda m: -m['score'])
         cands = cands[:12]
@@ -112,7 +113,7 @@ def search(out):
 
 
 def fetch(out):
-    picks = json.load(open(os.path.join(HERE, 'data', 'fleet-photos.json'), encoding='utf-8'))
+    picks = json.load(open(os.path.join(HERE, 'data', os.environ.get('PICKS') or 'fleet-photos.json'), encoding='utf-8'))
     meta = info([p['title'] for p in picks.values()], 2400)
     os.makedirs(out, exist_ok=True)
     credits = {}
