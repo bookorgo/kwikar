@@ -278,6 +278,9 @@ RewriteRule ^tour\.html$ /activities/abu-dhabi/natural-history-museum-abu-dhabi?
 RewriteRule ^(?:ar/)?tour/302/?$ /activities/abu-dhabi/zayed-national-museum-abu-dhabi [R=301,L]
 RewriteCond %{QUERY_STRING} (?:^|&)id=302(?:&|$)
 RewriteRule ^tour\.html$ /activities/abu-dhabi/zayed-national-museum-abu-dhabi? [R=301,L]
+RewriteRule ^(?:ar/)?tour/306/?$ /activities/uae/new-year-at-sky-views-observatory [R=301,L]
+RewriteCond %{QUERY_STRING} (?:^|&)id=306(?:&|$)
+RewriteRule ^tour\.html$ /activities/uae/new-year-at-sky-views-observatory? [R=301,L]
 RewriteRule ^(?:ar/)?tour/307/?$ /activities/dubai/private-transfers-and-chauffeur-service [R=301,L]
 RewriteCond %{QUERY_STRING} (?:^|&)id=307(?:&|$)
 RewriteRule ^tour\.html$ /activities/dubai/private-transfers-and-chauffeur-service? [R=301,L]
