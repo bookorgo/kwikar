@@ -354,3 +354,8 @@ a.kw-package{color:inherit}
 .kw-two-prices{display:grid;grid-template-columns:auto auto;column-gap:8px;align-items:baseline;justify-items:end}
 .kw-two-prices a{grid-column:1/-1}
 #tours .kw-section-head{margin-top:8px}#tours .kw-package-grid{margin-bottom:34px}
+.kw-ptour-callout{padding:18px 0 4px}
+.kw-ptour-callout .kw-market-wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#f2f7ff;border:1px solid #d9e6fb;border-radius:14px;padding:20px 24px}
+.kw-ptour-callout h2{font:700 20px/1.3 'DM Sans',Arial,sans-serif;margin:4px 0 6px}.kw-ptour-callout p{color:#4a5668;font-size:14px;margin:0}
+.kw-ptour-callout .kw-button{flex:none}
+@media(max-width:700px){.kw-ptour-callout .kw-market-wrap{flex-direction:column;align-items:flex-start;margin-inline:16px;padding:18px}}

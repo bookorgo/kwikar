@@ -711,6 +711,10 @@ def build_home():
                         for i, n, sub, img in cities)
     hol = ''.join(f'<a class="kw-home-feature" href="/holidays?country={quote(h["country"])}"><img src="{e(h["img"])}" loading="lazy" alt=""><span>{e(h["country"])}</span><strong>{e(h["name"])}</strong><small>{h["nights"]} nights · Request a quote</small></a>'
                   for h in [x for x in HOLIDAYS if x.get('img')][:6])
+    ptours_home = ('<section class="kw-market-section"><div class="kw-market-wrap">' + section_head("Private city tours", action=("View all", TOURS_PATH), carousel_id="kw-home-ptours")
+                   + '<div class="kw-home-row" id="kw-home-ptours">' + ''.join(
+                       f'<a class="kw-home-feature" href="{ptour_href(t)}"><img src="{e(ptour_img(t))}" loading="lazy" alt=""><span>{e(ptour_meta(t, False))}</span><strong>{e(t["name"])}</strong>'
+                       f'<small>From {money(tr_low(ptour_prices(t)))} per car</small></a>' for t in TOURS_PRIV) + '</div></div></section>') if TOURS_PRIV else ''
     cars = ''.join(f'<a class="kw-home-feature" href="{car_href(c)}"><img src="{e(c["img"])}" loading="lazy" alt=""><span>{e(c["type"])}</span><strong>{e(c["name"])}</strong><small>Up to {c["pax"]} passengers · Enquire for a quote</small></a>'
                    for c in CARS[:5])
     visas = ''.join(f'<a href="/visa?type={quote(v["name"])}#visa-enquiry"><span>UAE TOURIST VISA</span><strong>{e(v["name"])}</strong><small>{("From " + money(v["price"])) if v.get("price") else "Request a quote"} →</small></a>'
@@ -725,7 +729,7 @@ def build_home():
 <section class="kw-market-section kw-market-alt kw-popular"><div class="kw-market-wrap">{section_head("Best-selling experiences", action=("View all", "/activities"), carousel_id="kw-home-best")}<div class="kw-home-row" id="kw-home-best">{"".join(market_card(t) for t in best)}</div></div></section>
 <section class="kw-market-section"><div class="kw-market-wrap">{section_head("Holiday packages", action=("View all", "/holidays"), carousel_id="kw-home-holidays")}<div class="kw-home-row" id="kw-home-holidays">{hol}</div></div></section>
 <section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Private transfers", action=("View all", "/transfers"), carousel_id="kw-home-transfers")}<div class="kw-home-row" id="kw-home-transfers">{cars}</div></div></section>
-<section class="kw-market-section"><div class="kw-market-wrap">{section_head("Visa assistance", action=("View all", "/visa"))}<div class="kw-home-visa">{visas}</div></div></section>
+{ptours_home}<section class="kw-market-section"><div class="kw-market-wrap">{section_head("Visa assistance", action=("View all", "/visa"))}<div class="kw-home-visa">{visas}</div></div></section>
 <section class="kw-market-section kw-market-alt"><div class="kw-market-wrap">{section_head("Why travellers choose KWIKAR")}<div class="kw-market-benefits kw-benefits-5"><div><span>01</span><h3>One team for the whole trip</h3><p>Activities, cruises, transfers, visas and holidays in one conversation.</p></div><div><span>02</span><h3>Clear quotes first</h3><p>The final price and terms are confirmed before you pay, with no booking or card fees.</p></div><div><span>03</span><h3>WhatsApp support</h3><p>Message the team directly about your plans, before and during your trip.</p></div><div><span>04</span><h3>Local UAE company</h3><p>Operated by Kwikar LLC-FZ in the United Arab Emirates.</p></div><div><span>05</span><h3>Modern fleet</h3><p>From electric cars to seven-seat vans for families and groups.</p></div></div></div></section>'''
     main += home_guide()
     faq_ld = ld({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
@@ -829,7 +833,13 @@ def build_listings():
             places_html = f'<section class="kw-category-places"><div class="kw-market-wrap"><div class="kw-section-head"><div><h2>Explore {e(c["name"].lower())} by destination</h2></div></div><div class="kw-category-places-row">{btns}</div></div></section>'
         related = ''.join(f'<a href="/activities/{x["slug"]}">{e(x["name"])}<span>↗</span></a>' for x in LIVE_CATS if x['slug'] != slug)[:100000]
         rel_html = f'<section class="kw-related-categories"><div class="kw-market-wrap"><h2>Keep exploring</h2><div>{related}</div></div></section>'
-        main = lead + places_html + list_body(items, category=slug, kind=kind) + hub_intro(f'cat:{slug}', f'{c["name"]} in the UAE', items, eyebrow='GOOD TO KNOW') + rel_html
+        ptour_box = ''
+        if slug == 'city-tours' and TOURS_PRIV:
+            ptour_box = (f'<section class="kw-ptour-callout"><div class="kw-market-wrap"><div><span class="kw-eyebrow">PREFER A PRIVATE TOUR?</span>'
+                         f'<h2>Your own car and chauffeur for the day</h2><p>Private city tours of Dubai, Abu Dhabi, Sharjah, Hatta and more in a car from our fleet. '
+                         f'One price per car: half day from {money(tr_low(TT["prices"]["half"]))}, full day from {money(tr_low(TT["prices"]["full"]))}.</p></div>'
+                         f'<a class="kw-button" href="{TOURS_PATH}">See private tours ↗</a></div></section>')
+        main = lead + places_html + ptour_box + list_body(items, category=slug, kind=kind) + hub_intro(f'cat:{slug}', f'{c["name"]} in the UAE', items, eyebrow='GOOD TO KNOW') + rel_html
         page(f'/activities/{slug}', f'{c["name"]} in Dubai & the UAE', CAT_DESC.get(slug) or f'Browse {c["name"].lower()} experiences with KWIKAR. Enquire for current availability.', main,
              active='Cruises' if slug == 'cruises' else 'Activities', noindex=not items,
              main_class=f'kw-list-page kw-list-{kind} kw-category-{slug}',
@@ -864,6 +874,16 @@ def dest_extras(l):
                              f'{section_head(f"Transfers in {name}", "PRIVATE TRANSFERS", action=("All transfers", "/transfers"))}'
                              f'<p class="kw-section-intro">Private car with chauffeur, price per car. Tolls, parking and child seats included.</p>{route_rows(rs[:9])}'
                              f'<div class="kw-chip-links kw-dest-chips">{extra_links}</div></div></section>'))
+    # private chauffeur tours (from Dubai they all start; other cities get their own)
+    if l['group'] == 'uae' and TOURS_PRIV:
+        loc_tours = {'abu-dhabi': ['abu-dhabi', 'al-ain'], 'sharjah': ['sharjah'], 'ajman': ['ajman-uaq'], 'fujairah': ['fujairah'], 'ras-al-khaimah': ['ras-al-khaimah']}
+        pts = TOURS_PRIV if lid == 'dubai' else [t for t in TOURS_PRIV if t['id'] in loc_tours.get(lid, [])]
+        if pts:
+            head = 'Private tours from Dubai' if lid == 'dubai' else f'Private {name} tour with chauffeur'
+            sections.append(('private-tours', 'Private tours', f'<section class="kw-market-section kw-dest-extra" id="dest-private-tours"><div class="kw-market-wrap">'
+                             f'{section_head(head, "WITH YOUR OWN CHAUFFEUR", action=("All private tours", TOURS_PATH), carousel_id="kw-dest-ptours" if len(pts) > 3 else None)}'
+                             f'<p class="kw-section-intro">A private car and chauffeur from our fleet for the whole tour, with pickup from your Dubai hotel. One price per car, tolls and parking included.</p>'
+                             f'<div class="kw-home-row kw-ptour-row" id="kw-dest-ptours">{ptour_cards(pts)}</div></div></section>'))
     # visas
     vis = [v for v in VISAS if ('UAE' in v['name'] and l['group'] == 'uae') or (l['group'] != 'uae' and has(v['name']))]
     if vis:
