@@ -1,0 +1,14 @@
+{
+ "date": "2026-11-12",
+ "pages": {
+  "https://kwikar.com/": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret); local Lighthouse: Command '['/usr/local/bin/lighthouse', 'https://kwikar.com/', '--quiet', '--form-factor=mobile', '--output=json', '--output-path=/tmp/tmpl_qciihy/lh.json', '--only-categories=performance,seo,accessibi"
+  },
+  "https://kwikar.com/activities/dubai/burj-khalifa-at-the-top-tickets": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret); local Lighthouse: Command '['/usr/local/bin/lighthouse', 'https://kwikar.com/activities/dubai/burj-khalifa-at-the-top-tickets', '--quiet', '--form-factor=mobile', '--output=json', '--output-path=/tmp/tmp6qyj45cc/lh.jso"
+  },
+  "https://kwikar.com/blog/dubai/3-days-in-dubai-itinerary": {
+   "error": "PageSpeed API: HTTP Error 429: Too Many Requests (add the free PAGESPEED_API_KEY secret); local Lighthouse: Command '['/usr/local/bin/lighthouse', 'https://kwikar.com/blog/dubai/3-days-in-dubai-itinerary', '--quiet', '--form-factor=mobile', '--output=json', '--output-path=/tmp/tmpm4wane5y/lh.json', '--only-"
+  }
+ }
+}
