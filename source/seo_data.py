@@ -186,6 +186,29 @@ def _local_lighthouse(url):
         return json.load(open(out))
 
 
+_LOCAL_SERVER = None
+
+
+def _local_copy_url(path):
+    """Serve public_html (the built site in this checkout) on 127.0.0.1 and return the page's URL."""
+    global _LOCAL_SERVER
+    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public_html')
+    if not os.path.isfile(os.path.join(root, 'index.html')):
+        raise RuntimeError('no built site in public_html')
+    if _LOCAL_SERVER is None:
+        import functools, http.server, socket, threading
+        with socket.socket() as sock:
+            sock.bind(('127.0.0.1', 0))
+            port = sock.getsockname()[1]
+        class Quiet(http.server.SimpleHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+        handler = functools.partial(Quiet, directory=root)
+        _LOCAL_SERVER = http.server.ThreadingHTTPServer(('127.0.0.1', port), handler)
+        threading.Thread(target=_LOCAL_SERVER.serve_forever, daemon=True).start()
+    return f'http://127.0.0.1:{_LOCAL_SERVER.server_address[1]}/' + (path + '/' if path else '')
+
+
 def pagespeed():
     pages = ['', 'activities/dubai/burj-khalifa-at-the-top-tickets', 'blog/dubai/3-days-in-dubai-itinerary']   # canonical URLs (no trailing slash)
     res = {'date': TODAY, 'pages': {}}
@@ -204,7 +227,16 @@ def pagespeed():
                 res['pages'][url] = _summarise_lighthouse(_local_lighthouse(url), 'Lighthouse CLI on the runner (mobile lab test)')
                 res['pages'][url]['note'] = api_err
             except Exception as err2:
-                res['pages'][url] = {'error': api_err + '; local Lighthouse: ' + str(err2)[:200]}
+                # The live host answers 403 to headless Chrome from GitHub's runners (12 Nov 2026), so test
+                # the same built page from public_html on a local server instead (no gzip/CDN: lab-only).
+                try:
+                    res['pages'][url] = _summarise_lighthouse(_local_lighthouse(_local_copy_url(p)),
+                                                              'Lighthouse CLI on a local copy of the built site (mobile lab test)')
+                    res['pages'][url]['note'] = api_err + '; live site: ' + str(err2)[:120]
+                    res['pages'][url]['top_fixes'] = [f for f in res['pages'][url]['top_fixes']
+                                                      if f != 'Enable text compression']   # local server never gzips
+                except Exception as err3:
+                    res['pages'][url] = {'error': api_err + '; local Lighthouse: ' + str(err2)[:200] + '; local copy: ' + str(err3)[:200]}
     save('pagespeed.json', res)
     return 'pagespeed: ' + ', '.join(f"{u.replace(SITE, '/')}={v.get('scores', {}).get('performance', 'err')}"
                                      for u, v in res['pages'].items())

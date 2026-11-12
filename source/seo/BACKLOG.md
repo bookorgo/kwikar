@@ -5,6 +5,7 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 ## Open
 
 - [ ] Guide: "Best time to visit Dubai: month by month"
+- [ ] New Year at Sky Views Observatory (tour 306, new in the feed 11 Nov): full tour-extras content before December (time-sensitive like 289). 19 photos, 4 drinks packages (Non Alcoholic, House, Premium, Edge Walk all-inclusive), no prices in the feed yet, so write "our team confirms the price". Supplier location is "other", so the page is at /activities/uae/... and not in the sitemap; the URL move is under Needs approval (Tech, 12 Nov)
 - [ ] Alexandra New Year's Eve Gala Dinner (tour 289): full tour-extras content before December (time-sensitive; supplier has 8 options but no prices in the feed yet, so write "our team confirms the price"). Tech set title/meta on 3 Nov
 
 - [ ] Guide "Dubai with kids": when official sites can be fetched, add checked child rules (free ages, height limits, hours) for KidZania, LEGOLAND, The Green Planet, IMG Worlds, Ski Dubai and Dubai Safari Park. Supplier notes disagree (e.g. Green Planet free under 2 vs under 3), so the guide currently says "send ages, our team confirms"
@@ -26,12 +27,15 @@ Team roles are in TEAM.md. `[tech]` items are for Tech, `[edit]` items for Edito
 - Office address and trade licence number for the footer, About page and Organization schema
 - GA4 measurement ID (events are already in the code)
 - Xclusive Super Yacht Cruise (tour 68, /activities/uae/xclusive-super-yacht-cruise): the supplier gives no photos, no description, no categories and location "other", so the page is thin (only 2 option cards). Ask TravelDesk for details/photos, or approve noindex until they arrive (Tech, 5 Nov)
+- New Year at Sky Views Observatory (306) is published at /activities/uae/new-year-at-sky-views-observatory because the supplier location is "other"; it is in Downtown Dubai (next to Burj Khalifa). Moving it to /activities/dubai/... needs a `slug`/URL change + 301 (page is 1 day old, low risk). Or ask TravelDesk to set the location to Dubai (Tech, 12 Nov)
+- Accessibility (Lighthouse mobile, tour pages 92): (1) the sticky price bar's small "From" label is #778291 on white at 11px (contrast 3.9:1, needs 4.5:1; e.g. #5f6b7a = 5.1:1 as approved for card labels on 6 Nov); (2) breadcrumb and in-text links are blue with no underline (1.1–1.2:1 against the grey text); an underline on links inside text blocks would fix it. Both are design changes (Tech, 12 Nov)
 - Real Madrid World (268) is published at /activities/spain/real-madrid-world because the supplier location is "spain"; the park is at Dubai Parks and Resorts. Moving it to /activities/dubai/... needs a URL change + 301 (Writer, 4 Nov)
 
 - Slug typo: /activities/abu-dhabi/abu-dhabi-city-tour-form-abu-dhabi-russian-speaking-guide ("form" should be "from"; title/H1 already fixed, page is noindex). Renaming needs a `slug` in tour-extras + 301 (Auditor, 5 Nov)
 
 ## Done
 
+- [x] [tech] SEO data PageSpeed fallback: the live host answers 403 to headless Chrome from GitHub runners, so pagespeed.json had only errors (12 Nov). seo_data.py now runs Lighthouse on a local copy of the built public_html when the live run fails (labelled as such; "Enable text compression" dropped since the local server never gzips) (12 Nov 2026)
 - [x] Vintage G-Class Evening Heritage Safari (tour 204) full content (12 Nov 2026). 30–40 min open-top G-Class drive, camel caravan, falcon, henna, stargazing, water/soft drinks, ~6 h, not for pregnant/back-neck/wheelchair from supplier notes cross-checked with visitdubai/dnata/Ticket Fairy listings; reserve facts (Jan 2018, ~10% of Dubai, unfenced, Al Qudra Lakes) from Wikipedia; Al Khayma Bib Gourmand 2026 from the MICHELIN Guide. Left out (sources disagree or another operator): child age bands (supplier under 4 free/4–11 vs others 3–11), course count of other listings (3 vs our 5), 1980s vehicle year, "largest" unfenced reserve (Wikipedia says "first"), oryx/gazelle names, return time. Photo alt text still to do
 - [x] Guide: "Ferrari World vs Warner Bros. World vs Yas Waterworld" (11 Nov 2026, Writer) — /blog/abu-dhabi/ferrari-world-vs-warner-bros-world-vs-yas-waterworld
 
