@@ -2,7 +2,7 @@
  "source": "Rate card approved by Irfan on 2026-11-06 (claude.ai artifact VToVyCMfHoEhaLwAn9PrzL)",
  "approved": "2026-11-06",
  "settings": {
-  "wait_airport": 45,
+  "wait_airport": 60,
   "wait_other": 15,
   "hourly_min": 3
  },
