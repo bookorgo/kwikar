@@ -27,7 +27,11 @@
       if (typeof window.gtag !== 'function') return;
       window.gtag('event', name, data || {});
       var conv = window.KW_ADS_CONV && window.KW_ADS_CONV[name];   // Google Ads conversion label for this event, if set
-      if (conv) window.gtag('event', 'conversion', { send_to: conv });
+      if (conv) {
+        var cv = { send_to: conv };
+        if (data && data.value) { cv.value = data.value; cv.currency = data.currency || 'AED'; }
+        window.gtag('event', 'conversion', cv);
+      }
     } catch (e) { /* ignore */ }
   };
   document.addEventListener('click', function (e) {
