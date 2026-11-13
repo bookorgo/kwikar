@@ -6,9 +6,9 @@
   "social_profiles": [],
   "google_ads_id": "AW-17981726466",
   "google_ads_conversions": {
-    "_help": "Optional: conversion labels from Google Ads (Goals > Conversions > Tag setup), written as AW-17981726466/AbC-xyz. When set, these site events count as conversions in Google Ads.",
-    "generate_lead": "",
-    "whatsapp_click": "",
-    "call_click": ""
+    "_help": "Optional: conversion labels from Google Ads (Goals > Conversions > Tag setup), written as AW-17981726466/AbC-xyz. When set, these site events count as conversions in Google Ads. generate_lead (enquiry forms and the tour booking sheet, which open WhatsApp) uses the WhatsApp label too; a form send does not also fire whatsapp_click, so nothing is counted twice.",
+    "generate_lead": "AW-17981726466/rAhTCMrlzbcdEIK-rf5C",
+    "whatsapp_click": "AW-17981726466/rAhTCMrlzbcdEIK-rf5C",
+    "call_click": "AW-17981726466/FORyCM3lzbcdEIK-rf5C"
   }
 }
