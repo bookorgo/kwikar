@@ -14,7 +14,62 @@
     n = Number(n);
     return 'AED ' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
   };
-  KW.whatsapp = function (msg) { return 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(msg); };
+  /* ---------- Lead source code ("Ref") added to every WhatsApp message ----------
+     G Google Ads · F Meta · M Google Maps / Business Profile · S search (SEO) · R other website · D direct.
+     Kept 30 days; a higher source replaces a lower one (G > F > M > S > R > D). Visits from kwikar.com itself change nothing. */
+  var SRC_KEY = 'kw_src', SRC_DAYS = 30, SRC_RANK = { G: 6, F: 5, M: 4, S: 3, R: 2, D: 1 };
+  var srcMemory = null;
+  var detectSource = function () {
+    var q = function (k) { return (params.get(k) || '').toLowerCase(); };
+    var us = q('utm_source'), um = q('utm_medium');
+    if (params.has('gclid') || params.has('gbraid') || params.has('wbraid') || (us === 'google' && um === 'cpc')) return 'G';
+    if (params.has('fbclid') || us === 'facebook' || us === 'instagram' || us === 'meta') return 'F';
+    if (us === 'gbp') return 'M';
+    var ref = '';
+    try { ref = document.referrer ? new URL(document.referrer).hostname.toLowerCase() : ''; } catch (e) { ref = ''; }
+    if (ref && /(^|\.)kwikar\.com$/.test(ref)) return null;   // internal navigation: keep what we have
+    if (ref && /(^|\.)(google|bing|yahoo|duckduckgo)\./.test(ref)) return 'S';
+    return ref ? 'R' : 'D';
+  };
+  var readSource = function () {
+    var v = srcMemory;
+    try { var raw = localStorage.getItem(SRC_KEY); if (raw) v = JSON.parse(raw); } catch (e) { /* storage blocked: memory only */ }
+    if (!v || !SRC_RANK[v.s] || !(Date.now() - v.t < SRC_DAYS * 864e5)) return null;
+    return v;
+  };
+  (function () {
+    var now = detectSource(), old = readSource();
+    if (!now) { if (!old) now = 'D'; else return; }
+    if (old && SRC_RANK[old.s] >= SRC_RANK[now]) return;
+    srcMemory = { s: now, t: Date.now() };
+    try { localStorage.setItem(SRC_KEY, JSON.stringify(srcMemory)); } catch (e) { /* memory only */ }
+  })();
+  KW.source = function () { var v = readSource(); return v ? v.s : 'D'; };
+  var withRef = function (msg) {
+    msg = String(msg == null ? '' : msg);
+    return /(^|\n)Ref: [A-Z]\s*$/.test(msg) ? msg : msg.replace(/\s+$/, '') + '\n\nRef: ' + KW.source();
+  };
+  KW.withRef = withRef;
+  var refLink = function (href) {   // add the Ref line to the text= of a wa.me / api.whatsapp.com link
+    var i = href.indexOf('?'), base = i < 0 ? href : href.slice(0, i), qs = i < 0 ? '' : href.slice(i + 1), hash = '';
+    var h = qs.indexOf('#'); if (h >= 0) { hash = qs.slice(h); qs = qs.slice(0, h); }
+    var parts = qs ? qs.split('&') : [], text = null, rest = [];
+    parts.forEach(function (p) {
+      if (/^text=/.test(p)) { try { text = decodeURIComponent(p.slice(5).replace(/\+/g, ' ')); } catch (e) { text = p.slice(5); } }
+      else if (p) rest.push(p);
+    });
+    var t = withRef(text == null ? 'Hi KWIKAR,' : text);
+    return base + '?' + rest.concat('text=' + encodeURIComponent(t)).join('&') + hash;
+  };
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var h = a.getAttribute('href') || '';
+    if (/^https?:\/\/(wa\.me\/|api\.whatsapp\.com\/)/i.test(h)) {
+      try { a.setAttribute('href', refLink(h)); } catch (err) { /* leave the link as it was */ }
+    }
+  }, true);
+  KW.whatsapp = function (msg) { return 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(withRef(msg)); };
   KW.openWA = function (msg) {
     var url = KW.whatsapp(msg);
     var w = window.open(url, '_blank', 'noopener');
