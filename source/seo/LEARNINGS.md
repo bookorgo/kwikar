@@ -38,6 +38,7 @@ Short, factual notes that later runs should follow. Merged and shortened by the 
 - kwikar.com answers 403 to headless Chrome from GitHub runners; pagespeed.json falls back to a local copy. Sandbox Lighthouse (CHROME_PATH = Playwright Chromium) works on the live site: home 98/100/96/100, Burj tour 99/92/96/100 (12 Nov).
 - HTML is served with Cache-Control: no-cache (browsers showed cached pages after deploys).
 - Search Console (7 Nov): property in kwikarkwikar31@gmail.com; old-site URLs now 301; "Alternative page with proper canonical" and noindex /search are expected.
+- Event pages (F1 613, 13 Nov): offers often have no current price until the event dates (pricingPeriods start on day 1), so the auto From price and "Runs on: Every day" rows are misleading; hide Price/Runs on/Options and don't use {from}. abudhabigp.com/en/faq, gulfnews.com, formula1.com and dubicars.com were fetchable via the web-fetch agent; the official FAQ had wrong concert dates (4/7 Dec), so cross-check line-ups.
 - Writer 13 Nov: Wikipedia (en.wikipedia.org) was blocked and wam.ae returns an empty JavaScript shell, but dubai-online.com/essential/weather, weatherspark.com, emirates247.com, tradearabia.com and khaleejtimes.com could be fetched via the web-fetch agent. For climate numbers give rounded ranges where two sources differ by 1–2°C; phrase Ramadan/Eid dates as astronomers' forecasts.
 
 ## Strategy (Strategist, 13 Nov)
