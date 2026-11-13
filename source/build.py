@@ -28,6 +28,8 @@ try:
 except Exception:
     pass
 GA4_ID = (CONFIG.get('ga4_id') or '').strip()
+ADS_ID = (CONFIG.get('google_ads_id') or '').strip()
+ADS_CONV = {k: v.strip() for k, v in (CONFIG.get('google_ads_conversions') or {}).items() if not k.startswith('_') and isinstance(v, str) and v.strip()}
 GOOGLE_VERIFY = (CONFIG.get('google_site_verification') or '').strip()
 BING_VERIFY = (CONFIG.get('bing_site_verification') or '').strip()
 SOCIAL = [s for s in CONFIG.get('social_profiles', []) if isinstance(s, str) and s.startswith('https://')]
@@ -408,9 +410,12 @@ def page(path, title, desc, main, active=None, scripts=('kw',), noindex=False, o
         extra += f'<meta name="google-site-verification" content="{e(GOOGLE_VERIFY)}">'
     if BING_VERIFY:
         extra += f'<meta name="msvalidate.01" content="{e(BING_VERIFY)}">'
-    if GA4_ID:
-        extra += (f'<script async src="https://www.googletagmanager.com/gtag/js?id={e(GA4_ID)}"></script>'
-                  f"<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}gtag('js',new Date());gtag('config','{e(GA4_ID)}');</script>")
+    tag_ids = [i for i in (GA4_ID, ADS_ID) if i]
+    if tag_ids:   # one gtag.js for GA4 and Google Ads; KW.track in kw.js sends site events (and Ads conversions when labels are set)
+        extra += (f'<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id={e(tag_ids[0])}"></script>'
+                  "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());"
+                  + ''.join(f"gtag('config','{e(i)}');" for i in tag_ids)
+                  + (f"window.KW_ADS_CONV={json.dumps(ADS_CONV)};" if ADS_CONV else '') + '</script>')
     og = og_image if og_image.startswith('http') else SITE + og_image
     js = ''.join(f'<script src="/assets/js/{s}.js?v={VERSION}" defer></script>' for s in scripts)
     doc = f'''<!doctype html>

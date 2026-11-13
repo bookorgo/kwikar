@@ -21,9 +21,14 @@
     if (!w) location.href = url;
   };
 
-  /* ---------- GA4 events (only sent when GA4 is installed) ---------- */
+  /* ---------- GA4 / Google Ads events (only sent when the Google tag is installed) ---------- */
   KW.track = function (name, data) {
-    try { if (typeof window.gtag === 'function') window.gtag('event', name, data || {}); } catch (e) { /* ignore */ }
+    try {
+      if (typeof window.gtag !== 'function') return;
+      window.gtag('event', name, data || {});
+      var conv = window.KW_ADS_CONV && window.KW_ADS_CONV[name];   // Google Ads conversion label for this event, if set
+      if (conv) window.gtag('event', 'conversion', { send_to: conv });
+    } catch (e) { /* ignore */ }
   };
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href]');

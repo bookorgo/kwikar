@@ -3,5 +3,12 @@
   "ga4_id": "",
   "google_site_verification": "",
   "bing_site_verification": "",
-  "social_profiles": []
+  "social_profiles": [],
+  "google_ads_id": "AW-17981726466",
+  "google_ads_conversions": {
+    "_help": "Optional: conversion labels from Google Ads (Goals > Conversions > Tag setup), written as AW-17981726466/AbC-xyz. When set, these site events count as conversions in Google Ads.",
+    "generate_lead": "",
+    "whatsapp_click": "",
+    "call_click": ""
+  }
 }
