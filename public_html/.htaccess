@@ -197,9 +197,8 @@ RewriteRule ^tour\.html$ /activities/dubai/dubai-miracle-garden? [R=301,L]
 RewriteRule ^(?:ar/)?tour/186/?$ /activities/dubai/dubai-butterfly-garden [R=301,L]
 RewriteCond %{QUERY_STRING} (?:^|&)id=186(?:&|$)
 RewriteRule ^tour\.html$ /activities/dubai/dubai-butterfly-garden? [R=301,L]
-RewriteRule ^(?:ar/)?tour/203/?$ /activities/dubai/shindhaga-museum [R=301,L]
-RewriteCond %{QUERY_STRING} (?:^|&)id=203(?:&|$)
-RewriteRule ^tour\.html$ /activities/dubai/shindhaga-museum? [R=301,L]
+RewriteRule ^(?:ar/)?tour/203/?$ - [G,L]
+RewriteRule ^activities/dubai/shindhaga-museum/?$ - [G,L]
 RewriteRule ^(?:ar/)?tour/204/?$ /activities/uae/vintage-g-class-evening-heritage-safari-at-al-marmoom [R=301,L]
 RewriteCond %{QUERY_STRING} (?:^|&)id=204(?:&|$)
 RewriteRule ^tour\.html$ /activities/uae/vintage-g-class-evening-heritage-safari-at-al-marmoom? [R=301,L]
