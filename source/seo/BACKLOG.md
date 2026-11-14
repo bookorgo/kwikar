@@ -38,6 +38,7 @@ Writer order set by the Strategist on 13 Nov 2026 (time-sensitive events first, 
 
 ## Needs approval (Irfan)
 
+- Hostinger CDN cache: please flush it once (hPanel → Website → CDN / Cache → Flush). The CDN keeps old 301 answers for /ar/... URLs, so some old URLs still take 2 hops and /ar/location/ras-al-khaimah-emirates still ends on a 404 although the new .htaccess (14 Nov) is correct when the cache is bypassed (GSC, 14 Nov)
 Newest first. Each line: what, why, what Irfan does.
 
 - Off-Google listings (GBP, 14 Nov): MapQuest shows a wrong "Kwikar – Falkirk, UK" listing — fix via Foursquare for Business or MapQuest "suggest an edit"; the Facebook page says "Instant mobile voucher" but booking is on WhatsApp with team confirmation — change the Facebook text. Only Irfan can edit these accounts (details: reports/gbp-2026-11.md)
