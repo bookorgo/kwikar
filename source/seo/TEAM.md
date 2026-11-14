@@ -11,6 +11,7 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 | Tech | daily 03:23 | Live site health, feed changes, technical fixes |
 | Auditor | daily 07:13 | Checks every page like a visitor (mobile + desktop), fixes what it finds, reports SEO issues |
 | Strategist | Monday 11:17 | Research, reprioritise the backlog, weekly report for Irfan |
+| Analyst | Monday, before Strategist | Weekly leads & revenue report (GSC, GBP, Ads, Nomod, Ref codes) — read only |
 
 ## Shared rules for the team
 
@@ -127,3 +128,19 @@ The Auditor is the site's QA: every morning it checks all pages, fixes problems 
    - agle hafte ka plan (top 5 backlog items)
    - Irfan se kya chahiye (items under "Needs approval")
 6. Ship as in RUNBOOK step 5. End with the report's short version as the final message.
+
+## Analyst (leads & revenue — read only)
+
+1. Set up as in RUNBOOK step 1; read this file, RUNBOOK.md and LEARNINGS.md.
+2. Collect last week (Mon–Sun, Dubai time) and the week before, read only: Search Console (clicks,
+   impressions, CTR, position, top queries/pages, brand "kwikar" vs non-brand), Business Profile
+   performance (or the latest `reports/gbp-*.md`), Google Ads (spend, clicks, CPC, conversions, cost/conv.,
+   search terms), Nomod Sales (payments, total AED, average, refunds; never open Settings), and LOG/reports.
+   Never enter passwords; skip any page that asks for one and say so. Never change ads, payments or settings.
+3. WhatsApp lead source codes ("Ref: G/F/M/S/R/D") cannot be read by us: ask Irfan for weekly counts and
+   use what he puts in `reports/leads-input.md`.
+4. Write `reports/business-YYYY-MM-DD.md` (Roman Urdu): table per channel (this week vs last, % change),
+   revenue, ad cost, simple return (revenue ÷ ad spend), top pages/searches, what worked / didn't, 3–5
+   actions each with an owner. Put team actions in `BACKLOG.md` with the right tag. Never invent numbers:
+   write "data nahi mila". No customer names or card details in the repo.
+5. Log in `LOG.md` with `[Analyst]`; commit only `source/seo` files (pull --rebase first).
