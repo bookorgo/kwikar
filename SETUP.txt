@@ -77,3 +77,28 @@ How tours work now (SEO update, 29 Oct 2026)
 - Optional hand-written content per tour (quick answer, visitor info, KWIKAR
   tip, extra FAQs, custom title/slug, last-checked date): source/data/tour-extras.json
 - Analytics / Search Console / Bing: put the IDs in source/data/site-config.json.
+
+
+Online payment for activities (Nomod) — added 2026-11-14
+---------------------------------------------------------
+Only ACTIVITIES can be paid online ("Pay now" in the booking sheet). Transfers, holidays and
+visas stay WhatsApp-first. WhatsApp stays available next to "Pay now".
+
+Files: public_html/api/pay.php (create checkout, status), api/pay-lib.php (private helpers),
+api/nomod-webhook.php (webhook), /payment/success and /payment/failed (result pages, noindex).
+The price is recalculated on the server from the live TravelDesk feed; the browser price is never used.
+Online payment closes 12 hours before the activity (start time from the option's time slot, or 09:00).
+Orders are saved as JSON in /home/u809119518/kwikar-orders/ (outside public_html, not in Git).
+Every paid order emails info@kwikar.com (and the customer, if they gave an email).
+
+Switch on:
+1. Nomod > Settings > Tools & customisations > Apps & APIs > Nomod Hosted Checkout > Create API key.
+2. Same place > Webhooks > Create webhook: type Nomod Hosted Checkout; events charge.completed,
+   charge.failed, charge.refunded; URL https://kwikar.com/api/nomod-webhook.php. Copy the signing secret (whsec_...).
+3. Hostinger File Manager > home folder > kwikar-config.php: add the two lines from
+   public_html/api/config.sample.php ('NOMOD_API_KEY' and 'NOMOD_WEBHOOK_SECRET'). Never send keys by chat or email.
+4. Check: https://kwikar.com/api/pay.php?action=ready  →  {"ok":true,"enabled":true}
+5. Set "online_payment_activities": true in source/data/site-config.json and rebuild. This shows the button
+   and switches the Terms, Refund, Privacy, Booking information and home wording to online payment.
+6. Test with a small real payment and refund it in Nomod.
+Switch off quickly: add 'PAYMENTS_ENABLED' => false to kwikar-config.php (button disappears at once).

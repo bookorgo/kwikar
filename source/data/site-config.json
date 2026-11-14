@@ -10,5 +10,7 @@
     "generate_lead": "AW-17981726466/rAhTCMrlzbcdEIK-rf5C",
     "whatsapp_click": "AW-17981726466/rAhTCMrlzbcdEIK-rf5C",
     "call_click": "AW-17981726466/FORyCM3lzbcdEIK-rf5C"
-  }
+  },
+  "online_payment_activities": false,
+  "_payment_help": "online_payment_activities: set true (and rebuild) only after NOMOD_API_KEY is in kwikar-config.php and a test payment worked. It shows the Pay now button on activity booking sheets and switches the Terms, Refund, Privacy and Booking information wording to online payment for activities."
 }

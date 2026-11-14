@@ -1,6 +1,6 @@
 /* KWIKAR — site behaviour (menus, slider, listings, forms, booking sheet).
    Pages are complete HTML; this file only adds interaction.
-   No online payment: every booking and enquiry opens WhatsApp. */
+   Every enquiry can open WhatsApp; activities can also be paid online (Nomod) when switched on. */
 (function () {
   'use strict';
   var PHONE = '971505599243';
@@ -491,6 +491,23 @@
       return Math.round(((p.adult || 0) * s.adults + (p.child || 0) * s.children + (p.trip || 0)) * 100) / 100;
     };
     var selected = function () { return offers[s.offer] || null; };
+    /* Pay now: only when switched on for the site, the price is known and the activity starts 12+ hours from now (the server checks again). */
+    var startOf = function (o) {
+      var best = null;
+      (o.timeSlots || []).forEach(function (x) {
+        var m = /\b(\d{1,2})[:.](\d{2})\s*(am|pm)?/i.exec(String(x)); if (!m) return;
+        var h = +m[1], mi = +m[2], ap = (m[3] || '').toLowerCase();
+        if (ap === 'pm' && h < 12) h += 12; if (ap === 'am' && h === 12) h = 0;
+        if (h < 24 && mi < 60) { var v = h * 60 + mi; if (best === null || v < best) best = v; }
+      });
+      return best === null ? 9 * 60 : best;
+    };
+    var payEligible = function (o, tot) {
+      if (!t.pay || !o || o.id == null || tot == null || !(tot > 0) || !s.date) return false;
+      var p = s.date.split('-').map(Number), mins = startOf(o);
+      var startUtc = Date.UTC(p[0], p[1] - 1, p[2], Math.floor(mins / 60) - 4, mins % 60);   // Dubai is UTC+4
+      return startUtc - Date.now() >= 12 * 3600 * 1000;
+    };
     var titles = { date: 'When are you going?', guests: "Who's going?", options: 'Choose an option', details: 'Your details', review: 'Review your request' };
     var back = { date: null, guests: 'date', options: 'guests', details: 'options', review: 'details' };
 
@@ -648,14 +665,48 @@
       var o = selected(), d = s.d, tot = total(o);
       var row = function (k, v) { return '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>'; };
       var pol = (t.cancellation || []).length ? '<details class="kw-review-policy"><summary>Cancellation policy</summary>' + t.cancellation.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</details>' : '';
+      var payOk = payEligible(o, tot);
       body.innerHTML = '<div class="kw-sheet-content kw-review-step"><div class="kw-review-card"><h3>' + esc(t.name) + '</h3><dl>' + row('Date', esc(fmt(s.date, true))) +
         (o ? row('Option', esc(o.name)) : '') + row('Guests', esc(guestSummary()) + (s.children ? ' (ages ' + esc(s.ages.join(', ')) + ')' : '')) +
         (o && o.pickupRequired ? row('Pickup', d.pickupMode === 'later' ? 'Share later' : esc(d.hotel + (d.room ? ' · Room ' + d.room : ''))) : '') +
         row('Contact', esc(d.name) + '<br>' + esc(d.countryCode + ' ' + d.mobile) + (d.email ? '<br>' + esc(d.email) : '')) + '</dl></div>' +
         '<div class="kw-review-total"><span>Estimated total in AED</span><strong>' + (tot != null ? money(tot) : 'On request') + '</strong><small>Final price confirmed by our team on WhatsApp. No booking or card fees.</small></div>' + pol +
-        '<p class="kw-guest-note">WhatsApp opens with your request so you can review and send it. Nothing is booked or paid until our team confirms availability and the final price.</p>' +
+        '<div data-pay-box></div>' +
+        '<p class="kw-guest-note" data-wa-note>WhatsApp opens with your request so you can review and send it. Nothing is booked or paid until our team confirms availability and the final price.</p>' +
         '<button class="kw-button kw-wa-send" type="button" data-send>Send request on WhatsApp ↗</button><button class="kw-link-button" type="button" data-goto="details">Edit traveller details</button></div>';
       body.querySelector('[data-goto]').addEventListener('click', function () { go('details'); });
+      if (payOk) payReady(function (on) {
+        if (!on || s.stage !== 'review') return;
+        var box = body.querySelector('[data-pay-box]');
+        if (!box) return;
+        body.querySelector('.kw-review-total small').textContent = 'Full price in AED. No booking or card fees.';
+        body.querySelector('.kw-review-total span').textContent = 'Total to pay';
+        body.querySelector('[data-wa-note]').textContent = 'Prefer to talk first? Send your request on WhatsApp and pay later with a payment link from our team.';
+        var wa = body.querySelector('[data-send]'); wa.classList.remove('kw-button'); wa.classList.add('kw-button', 'kw-button-ghost');
+        box.innerHTML = '<label class="kw-check-row kw-pay-agree"><input type="checkbox" data-agree><span>I agree to the <a href="/terms" target="_blank">terms</a> and the cancellation policy of this activity.</span></label>' +
+          '<p class="kw-sheet-error" data-pay-err hidden></p><button class="kw-button kw-pay-now" type="button" data-pay>Pay now · ' + money(tot) + '</button>' +
+          '<p class="kw-pay-secure">Secure card payment by Nomod. Your booking is confirmed as soon as the payment is successful.</p>';
+        var btn = box.querySelector('[data-pay]'), perr = box.querySelector('[data-pay-err]');
+        btn.addEventListener('click', function () {
+          perr.hidden = true;
+          if (!box.querySelector('[data-agree]').checked) { perr.textContent = 'Please tick the box to accept the terms and cancellation policy.'; perr.hidden = false; return; }
+          btn.disabled = true; btn.textContent = 'Opening secure payment…';
+          var d = s.d;
+          var payload = { tour_id: String(t.id), offer_id: String(o.id), date: s.date, adults: s.adults, children: s.children, infants: s.infants, ages: s.ages,
+            path: t.path || location.pathname, src: KW.source ? KW.source() : 'D',
+            customer: { name: d.name.trim(), phone: d.countryCode.trim() + ' ' + d.mobile.trim(), email: d.email.trim(), residence: d.residence.trim(),
+              pickup: o.pickupRequired ? (d.pickupMode === 'later' ? 'Will share later' : d.hotel + (d.room ? ', room ' + d.room : '')) : '', special: d.special.trim() } };
+          fetch('/api/pay.php?action=create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              if (j && j.ok && j.url) {
+                KW.track('begin_checkout', { currency: 'AED', value: tot, payment_type: 'card', items: [{ item_id: String(t.id), item_name: t.name, item_variant: o.name }] });
+                location.href = j.url;
+              } else throw new Error((j && j.error) || 'Payment could not be started.');
+            })
+            .catch(function (e) { perr.textContent = (e && e.message) || 'Payment could not be started. Please try again or send your request on WhatsApp.'; perr.hidden = false; btn.disabled = false; btn.textContent = 'Pay now · ' + money(tot); });
+        });
+      });
       body.querySelector('[data-send]').addEventListener('click', function () {
         KW.track('begin_checkout', { currency: 'AED', value: tot || 0, items: [{ item_id: String(t.id), item_name: t.name, item_variant: o ? o.name : '' }] });
         KW.track('generate_lead', { form_name: 'Tour booking', method: 'whatsapp', currency: 'AED', value: tot || 0 });
@@ -665,5 +716,54 @@
 
     render();
     sheet.focus();
+  }
+
+  /* ---------- online payment (Nomod): is it switched on on the server? ---------- */
+  var payState = null, payWaiters = [];
+  function payReady(cb) {
+    if (payState !== null) return cb(payState);
+    payWaiters.push(cb);
+    if (payWaiters.length > 1) return;
+    fetch('/api/pay.php?action=ready').then(function (r) { return r.json(); })
+      .then(function (j) { payState = !!(j && j.enabled); }).catch(function () { payState = false; })
+      .then(function () { var w = payWaiters; payWaiters = []; w.forEach(function (f) { f(payState); }); });
+  }
+
+  /* ---------- payment result pages (/payment/success, /payment/failed) ---------- */
+  var resultEl = document.querySelector('[data-pay-result]');
+  if (resultEl) {
+    var ref = params.get('ref') || '';
+    var failedPage = resultEl.dataset.payResult === 'failed';
+    var dl = function (rows) { return '<dl class="kw-facts">' + rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + r[1] + '</dd></div>'; }).join('') + '</dl>'; };
+    var show = function (o, tries) {
+      var rows = [['Booking ref', esc(o.ref)], ['Activity', esc(o.tour)], ['Option', esc(o.option)], ['Date', esc(o.date_text)], ['Guests', esc(o.guests)], ['Total', money(o.total)]];
+      if (o.status === 'paid') {
+        var key = 'kw-paid-' + o.ref, first = true;
+        try { first = !localStorage.getItem(key); localStorage.setItem(key, '1'); } catch (e) { /* ignore */ }
+        if (first) KW.track('purchase', { transaction_id: o.ref, currency: 'AED', value: o.total, items: [{ item_name: o.tour, item_variant: o.option }] });
+        var msg = ['Hi KWIKAR, I have paid for my booking.', '', 'Booking ref: ' + o.ref, o.tour, 'Option: ' + o.option, 'Date: ' + o.date_text, 'Guests: ' + o.guests, 'Paid: ' + money(o.total)].join('\n');
+        resultEl.innerHTML = '<h1>Payment received. Your booking is confirmed.</h1><p>Thank you' + (o.first_name ? ', ' + esc(o.first_name) : '') + '. Our team will send your tickets or meeting details on WhatsApp. Keep your booking reference.</p>' +
+          dl(rows) + (o.cancellation && o.cancellation.length ? '<details class="kw-review-policy"><summary>Cancellation policy</summary>' + o.cancellation.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</details>' : '') +
+          '<p>If the supplier cannot confirm your date, we offer another date or a full refund to your card (7–10 working days).</p>' +
+          '<p><a class="kw-button" href="' + esc(KW.whatsapp(msg)) + '" target="_blank" rel="noopener noreferrer">Message us on WhatsApp ↗</a></p>';
+        return;
+      }
+      if (!failedPage && o.status === 'created' && tries < 6) {
+        resultEl.innerHTML = '<h1>Checking your payment…</h1><p>This usually takes a few seconds.</p>';
+        return setTimeout(function () { load(tries + 1); }, 4000);
+      }
+      var waMsg = ['Hi KWIKAR, my online payment did not go through. Can you help me book?', '', 'Booking ref: ' + o.ref, o.tour, 'Option: ' + o.option, 'Date: ' + o.date_text, 'Guests: ' + o.guests].join('\n');
+      resultEl.innerHTML = (o.status === 'created' && !failedPage
+        ? '<h1>We are still checking your payment</h1><p>If money was taken from your card, our team will confirm your booking on WhatsApp. You can also message us now with your booking reference.</p>'
+        : '<h1>Payment not completed</h1><p>' + (params.get('cancelled') ? 'You cancelled the payment.' : 'The payment did not go through.') + ' No money was taken.</p>') +
+        dl(rows) + '<p><a class="kw-button" href="' + esc(o.url || '/activities') + '">Try again</a> <a class="kw-button kw-button-ghost" href="' + esc(KW.whatsapp(waMsg)) + '" target="_blank" rel="noopener noreferrer">Book on WhatsApp ↗</a></p>';
+    };
+    var load = function (tries) {
+      if (!/^KW-\d{6}-[A-Z2-9]{8}$/.test(ref)) { resultEl.innerHTML = '<h1>Booking not found</h1><p>Please message us on WhatsApp with your payment details.</p>'; return; }
+      fetch('/api/pay.php?action=status&ref=' + encodeURIComponent(ref)).then(function (r) { return r.json(); })
+        .then(function (j) { if (!j || !j.ok) throw new Error(); show(j.order, tries); })
+        .catch(function () { resultEl.innerHTML = '<h1>We could not load your booking</h1><p>Please message us on WhatsApp with your booking reference: ' + esc(ref) + '</p>'; });
+    };
+    load(0);
   }
 })();

@@ -28,6 +28,7 @@ try:
 except Exception:
     pass
 GA4_ID = (CONFIG.get('ga4_id') or '').strip()
+PAY_ON = CONFIG.get('online_payment_activities') is True   # Nomod "Pay now" for activities (see site-config.json)
 ADS_ID = (CONFIG.get('google_ads_id') or '').strip()
 ADS_CONV = {k: v.strip() for k, v in (CONFIG.get('google_ads_conversions') or {}).items() if not k.startswith('_') and isinstance(v, str) and v.strip()}
 GOOGLE_VERIFY = (CONFIG.get('google_site_verification') or '').strip()
@@ -670,7 +671,7 @@ def home_guide():
           + f'<div class="kw-chip-links">{city_chips}<a href="/destinations">All destinations<span>↗</span></a></div></div></div></section>')
 
     s6 = (f'<section class="kw-seo-section kw-market-alt"><div class="kw-market-wrap">'
-          + seo_head('HOW IT WORKS', 'Booking with KWIKAR in three steps', 'No account and no online payment. You only pay once our team has confirmed everything.', center=True)
+          + seo_head('HOW IT WORKS', 'Booking with KWIKAR in three steps', ('No account needed. Pay activities online by card, or pay after our team confirms on WhatsApp.' if PAY_ON else 'No account and no online payment. You only pay once our team has confirmed everything.'), center=True)
           + info_cards([('', 'Choose', 'Browse experiences, transfers or packages and note the indicative price.'),
                         ('', 'Send a request', 'Send your preferred date and number of guests by form, WhatsApp or phone.'),
                         ('', 'Confirm and pay', 'Our team replies with availability, the final price and booking terms. You pay only after that.')], numbered=True)
@@ -1266,9 +1267,9 @@ def build_product(t, d):
     cta_t = x.get('cta_text') or 'Send your date and guests. Our team replies on WhatsApp with availability and the final price.'
     wa_q = wa(f'Hi KWIKAR, I would like to book {name}. Please share availability.')
     ages = child_age_range(d, x)
-    sheet_data = {'id': t['id'], 'name': name, 'url': SITE + path, 'cancellation': [_plain(c) for c in cancel],
+    sheet_data = {'id': t['id'], 'name': name, 'url': SITE + path, 'path': path, 'pay': PAY_ON, 'cancellation': [_plain(c) for c in cancel],
                   'childAges': {'min': ages[0], 'max': ages[1]} if ages else None,
-                  'offers': [{k: o.get(k) for k in ('name', 'hours', 'price', 'unit', 'child', 'tripFee', 'adultBase', 'minPeople', 'maxPeople', 'daysOffered', 'pricingPeriods', 'transferKind', 'transferPricingMode', 'pickupRequired', 'childrenAllowed')} for o in offers]}
+                  'offers': [{k: o.get(k) for k in ('id', 'timeSlots', 'name', 'hours', 'price', 'unit', 'child', 'tripFee', 'adultBase', 'minPeople', 'maxPeople', 'daysOffered', 'pricingPeriods', 'transferKind', 'transferPricingMode', 'pickupRequired', 'childrenAllowed')} for o in offers]}
     city_link = dest_href(lid)
     main = f'''<nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/activities">Activities</a> / <a href="{city_link}">{e("More" if lid == "other" else cname)}</a> / {e(name)}</nav>
 <h1>{e(h1)}</h1>
@@ -2226,6 +2227,32 @@ def build_contact():
     page('/contact', 'Contact', 'Contact KWIKAR on WhatsApp, phone or email about tours, attraction tickets, holiday packages, private transfers and UAE visa help. We are happy to help.', main, crumbs=[('Home', '/'), ('Contact', '/contact')])
 
 
+# ---- wording used when online payment for activities is switched on (PAY_ON)
+PRIV_DESC_PAY = 'How KWIKAR uses the details you share in enquiries and bookings. Online card payments for activities are handled by Nomod; we never see or store your card details.'
+PRIV_PAY = ('Activities can be paid online by card. Card payments are processed by our payment provider Nomod on its secure checkout page; '
+            'KWIKAR never sees or stores your card number. We keep your booking details (name, contact details, activity, date, guests and amount paid) to provide the booking and for our accounts.')
+TERMS_PAY = ('<p><strong>Activities:</strong> you can pay online by card with “Pay now” on the activity page, or send your request on WhatsApp and pay a payment link from our team. '
+             'Online payment is available until 12 hours before the activity starts; closer to the date, please book on WhatsApp. The amount shown before payment is the full price in AED, with no card or booking fees. '
+             'Card payments are processed by Nomod. When your payment is successful, your booking is confirmed and you receive a booking reference; our team then sends your tickets or meeting details on WhatsApp. '
+             'If the supplier cannot provide your activity on the booked date, we offer another date or a full refund.</p>'
+             '<p><strong>Transfers, holidays and visas:</strong> our team confirms the details and the final price first and agrees the payment method with you.</p>')
+REFUND_PAY = ('<h2>Activities paid online</h2><ul><li><strong>Cancellation:</strong> the cancellation terms of the supplier for that activity apply. They are shown on the activity page and before you pay.</li>'
+              '<li><strong>No-show:</strong> if you do not arrive at the activity, no refund is due.</li>'
+              '<li><strong>Not available:</strong> if the supplier cannot confirm your date after payment, you choose another date or a full refund.</li>'
+              '<li><strong>Refunds</strong> go back to the card you paid with, within 7–10 working days. Your bank may take a few more days to show it.</li></ul>')
+BOOKING_PAY = ('<p><strong>Pay now (activities):</strong> choose the option, date and guests, enter your details and pay by card on the secure Nomod page. '
+               'Online payment is open until 12 hours before the activity. After payment you see your booking reference, and our team sends your tickets or meeting details on WhatsApp. '
+               'You can still send your request on WhatsApp instead and pay a payment link from our team.</p>')
+
+
+def build_payment_pages():
+    """/payment/success and /payment/failed: Nomod returns the customer here (noindex). kw.js reads the order status."""
+    page('/payment/success', 'Payment received', 'Your KWIKAR booking payment.', '<section class="kw-pay-result kw-wrap" data-pay-result="success"><h1>Checking your payment…</h1><p>One moment please.</p></section>',
+         noindex=True, crumbs=[('Home', '/'), ('Payment', '/payment/success')], main_class='kw-info-page')
+    page('/payment/failed', 'Payment not completed', 'Your KWIKAR booking payment was not completed.', '<section class="kw-pay-result kw-wrap" data-pay-result="failed"><h1>Payment not completed</h1><p>No money was taken. You can try again or send your request on WhatsApp.</p></section>',
+         noindex=True, crumbs=[('Home', '/'), ('Payment', '/payment/failed')], main_class='kw-info-page')
+
+
 def info(path, title, desc, body, label):
     page(path, title, desc, body, main_class='kw-info-page', crumbs=[('Home', '/'), (label, path)])
 
@@ -2234,27 +2261,27 @@ def build_info_pages():
     info('/about', 'About KWIKAR', 'KWIKAR is a UAE travel company for tours, attraction tickets, holidays, private transfers and visa help. See how we check prices and visitor details.', '''
 <h1>Travel plans, made simpler.</h1><p>KWIKAR LLC-FZ helps travellers explore experiences, holiday ideas, private transfers and visa assistance in the UAE and beyond. Browse what interests you, then tell our team your dates and requirements.</p>
 <h2>How we check our information</h2><ul><li><strong>Prices and options</strong> come from our suppliers' live rates and are refreshed several times a day. Each tour page shows when they were last checked.</li><li><strong>Visitor details</strong> on our main pages, such as opening hours, entry rules and what to bring, are written by the KWIKAR team from official venue and supplier information, and each page shows the date it was checked.</li><li><strong>Final details</strong> are confirmed by our team for your date before you pay, because supplier rules can change.</li><li><strong>No invented reviews or ratings.</strong> We do not show ratings from other websites as our own.</li><li><strong>Corrections:</strong> if you spot something out of date, email <a href="mailto:info@kwikar.com">info@kwikar.com</a> and we will check and fix it.</li></ul>
-<h2>How enquiries work</h2><ol><li>Explore experiences and indicative prices.</li><li>Send your request on WhatsApp with your preferred date and number of guests.</li><li>Our team confirms availability, final price and applicable booking terms before payment.</li></ol><p>Questions? <a href="/contact">Get in touch</a>.</p>''', 'About')
-    info('/privacy', 'Privacy', 'How KWIKAR uses the details you share in WhatsApp and email enquiries. This website takes no online payments and does not ask for or store card details.', f'''
-<h1>Privacy and enquiries</h1><p>KWIKAR LLC-FZ uses the details you share to respond to travel enquiries and arrange requested services. This website does not take online payments and does not ask for or store card details.</p>
+<h2>How enquiries work</h2><ol><li>Explore experiences and indicative prices.</li><li>Send your request on WhatsApp with your preferred date and number of guests.</li><li>Our team confirms availability, final price and applicable booking terms before payment.</li></ol>''' + ('<p>Activities can also be paid online by card with “Pay now”; see <a href="/booking-information">booking information</a>.</p>' if PAY_ON else '') + '''<p>Questions? <a href="/contact">Get in touch</a>.</p>''', 'About')
+    info('/privacy', 'Privacy', (PRIV_DESC_PAY if PAY_ON else 'How KWIKAR uses the details you share in WhatsApp and email enquiries. This website takes no online payments and does not ask for or store card details.'), f'''
+<h1>Privacy and enquiries</h1><p>KWIKAR LLC-FZ uses the details you share to respond to travel enquiries and arrange requested services. {PRIV_PAY if PAY_ON else 'This website does not take online payments and does not ask for or store card details.'}</p>
 <h2>How our forms work</h2><p>Booking and enquiry forms on this website open WhatsApp (or your email app) with a prepared message, which you review before you send it.</p>
 <h2>Information you share</h2><p>When you contact us we receive the details you choose to send, for example your name, phone number or email, selected tour or service, travel date, number of guests, pickup location and notes. We use them to answer you, confirm availability and price, arrange your booking and contact you about it. Visa documents should be shared only after our team confirms the appropriate process.</p>
 <h2>Other services</h2><p>WhatsApp and your email provider handle messages under their own terms. A tour or transfer supplier may receive the booking details needed to provide your service.</p>
 <h2>Your questions</h2><p>Contact <a href="mailto:{EMAIL}">{EMAIL}</a> about your information or a data request. See our <a href="/booking-information">booking information</a>.</p>''', 'Privacy')
     info('/terms', 'Terms & conditions', 'Terms for KWIKAR travel enquiries, quotes and confirmed bookings: how reservations are confirmed in writing, payment, changes and supplier cancellation rules.', '''
 <h1>Terms &amp; conditions</h1><p>Kwikar LLC-FZ provides travel enquiries and booking assistance for attractions, holidays, transfers and visas. Information and prices on this website may change with supplier availability, dates and guest details.</p>
-<h2>Quotes and orders</h2><p>Only a written confirmation from KWIKAR confirms a reservation. Sending an enquiry does not reserve a service. Before any payment, KWIKAR confirms the final AED amount, what is included and the applicable supplier conditions.</p>
-<h2>Booking and payment</h2><p>No payment is taken on this website. Our team agrees the payment method with you directly. A booking is confirmed only when KWIKAR sends you a written confirmation with your booking details.</p>
+<h2>Quotes and orders</h2>''' + ('<p>Sending an enquiry does not reserve a service. For requests sent on WhatsApp, KWIKAR confirms the final AED amount, what is included and the applicable supplier conditions before any payment. For activities paid online, your booking is confirmed when the payment is successful.</p>' if PAY_ON else '<p>Only a written confirmation from KWIKAR confirms a reservation. Sending an enquiry does not reserve a service. Before any payment, KWIKAR confirms the final AED amount, what is included and the applicable supplier conditions.</p>') + '''
+<h2>Booking and payment</h2>''' + (TERMS_PAY if PAY_ON else '<p>No payment is taken on this website. Our team agrees the payment method with you directly. A booking is confirmed only when KWIKAR sends you a written confirmation with your booking details.</p>') + '''
 <h2>Changes and cancellations</h2><p>Supplier rules for each service govern changes, cancellation charges and refunds. Read the specific tour conditions and our <a href="/refund-policy">refund and cancellation policy</a>. Visa issuance is determined by the issuing authority; processing times and approval are not guaranteed.</p>
 <p>Read <a href="/booking-information">booking information</a> or <a href="/contact">contact our team</a> with questions.</p>''', 'Terms')
     info('/refund-policy', 'Refund & cancellation policy', 'How KWIKAR handles experiences that cannot be confirmed, changes and cancellations after confirmation, and refunds under each supplier policy.', f'''
-<h1>Refund &amp; cancellation policy</h1><h2>Before confirmation</h2><p>If an experience or service cannot be confirmed with the supplier, we tell you on WhatsApp and suggest alternatives. Nothing is booked until you accept the final quote.</p>
+<h1>Refund &amp; cancellation policy</h1>{REFUND_PAY if PAY_ON else ''}<h2>Before confirmation</h2><p>If an experience or service cannot be confirmed with the supplier, we tell you on WhatsApp and suggest alternatives. Nothing is booked until you accept the final quote.</p>
 <h2>After confirmation</h2><p>Cancellation or changes to a confirmed booking depend on the supplier's policy for that exact tour, option and travel date. The applicable conditions are shown on the tour page when provided by the supplier and are shared with your confirmation. Some tickets are non-refundable or carry a cancellation charge. Contact us as soon as possible with your booking details; we will check the supplier's terms and tell you the refundable amount, if any, before processing a request.</p>
 <h2>Other services</h2><p>Transfers, visas and holiday packages can have different cancellation terms. KWIKAR shares the applicable terms with your quote before requesting payment. Visa approval is determined by the issuing authority; an application fee may not be refundable after processing starts.</p>
 <p>For assistance email <a href="mailto:{EMAIL}">{EMAIL}</a> or <a href="/contact">contact our team</a>. See <a href="/booking-information">how booking works</a>.</p>''', 'Refund policy')
     info('/booking-information', 'Booking information', 'How booking with KWIKAR works: send your request on WhatsApp, our team confirms availability and the final AED price, then you pay and receive confirmation.', '''
 <h1>Booking information</h1><p>Tour prices are shown in AED. Some services require a quote before we can confirm the total.</p>
-<h2>Tour booking</h2><p>Choose an experience, option, date and guests, then send your booking request on WhatsApp. The supplier recommended prices are indicative; our team checks age-based guest prices, date and availability, then replies with the final AED amount and how to pay. Your booking is confirmed when we send your confirmation and voucher reference.</p>
+<h2>Tour booking</h2>''' + (BOOKING_PAY if PAY_ON else '') + '''<p>Choose an experience, option, date and guests, then send your booking request on WhatsApp. The supplier recommended prices are indicative; our team checks age-based guest prices, date and availability, then replies with the final AED amount and how to pay. Your booking is confirmed when we send your confirmation and voucher reference.</p>
 <h2>Transfers, visas and holidays</h2><p>Send an enquiry with your travel details. Transfers and holidays are arranged on WhatsApp. For visas, contact our team to check requirements and pricing. A website starting price does not reserve a vehicle, visa or holiday. The confirmed AED quote is the customer total, with no separate card or booking fee.</p>
 <p>Read our <a href="/terms">terms</a>, <a href="/refund-policy">refund and cancellation policy</a> and <a href="/privacy">privacy policy</a>. Questions? <a href="/contact">Contact KWIKAR</a>.</p>''', 'Booking information')
 
@@ -2483,6 +2510,7 @@ if __name__ == '__main__':
     build_visa()
     build_contact()
     build_info_pages()
+    build_payment_pages()
     build_blog()
     build_status_pages()
     build_seo_files()

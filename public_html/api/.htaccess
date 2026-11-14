@@ -1,5 +1,5 @@
-# Only tours.php is public in this folder.
+# Public: tours.php, sitemap-tours.php, pay.php, nomod-webhook.php. Everything else is private.
 Options -Indexes
-<FilesMatch "^(config\.php|config\.sample\.php|locations\.json)$">
+<FilesMatch "^(config\.php|config\.sample\.php|locations\.json|pay-lib\.php)$">
   Require all denied
 </FilesMatch>

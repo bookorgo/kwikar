@@ -378,3 +378,9 @@ section[id]{scroll-margin-top:165px}
  /* "Choose" on transfer price rows: bigger tap area, same look */
  .kw-class-price a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
 }
+/* Online payment (activities) */
+.kw-pay-agree{margin:10px 0 8px;font-size:14px;align-items:flex-start}.kw-pay-agree a{color:var(--kw-blue);text-decoration:underline}
+.kw-pay-now{width:100%;margin-top:4px}.kw-pay-secure{font-size:12.5px;color:#5b6574;margin:8px 0 14px;text-align:center}
+.kw-review-step .kw-button-ghost.kw-wa-send{background:#fff;color:#128c4a;border:1.5px solid #25d366}
+.kw-pay-result{max-width:760px;padding:40px 16px}.kw-pay-result h1{margin-bottom:10px}.kw-pay-result .kw-facts{margin:18px 0}.kw-pay-result p{margin:12px 0}
+.kw-pay-result a.kw-button{color:#fff;text-decoration:none}.kw-pay-result a.kw-button.kw-button-ghost{background:#fff;color:var(--kw-blue);border:1.5px solid var(--kw-blue)}

@@ -4,3 +4,8 @@ public_html/api/config.php
 public_html/api/cache/*.json
 __pycache__/
 .DS_Store
+# Server keys and payment data (never commit)
+kwikar-config.php
+public_html/api/cache/orders/
+public_html/api/cache/*.log
+kwikar-orders/
