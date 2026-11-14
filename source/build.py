@@ -105,6 +105,8 @@ def _clean_name(s):
     if not isinstance(s, str):
         return s
     s = re.sub(r'\b(tour|trip|transfer|cruise|safari) form\b', r'\1 from', s, flags=re.I)   # supplier typo "City Tour form Abu Dhabi"
+    s = re.sub(r'\bSea Louge\b', 'Sea Lounge', s)                                           # supplier typo (tour 289 option)
+    s = re.sub(r'(\w)- (?=\w)', r'\1 - ', s)                                                # "2026- Lower Deck" -> "2026 - Lower Deck"
     return re.sub(r'\s{2,}', ' ', s).strip()
 
 

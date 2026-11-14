@@ -15,6 +15,7 @@ Short, factual notes that later runs should follow. Merged and shortened by the 
 - Count the title including " | KWIKAR" (9 chars); meta 120–160 counted on the rendered page, and read its end (fit() once cut "tolls and."). qa.py once passed a 171-char meta.
 - Avoid "cheapest" even in comparisons ("costs the least"). Never promise instant tickets (build.py rewrites supplier "you will instantly receive tickets").
 - Template words: "First Class class" → build.py cls_word(); fleet alts via car_alt() (no "with chauffeur" when none is in the photo).
+- Read the option card names on the rendered page: supplier typos show there (289 "Sea Louge", "2026- Lower Deck"). Fix them in build.py `_clean_name()` (display only, slugs unchanged) (Editor, 14 Nov).
 - Don't answer "Is it open now?" with "Yes"; state dates. Don't state ticket validity unless the supplier notes say it.
 
 ## Supplier data traps
