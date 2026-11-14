@@ -42,16 +42,34 @@ RewriteRule ^(?:ar/)?car/(mercedes-s-class|mercedes-benz-s-class)/?$ /transfers/
 RewriteRule ^(?:ar/)?car/(mercedes-e-class|mercedes-benz-e-class)/?$ /transfers/fleet/mercedes-e-class [R=301,L]
 RewriteRule ^(?:ar/)?car/(cadillac-escalade|gmc-yukon-xl|tesla-model-y|lexus-es-300h|bmw-530i)/?$ /transfers/fleet/$1 [R=301,L]
 RewriteRule ^(?:ar/)?car(/.*)?$ /transfers/fleet [R=301,L]
-RewriteRule ^location/([a-z-]+)/?$ /destinations/$1 [R=301,L]
+# Old city pages (also with the /ar/ prefix, one hop). Cities without their own page -> the nearest live page
+RewriteRule ^(?:ar/)?location/al-ain/?$ /transfers/private-tours/al-ain-garden-city-tour [R=301,L]
+RewriteRule ^(?:ar/)?location/ras-al-khaimah(?:-emirates)?/?$ /destinations/ras-al-khaimah [R=301,L]
+RewriteRule ^(?:ar/)?location/([a-z-]+)/?$ /destinations/$1 [R=301,L]
 RewriteRule ^attractions/?$ /destinations [R=301,L]
 RewriteRule ^destinations/other/?$ /activities/uae [R=301,L]
 RewriteRule ^api/sitemap-tours\.php$ /sitemap-products.xml [R=301,L]
 # Old blog, tour search and info pages
 RewriteRule ^(?:ar/)?news(/.*)?$ /blog? [R=301,L]
 RewriteRule ^(?:ar/)?tour/?$ /activities? [R=301,L]
+# Old tour pages by name (GSC 404s, 14 Nov 2026): holiday packages -> /holidays, tours -> the matching page
+RewriteRule ^(?:ar/)?tour/[a-z0-9-]+-\d+n\d+d(?:-[a-z0-9-]*)?/?$ /holidays? [R=301,L]
+RewriteRule ^(?:ar/)?tour/combo-save-[a-z0-9-]*hop-on-hop-off[a-z0-9-]*/?$ /activities/city-tours? [R=301,L]
+RewriteRule ^(?:ar/)?tour/inside-burj-al-arab[a-z0-9-]*/?$ /activities/attraction-tickets? [R=301,L]
+RewriteRule ^(?:ar/)?tour/from-dubai-abu-dhabi-full-day-city-tour[a-z0-9-]*/?$ /transfers/private-tours/abu-dhabi-day-tour? [R=301,L]
+RewriteRule ^(?:ar/)?tour/self-drive-jet-ski-tour[a-z0-9-]*/?$ /activities/dubai/jet-ski-from-dubai-harbour? [R=301,L]
+# Any other old tour name (never a live page: tours live under /activities/) -> all experiences
+RewriteRule ^(?:ar/)?tour/[a-z][a-z0-9-]*/?$ /activities? [R=301,L]
+# Removed sections of the old site -> the nearest hub
+RewriteRule ^(?:ar/)?event(/.*)?$ /activities/events? [R=301,L]
+RewriteRule ^(?:ar/)?boat(/.*)?$ /activities/yachts? [R=301,L]
+RewriteRule ^(?:ar/)?flight(/.*)?$ /holidays? [R=301,L]
+RewriteRule ^(?:ar/)?(forgot-password|login|register)/?$ /? [R=301,L]
 RewriteRule ^(?:ar/)?page/become-a-vendor/?$ /contact [R=301,L]
 RewriteRule ^(?:ar/)?page/.*$ /about? [R=301,L]
-# Old currency / language switches -> the same page without them
+# Old currency / language switches -> the same page without them (/ar home first, one hop)
+RewriteCond %{QUERY_STRING} (^|&)(set_currency|set_lang)= [NC]
+RewriteRule ^ar/?$ /? [R=301,L]
 RewriteCond %{QUERY_STRING} (^|&)(set_currency|set_lang)= [NC]
 RewriteRule ^(.*)$ /$1? [R=301,L]
 # Odd addresses with a ":code" suffix -> the clean address

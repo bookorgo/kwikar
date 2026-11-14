@@ -2374,6 +2374,51 @@ def write_css():
     open(os.path.join(OUT, 'assets', 'css', 'site.css'), 'w', encoding='utf-8').write(out)
 
 
+def build_llms_txt():
+    """/llms.txt: a short plain-text summary for AI search tools (ChatGPT, Claude, Perplexity, Gemini).
+    Only facts the site already shows: prices come from the live feed (tours) and transfers.json (cars)."""
+    L = [f'# KWIKAR', '',
+         f'> {ORG["description"]} Based in the United Arab Emirates (Kwikar LLC-FZ). Booking is on WhatsApp: '
+         f'send a request, our team checks availability and confirms the final price in AED before you pay.', '',
+         '## How to book',
+         f'- WhatsApp or call: {PHONE_FMT} (https://wa.me/{PHONE})',
+         f'- Email: {EMAIL}',
+         '- Prices shown are starting ("from") prices. The final price depends on date, group size and options and is confirmed before payment. No online payment on the website.',
+         f'- [Booking information]({SITE}/booking-information) · [Contact]({SITE}/contact)', '',
+         '## Main sections',
+         f'- [Activities and tours]({SITE}/activities): tickets, cruises, desert safaris, theme parks and city tours in Dubai, Abu Dhabi and the UAE',
+         f'- [Destinations]({SITE}/destinations): [Dubai]({SITE}/destinations/dubai), [Abu Dhabi]({SITE}/destinations/abu-dhabi)',
+         f'- [Private transfers]({SITE}/transfers): airport transfers and city-to-city transfers with a chauffeur, fixed price per car',
+         f'- [Holiday packages]({SITE}/holidays): price on request',
+         f'- [UAE visas]({SITE}/visa): visa assistance, price on request',
+         f'- [Travel guides]({SITE}/blog)', '']
+    tours = []
+    for tid, x in EXTRAS.items():
+        t = next((t for t in TOURS if str(t['id']) == tid), None)
+        if not t or not x.get('h1'):
+            continue
+        price = '' if 'Price' in (x.get('glance_hide') or []) or not t.get('price') else f': from {money(t["price"])} per {t.get("unit") or "person"}'
+        tours.append(f'- [{x["h1"]}]({SITE}{tour_href(t)}){price}')
+    if tours:
+        L += ['## Popular tours and tickets (prices from live supplier rates)'] + tours + ['']
+    routes = [f'- [{tr_name(r)}]({SITE}{tr_href(r)}): from {money(tr_low(r["prices"]))} per car, one way' for r in TR_ROUTES if tr_low(r['prices'])]
+    hp = tr_low(TR['hourly']['prices'])
+    L += ['## Private transfers (fixed prices per car; tolls, parking and child seats included)'] + routes
+    if hp:
+        L.append(f'- [Chauffeur service in Dubai by the hour]({SITE}{HOURLY_PATH}): from {money(hp)} per hour, minimum {HOUR_MIN} hours')
+    L.append('')
+    if TT.get('list'):
+        L.append('## Private chauffeur tours from Dubai (price per car for the whole tour)')
+        for t in TT['list']:
+            kind, hrs = TOUR_KIND[t['kind']]
+            L.append(f'- [{t["name"]}]({SITE}{ptour_href(t)}): {kind.lower()} ({hrs} hours), from {money(tr_low(ptour_prices(t)))} per car')
+        L.append('')
+    if POSTS:
+        L += ['## Guides'] + [f'- [{re.sub(r" [|] KWIKAR$", "", a["title"])}]({SITE}{post_href(a)})' for a in POSTS] + ['']
+    L += [f'Updated {TODAY}. Full page list: {SITE}/sitemap.xml']
+    open(os.path.join(OUT, 'llms.txt'), 'w', encoding='utf-8').write('\n'.join(L) + '\n')
+
+
 def build_seo_files():
     def urlset(paths):
         return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -2394,14 +2439,15 @@ def build_seo_files():
     lines = []
     for tid, p_ in sorted(SLUGS.items(), key=lambda kv: int(kv[0])):
         if tid in LIVE_IDS:
-            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ {p_} [R=301,L]', f'RewriteCond %{{QUERY_STRING}} (?:^|&)id={tid}(?:&|$)', f'RewriteRule ^tour\\.html$ {p_}? [R=301,L]']
+            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}(?::[a-z0-9:]+)?/?$ {p_} [R=301,L]', f'RewriteCond %{{QUERY_STRING}} (?:^|&)id={tid}(?:&|$)', f'RewriteRule ^tour\\.html$ {p_}? [R=301,L]']
         else:
-            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}/?$ - [G,L]', f'RewriteRule ^{p_.strip("/")}/?$ - [G,L]']
+            lines += [f'RewriteRule ^(?:ar/)?tour/{tid}(?::[a-z0-9:]+)?/?$ - [G,L]', f'RewriteRule ^{p_.strip("/")}/?$ - [G,L]']
     for old, new in sorted(SLUG_REDIRECTS.items()):
         lines.append(f'RewriteRule ^{re.escape(old.strip("/"))}/?$ {new} [R=301,L]')
     # city lists that existed briefly at /activities/{city} now live on the destination pages
     for city in sorted({tf.city_of(t['loc']) for t in ALL_TOURS}):
         lines.append(f'RewriteRule ^activities/{city}/?$ /destinations/{"other" if city == "uae" else city} [R=301,L]')
+    build_llms_txt()
     tpl = open(os.path.join(ROOT, 'htaccess.template'), encoding='utf-8').read()
     tpl = tpl.replace('RewriteRule ^destinations/other/?$ /activities/uae [R=301,L]\n', '')
     open(os.path.join(OUT, '.htaccess'), 'w', encoding='utf-8').write(tpl.replace('# {{TOUR_RULES}}', '\n'.join(lines)))
