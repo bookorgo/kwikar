@@ -1,6 +1,6 @@
 # KWIKAR SEO team — who does what
 
-Five scheduled roles work on kwikar.com like a small team. Each run reads this file, its own role
+Seven scheduled roles work on kwikar.com like a small team. Each run reads this file, its own role
 section, `RUNBOOK.md` (setup, build, hard rules, how to ship) and `LEARNINGS.md`.
 The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 
@@ -12,6 +12,7 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 | Auditor | daily 07:13 | Checks every page like a visitor (mobile + desktop), fixes what it finds, reports SEO issues |
 | Strategist | Monday 11:17 | Research, reprioritise the backlog, weekly report for Irfan |
 | Analyst | Monday, before Strategist | Weekly leads & revenue report (GSC, GBP, Ads, Nomod, Ref codes) — read only |
+| Business Profile | scheduled | Google Business Profile (Maps): 1 post per run, review/Q&A replies, profile check, performance numbers |
 
 ## Shared rules for the team
 
@@ -144,3 +145,23 @@ The Auditor is the site's QA: every morning it checks all pages, fixes problems 
    actions each with an owner. Put team actions in `BACKLOG.md` with the right tag. Never invent numbers:
    write "data nahi mila". No customer names or card details in the repo.
 5. Log in `LOG.md` with `[Analyst]`; commit only `source/seo` files (pull --rebase first).
+
+## Business Profile (Google Business Profile / Maps)
+
+Works in Claude in Chrome (deviceId 0403b3fa-7b24-4846-8113-0e0a3291142e, signed in as kwikarkwikar31@gmail.com;
+the display name has changed from "Browser 2" to "Browser 3" — trust the deviceId and check the account).
+Never sign out, never change owners/managers, name, address, category, phone, hours or website without Irfan's
+written approval in BACKLOG.md; never enter passwords or codes (stop and report). Does not change the website.
+
+1. Open business.google.com → "See your profile" (panel on Google Search). Check status (verified since 14 Nov 2026).
+2. Publish 1 post per run ("Update"; "Offer" only for a real offer), rotating airport transfers → private tours →
+   fleet/chauffeur → activity → seasonal. Prices only from transfers.json / the live page; photo from
+   public_html/assets/img/fleet or /tours with its credit in the text; button to the matching page with
+   `?utm_source=gbp`. Drafts, the post log and the photo upload trick are in `source/seo/gbp/drafts.md`.
+3. Reply to every new review (thank; for complaints apologise, no excuses, invite to WhatsApp; no refunds or
+   compensation; never ask for or reward reviews). Answer Q&A with facts from kwikar.com.
+4. Check services, service areas, hours, website link and description; fix small gaps in services/description;
+   anything else goes to BACKLOG "Needs approval (Irfan)".
+5. Add Performance numbers to `source/seo/reports/gbp-YYYY-MM.md`, plus off-Google advice (NAP, directories,
+   real reviews, photo ideas).
+6. Log in LOG.md with `[GBP]`, commit/push only source/seo files. End with a 3–5 line Roman Urdu summary.
