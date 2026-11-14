@@ -200,7 +200,7 @@ function kw_notify(array $o): void {
         'Name: ' . $c['name'], 'Mobile / WhatsApp: ' . $c['phone'], 'Email: ' . ($c['email'] ?: '-'), 'Country of residence: ' . ($c['residence'] ?: '-'),
         'Pickup: ' . ($c['pickup'] ?: '-'), 'Requests: ' . ($c['special'] ?: '-'), '', 'Page: ' . $o['tour']['url'], 'Nomod checkout: ' . ($o['checkout_id'] ?? '-')];
     kw_mail(KW_NOTIFY_TO, 'PAID ' . $o['ref'] . ' – ' . $o['tour']['name'] . ' – ' . date('j M', strtotime($o['date'])), implode("\n", $lines));
-    if ($c['email'] !== '') {
+    if ($c['email'] !== '') {   // the customer gets a confirmation email when they gave an email address
         $cust = ['Hi ' . (preg_split('/\s+/', $c['name'])[0] ?? '') . ',', '', 'Thank you for booking with KWIKAR. We have received your payment and your booking is confirmed.', '',
             'Booking ref: ' . $o['ref'], 'Activity: ' . $o['tour']['name'], 'Option: ' . $o['offer']['name'], 'Date: ' . date('D j M Y', strtotime($o['date'])),
             'Guests: ' . kw_guests($o), 'Paid: AED ' . number_format((float)$o['total'], 2), '',
