@@ -1,25 +1,27 @@
 # KWIKAR SEO team — who does what
 
-Eight scheduled roles work on kwikar.com like a small team. Each run reads this file, its own role
+Ten scheduled roles work on kwikar.com like a small team, led by the Team Lead. Each run reads this file, its own role
 section, `RUNBOOK.md` (setup, build, hard rules, how to ship) and `LEARNINGS.md`.
 The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 
-| Role | When (Dubai time) | Main job |
-|---|---|---|
-| Writer | daily 10:43 and 16:43 | One new or expanded page/guide per run |
-| Editor | daily 21:37 | Check and polish what was published in the last 24 h |
-| Tech | daily 03:23 | Live site health, feed changes, technical fixes |
-| Auditor | daily 07:13 | Checks every page like a visitor (mobile + desktop), fixes what it finds, reports SEO issues |
-| Strategist | Monday 11:17 | Research, reprioritise the backlog, weekly report for Irfan |
-| Analyst | Monday, before Strategist | Weekly leads & revenue report (GSC, GBP, Ads, Nomod, Ref codes) — read only |
-| Business Profile | scheduled | Google Business Profile (Maps): 1 post per run, review/Q&A replies, profile check, performance numbers |
-| Designer & Conversion | scheduled | Mobile-first design and CRO: more WhatsApp enquiries/bookings from the same traffic |
-| Search Console & AI search | scheduled | Google Search Console (indexing, 404s, performance), AI-search readiness (robots, llms.txt, schema, Bing/IndexNow) |
+| Role | When (Dubai time) | Tag | Main job |
+|---|---|---|---|
+| Team Lead | daily 22:43 (after the last Editor run) | — | Checks every role ran, unblocks, daily brief for Irfan |
+| Writer | daily 10:43, 13:43, 16:43 | untagged | One new or expanded page/guide per run |
+| Editor | daily 12:37 and 21:37 | [edit] | Check and polish what was published since the last Editor run |
+| Tech | daily 03:23 | [tech] | Live site health, feed changes, technical fixes |
+| Auditor | daily 07:13 | — | Checks every page like a visitor (mobile + desktop), fixes what it finds, reports SEO issues |
+| Search Console & AI search | daily 14:07 (Irfan's computer, Browser 2) | [gsc] | Indexing, approved 301s for old URLs, CTR titles/metas, request indexing, AI crawlers, /llms.txt |
+| Designer & Conversion | Sun/Tue/Thu 15:19 | [design] | Mobile-first design and CRO: more WhatsApp enquiries/bookings from the same traffic |
+| Business Profile | Tue/Fri 11:47 (Irfan's computer, Browser 2) | [gbp] | Google Business Profile (Maps): 1 post per run, review/Q&A replies, profile check, performance numbers |
+| Analyst | Monday 09:53 (Irfan's computer) | [analyst] | Weekly leads & revenue report (GSC, GBP, Ads, Nomod, Ref codes) — read only |
+| Strategist | Monday 11:17 | — | Research, reprioritise the backlog, weekly report for Irfan |
 
 ## Shared rules for the team
 
-- **Backlog tags** in `BACKLOG.md`: items starting with `[tech]` belong to Tech, `[edit]` to Editor,
-  items under "Needs approval" wait for Irfan. Every other open item belongs to Writer.
+- **Backlog tags** in `BACKLOG.md`: `[tech]` Tech, `[edit]` Editor, `[gsc]` Search Console, `[design]` Designer,
+  `[gbp]` Business Profile, `[analyst]` Analyst; items under "Needs approval" wait for Irfan. Every other open
+  item belongs to Writer.
 - Any role may add items to the backlog for another role (with the right tag). Write *why* in the item.
 - One role per run, one shipped change set per run. Always `git pull --rebase` before you push; if the
   push conflicts, rebase again, rebuild, re-run QA, then push.
@@ -28,6 +30,47 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
   mass-produced pages as low quality). Editor, Tech and Auditor never add new pages.
 - If a run cannot finish, push only the notes (LOG/BACKLOG) and stop. Never push broken work.
 - End every run with a 2–3 line Roman Urdu summary for Irfan.
+
+## How we work together (Team Lead keeps this part current)
+
+- Hand-offs only through `BACKLOG.md` with the right tag; report what you did in `LOG.md` with your role tag.
+- Your own TEAM.md section is yours; the table, "Shared rules" and this part are edited only by the Strategist
+  and the Team Lead. Never rewrite another role's section or undo its commit — add a BACKLOG item instead.
+- Generated files (`public_html/**`, sitemap, `.htaccess`, `llms.txt`): if `git pull --rebase` conflicts on them,
+  take the upstream version, rebuild with the latest feed, re-run `qa.py`, then push. Source files
+  (`source/data/*.json`, `build.py`, CSS, `htaccess.template`) are merged by hand, keeping both roles' changes.
+- `source/data/tour-extras.json`: Writer adds and fills pages; Editor only fixes facts/wording in entries the
+  Writer finished; Search Console may change only `title`/`description` (CTR work) and logs which tour ids.
+- CTR work (titles/metas of pages with many impressions and few clicks, from GSC data) belongs to Search Console
+  (`[gsc]`). Editor does not re-change a title/meta that `[GSC]` set in the last 14 days; when the Writer later
+  fills such a page, it keeps the GSC title/meta unless it is clearly wrong (then say so in LOG.md).
+- `source/styles/additions.css` belongs to the Designer; other roles add a `[design]` item instead of editing it
+  (Auditor/Tech may fix a clear bug and must say so in LOG.md).
+- `source/htaccess.template` and robots: only Search Console (approved old-URL 301s, AI-crawler Allow lines) and
+  Tech (with Irfan's approval). Everyone else reports.
+- New-page limit: at most 2 *new* pages or guides a day across the team. Filling an existing tour page with
+  full content is not a new page, so the third Writer run of the day takes the first tour-page item, not a
+  third new guide.
+- If your item is blocked by something only Irfan can give (access, prices, approval), write it once under
+  "Needs approval (Irfan)" with a date and move on to your next item — don't re-log the same blocker every run.
+
+## Team Lead (daily coordination and brief)
+
+Runs daily 22:43 Dubai, after the last Editor run. Coordinates only: never writes pages, changes design, touches
+prices, payment code (`public_html/api/`), robots, redirects, canonicals, tracking or contact details, and never
+posts anywhere.
+1. Read TEAM.md, RUNBOOK.md, LEARNINGS.md, BACKLOG.md.
+2. Check every role ran today: scheduled-task last run status/time vs LOG.md and git log (last 24 h). Note runs
+   that failed, did not happen or logged "blocked". Roles on Irfan's computer (Search Console, Business Profile,
+   Analyst) fail when that computer or the Claude desktop app is off — say so plainly.
+3. Unblock: re-tag/move BACKLOG items to the role that can do them; write collision rules in "How we work
+   together"; a blocker repeated 2 days in a row becomes a high-priority `[tech]` item; keep "Needs approval
+   (Irfan)" short, dated, newest first.
+4. Read today's reports (audit-latest, gsc-*, design-log, gbp-*, business-*, weekly) and do a quick live check
+   (home + one activity page answer 200, no error text).
+5. Write `reports/daily/YYYY-MM-DD.md`, log `[Lead]` in LOG.md, commit/push only `source/seo/` files.
+6. Send Irfan a 6–10 line Roman Urdu brief (✅ live today with links, ⚠️ problems and what was done, 📋 tomorrow,
+   🙋 what he must do/approve); 3–4 lines when all is normal.
 
 ## Free SEO data (branch `seo-data`, refreshed Mon and Thu by the "SEO data" workflow)
 
