@@ -89,7 +89,9 @@ api/nomod-webhook.php (webhook), /payment/success and /payment/failed (result pa
 The price is recalculated on the server from the live TravelDesk feed; the browser price is never used.
 Online payment closes 12 hours before the activity (start time from the option's time slot, or 09:00).
 Orders are saved as JSON in /home/u809119518/kwikar-orders/ (outside public_html, not in Git).
-Every paid order emails info@kwikar.com (and the customer, if they gave an email).
+Every paid order emails info@kwikar.com (and the customer, if they gave an email) and, when
+'WHATSAPP_ALERTS' is set in kwikar-config.php, sends a WhatsApp alert to the team (CallMeBot, free;
+see config.sample.php for how to get the apikey on each phone).
 
 Switch on:
 1. Nomod > Settings > Tools & customisations > Apps & APIs > Nomod Hosted Checkout > Create API key.
