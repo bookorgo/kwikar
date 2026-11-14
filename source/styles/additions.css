@@ -385,3 +385,11 @@ section[id]{scroll-margin-top:165px}
 .kw-pay-result{max-width:760px;padding:40px 16px}.kw-pay-result h1{margin-bottom:10px}.kw-pay-result .kw-facts{margin:18px 0}.kw-pay-result p{margin:12px 0}
 .kw-pay-result a.kw-button{color:#fff;text-decoration:none}.kw-pay-result a.kw-button.kw-button-ghost{background:#fff;color:var(--kw-blue);border:1.5px solid var(--kw-blue)}
 .kw-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+/* Transfer pages: WhatsApp sticky button and short form with optional details */
+.kw-product-sticky .kw-sticky-wa{background:#25d366!important;border-color:#25d366!important;color:#fff!important;display:inline-flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.kw-product-sticky .kw-sticky-wa svg{width:18px;height:18px}
+.kw-more-details{border:1px solid #e3e8ef;border-radius:12px;padding:0 14px;margin:4px 0 14px;background:#fafbfd}
+.kw-more-details>summary{cursor:pointer;padding:13px 0;font-weight:600;font-size:14px;color:#1f5fbf;list-style:none}
+.kw-more-details>summary::-webkit-details-marker{display:none}
+.kw-more-details>summary::after{content:'＋';float:right;color:#8a96a8}.kw-more-details[open]>summary::after{content:'－'}
+.kw-more-details[open]{padding-bottom:6px}

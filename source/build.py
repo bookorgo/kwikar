@@ -1504,8 +1504,8 @@ def faq_block(title, items):
 def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_title='Transfer enquiry', special=''):
     opts = ''.join(f'<option{" selected" if c["name"] == vehicle else ""}>{e(c["name"])}</option>' for c in TR_CLASSES)
     svc = ''.join(f'<option{" selected" if s == service else ""}>{s}</option>' for s in ('Airport transfer', 'Point to point', 'Hourly chauffeur', 'Private tour'))
-    return (f'<form class="kw-form" data-wa="{e(wa_title)}"><label>Service type<select name="service" data-label="Service" data-prefill="service">{svc}</select></label>'
-            f'<label>Vehicle class<select name="vehicle" data-label="Vehicle class">{opts}</select></label>'
+    return (f'<form class="kw-form kw-short-form" data-wa="{e(wa_title)}">'
+            f'<label>Service type<select name="service" data-label="Service" data-prefill="service">{svc}</select></label>'
             f'<label>Pickup location<input required name="pickup" data-label="Pickup" value="{e(pickup)}" placeholder="Hotel, address or airport terminal"></label>'
             f'<label>Drop-off location<input required name="dropoff" data-label="Drop-off" value="{e(dropoff)}" placeholder="Hotel or address"></label>'
             f'<div class="kw-two-fields"><label>Date<input required type="date" name="date" data-label="Date"></label><label>Time<input required type="time" name="time" data-label="Time"></label></div>'
@@ -1513,8 +1513,11 @@ def tr_form(service='Airport transfer', pickup='', dropoff='', vehicle=None, wa_
             f'<label>Large suitcases<input type="number" min="0" max="30" value="1" name="bags" data-label="Large suitcases" inputmode="numeric"></label></div>'
             f'<div class="kw-two-fields"><label>Hand bags<input type="number" min="0" max="30" value="0" name="handbags" data-label="Hand bags" inputmode="numeric"></label>'
             f'<label>Your name<input required name="name" data-label="Name"></label></div>'
+            f'<details class="kw-more-details"{" open" if special else ""}><summary>More details (optional)</summary>'
+            f'<label>Vehicle class<select name="vehicle" data-label="Vehicle class">{opts}</select></label>'
             f'<label>Flight number (airport pickups)<input name="flight" data-label="Flight number" placeholder="For example EK 202"></label>'
             f'<label>Child seats, extra stops or special requests<textarea name="special" data-label="Special requirements" placeholder="Child ages for seats, luggage, extra stops">{e(special)}</textarea></label>'
+            f'</details>'
             f'<button class="kw-button" type="submit">Send enquiry on WhatsApp ↗</button></form>')
 
 
@@ -1570,7 +1573,7 @@ def fit(s, n):
     return s[:n].rsplit(' ', 1)[0].rstrip(',;:.') + '.'
 
 
-def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers', cta_label='Request this transfer', seller='Transfers'):
+def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, lds, cta_text, active='Transfers', cta_label='Request this transfer', seller='Transfers', quote_name=None):
     nav = ' / '.join(f'<a href="{h}">{e(n)}</a>' for n, h in crumbs[:-1]) + f' / {e(crumbs[-1][0])}'
     main = (f'<nav aria-label="Breadcrumb">{nav}</nav><h1>{e(h1)}</h1><p class="kw-detail-meta">{e(sub)}</p>'
             f'<div class="kw-product-badges"><span>Price per vehicle</span><span>Tolls and parking included</span><span>Book on WhatsApp</span></div>'
@@ -1580,7 +1583,7 @@ def tr_page(path, title, desc, h1, sub, body, aside_price, aside_unit, crumbs, l
             f'<a href="tel:+{PHONE}">Need help? Call {PHONE_FMT}</a><p class="kw-seller">{e(seller)} arranged by Kwikar LLC-FZ, United Arab Emirates.</p></div></aside></div>'
             f'<section class="kw-final-cta"><div><h2>Book your ride</h2><p>{e(cta_text)} Questions? <a href="{e(wa("Hi KWIKAR, I have a transfer question."))}" target="_blank" rel="noopener noreferrer">WhatsApp us on {PHONE_FMT}</a>.</p></div>'
             f'<div><a class="kw-button" href="#transfer-enquiry">Request a quote</a></div></section>'
-            f'<div class="kw-product-sticky"><div><span>From</span><strong>{money(aside_price) if aside_price else "On request"}</strong><small>{e(aside_unit)}</small></div><a class="kw-button" href="#transfer-enquiry">Request</a></div>')
+            f'<div class="kw-product-sticky"><div><span>From</span><strong>{money(aside_price) if aside_price else "On request"}</strong><small>{e(aside_unit)}</small></div><a class="kw-button kw-sticky-wa" href="{e(wa(f"Hi KWIKAR, I'd like a quote for {quote_name or h1}. Date: ___ Passengers: ___"))}" target="_blank" rel="noopener noreferrer" aria-label="Get a quote on WhatsApp">{svg("message", 18)}WhatsApp</a></div>')
     return main
 
 
@@ -1650,7 +1653,7 @@ def build_transfer_route(r):
             + f'<p class="kw-checked">Prices from the KWIKAR transfer rate card, updated {datetime.date.fromisoformat(TR["approved"]).strftime("%-d %b %Y")}.</p>')
     crumbs = [('Home', '/'), ('Transfers', '/transfers')] + ([(ap['short'], ap_href(ap))] if ap else []) + [(h1, path)]
     main = tr_page(path, title, desc, h1, sub, body, low, 'per car, one way', crumbs, None,
-                   'Send pickup, drop-off, date, time and guests. Our team replies on WhatsApp with the final price.')
+                   'Send pickup, drop-off, date, time and guests. Our team replies on WhatsApp with the final price.', quote_name=f'{sf} to {to} transfer')
     main += tr_enquiry_section(f'Request your {sf} to {to} transfer', 'Tell us your date, time and number of guests. We reply on WhatsApp with the final price.',
                                service='Airport transfer' if ap else 'Point to point', pickup=frm, dropoff=to, wa_title=f'Transfer enquiry: {sf} to {to}')
     lds = (ld(tr_service_ld(h1, path, desc, r['prices'], 'Airport transfer' if ap else 'Private transfer', [frm, to])) + ld(faq_ld(faqs)))

@@ -361,6 +361,8 @@
     if (!el || value == null) return;
     if (el.tagName === 'SELECT') { if (Array.prototype.some.call(el.options, function (o) { return o.text === value; })) el.value = value; }
     else el.value = value;
+    var more = el.closest && el.closest('details');   // show the optional fields when a car or class was picked
+    if (more && (name === 'vehicle' || name === 'special')) more.open = true;
   };
   document.querySelectorAll('[data-pick]').forEach(function (a) {
     a.addEventListener('click', function () {
@@ -370,6 +372,7 @@
         var sp = form.elements.special, line = 'Preferred car: ' + a.dataset.model;
         sp.value = sp.value.replace(/^Preferred car: .*(\n|$)/, '');
         sp.value = line + (sp.value ? '\n' + sp.value : '');
+        var det = sp.closest && sp.closest('details'); if (det) det.open = true;
       }
     });
   });
