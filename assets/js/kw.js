@@ -625,11 +625,12 @@
         (pickup ? '<fieldset class="kw-pickup-fields"><legend>Pickup details</legend><label class="kw-check-row"><input type="radio" name="pickupMode" value="address"' + (d.pickupMode !== 'later' ? ' checked' : '') + '><span>Share hotel or address now</span></label>' +
           '<div class="kw-two-fields" data-addr' + (d.pickupMode === 'later' ? ' hidden' : '') + '><label>Hotel or pickup address<input name="hotel" value="' + esc(d.hotel) + '"></label><label>Room number (optional)<input name="room" value="' + esc(d.room) + '"></label></div>' +
           '<label class="kw-check-row"><input type="radio" name="pickupMode" value="later"' + (d.pickupMode === 'later' ? ' checked' : '') + '><span>I will share pickup details later</span></label></fieldset>' : '') +
+        '<label class="kw-hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>' +
         '<label>Special requests (optional)<textarea name="special" rows="3" maxlength="500" placeholder="Accessibility, dietary or other useful details">' + esc(d.special) + '</textarea></label>' +
         '<p class="kw-draft-note">Saved on this device so you can return after refreshing.</p><p class="kw-sheet-error" data-err hidden></p><button class="kw-button" type="submit">Review request</button></form>';
       var form = body.querySelector('form');
       form.addEventListener('input', function (e) {
-        var el = e.target; if (el.name && el.name in d) d[el.name] = el.value;
+        var el = e.target; if (el.name === 'website') s.hp = el.value; if (el.name && el.name in d) d[el.name] = el.value;
         if (el.name === 'pickupMode') form.querySelector('[data-addr]').hidden = el.value === 'later';
         save();
       });
@@ -693,7 +694,7 @@
           btn.disabled = true; btn.textContent = 'Opening secure payment…';
           var d = s.d;
           var payload = { tour_id: String(t.id), offer_id: String(o.id), date: s.date, adults: s.adults, children: s.children, infants: s.infants, ages: s.ages,
-            path: t.path || location.pathname, src: KW.source ? KW.source() : 'D',
+            path: t.path || location.pathname, src: KW.source ? KW.source() : 'D', website: s.hp || '',
             customer: { name: d.name.trim(), phone: d.countryCode.trim() + ' ' + d.mobile.trim(), email: d.email.trim(), residence: d.residence.trim(),
               pickup: o.pickupRequired ? (d.pickupMode === 'later' ? 'Will share later' : d.hotel + (d.room ? ', room ' + d.room : '')) : '', special: d.special.trim() } };
           fetch('/api/pay.php?action=create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

@@ -11,11 +11,16 @@ header('Content-Type: application/json; charset=utf-8');
 require __DIR__ . '/pay-lib.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') out(['ok' => false], 405);
+if (!kw_rate_ok('webhook', 300, 3600)) out(['ok' => false], 429);
 $raw = (string)file_get_contents('php://input', false, null, 0, 200000);
 $h = [];
 foreach (['svix-id', 'svix-timestamp', 'svix-signature'] as $k) $h[$k] = (string)($_SERVER['HTTP_' . strtoupper(str_replace('-', '_', $k))] ?? '');
 if (!kw_verify_webhook($raw, $h, trim((string)cfg('NOMOD_WEBHOOK_SECRET')))) { kw_log('webhook: bad signature'); out(['ok' => false], 400); }
 
+$seen = kw_data_dir() . '/webhook-seen.txt';
+if (strpos((string)@file_get_contents($seen), $h['svix-id'] . "\n") !== false) out(['ok' => true]);   // same delivery twice: ignore
+@file_put_contents($seen, $h['svix-id'] . "\n", FILE_APPEND | LOCK_EX);
+if (@filesize($seen) > 200000) @file_put_contents($seen, substr((string)file_get_contents($seen), -100000), LOCK_EX);
 $ev = json_decode($raw, true);
 $type = is_array($ev) ? (string)($ev['type'] ?? '') : '';
 if (!preg_match('/KW-\d{6}-[A-Z2-9]{8}/', $raw, $m)) { kw_log('webhook ' . $type . ': no KWIKAR ref'); out(['ok' => true]); }
