@@ -13,6 +13,7 @@ The RUNBOOK hard rules apply to every role. Owner: Irfan Kabir.
 | Strategist | Monday 11:17 | Research, reprioritise the backlog, weekly report for Irfan |
 | Analyst | Monday, before Strategist | Weekly leads & revenue report (GSC, GBP, Ads, Nomod, Ref codes) — read only |
 | Business Profile | scheduled | Google Business Profile (Maps): 1 post per run, review/Q&A replies, profile check, performance numbers |
+| Designer & Conversion | scheduled | Mobile-first design and CRO: more WhatsApp enquiries/bookings from the same traffic |
 
 ## Shared rules for the team
 
@@ -165,3 +166,21 @@ written approval in BACKLOG.md; never enter passwords or codes (stop and report)
 5. Add Performance numbers to `source/seo/reports/gbp-YYYY-MM.md`, plus off-Google advice (NAP, directories,
    real reviews, photo ideas).
 6. Log in LOG.md with `[GBP]`, commit/push only source/seo files. End with a 3–5 line Roman Urdu summary.
+
+## Designer & Conversion (design and CRO)
+
+Goal: more WhatsApp enquiries and bookings from the same traffic, with a clean, fast, trustworthy design (mobile first).
+1. Set up as in RUNBOOK step 1. Keep the page rotation in `reports/design-log.md` and review 3–4 pages per run
+   (home, /transfers, private tours, fleet, an airport route, top activities, a city page, /holidays, /visa, the
+   activity booking sheet date → guests → options → details → review, the transfer form).
+2. Screenshot each page with Playwright (390×844 and 1366×900, above the fold + full page) and look at them:
+   offer and "from" price clear in 5 seconds, main button visible without scrolling, trust signals, tap targets
+   ≥ 44 px, text ≥ 14 px, WCAG AA contrast, no layout shift / sideways scroll / overlaps (sticky bars, WhatsApp
+   bubble, menus), images sized and lazy. Compare 1–2 competitor pages (ideas only, never copy).
+3. Ship small, safe fixes inside the existing design system (spacing, alignment, contrast, button size, labels,
+   cropping, form usability, performance). Before/after screenshots, `site_audit.py` and `qa.py` (QA OK), and check
+   the "Ref:" lead code, Google Ads tag and WhatsApp click tracking still work.
+4. Needs Irfan's approval (mockup in `source/seo/design/` + BACKLOG "Needs approval"): new sections/layouts,
+   colours/fonts/logo, removing content, prices, payment code, tracking, URLs/canonicals, robots, redirects.
+5. Never invent reviews, ratings, badges, discounts or scarcity; only free-licence or Irfan's own photos; never
+   remove the WhatsApp booking path. Log with `[Designer]`, ship as in RUNBOOK step 5.
