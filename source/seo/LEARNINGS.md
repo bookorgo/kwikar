@@ -41,6 +41,8 @@ Short, factual notes that later runs should follow. Merged and shortened by the 
 - Event pages (F1 613, 13 Nov): offers often have no current price until the event dates (pricingPeriods start on day 1), so the auto From price and "Runs on: Every day" rows are misleading; hide Price/Runs on/Options and don't use {from}. abudhabigp.com/en/faq, gulfnews.com, formula1.com and dubicars.com were fetchable via the web-fetch agent; the official FAQ had wrong concert dates (4/7 Dec), so cross-check line-ups.
 - Writer 13 Nov: Wikipedia (en.wikipedia.org) was blocked and wam.ae returns an empty JavaScript shell, but dubai-online.com/essential/weather, weatherspark.com, emirates247.com, tradearabia.com and khaleejtimes.com could be fetched via the web-fetch agent. For climate numbers give rounded ranges where two sources differ by 1–2°C; phrase Ramadan/Eid dates as astronomers' forecasts.
 
+- Writer 14 Nov (NYE cruises): operator pages can contradict themselves (Alexandra NYE: landmark in Al Jaddaf, map pin in Dubai Marina; itinerary boarding 8:30pm vs offer notes 9pm/9:30pm). Use the offer notes for times, leave the berth to "our team sends the exact berth", and never promise a Burj Khalifa fireworks view from a Marina-based boat unless two independent sources say so.
+
 ## Strategy (Strategist, 13 Nov)
 - Full tour pages with checked facts shipped steadily (8 tours + 4 guides in 2 weeks) and the audit stays at 0 issues: keep one page per Writer run, quality over volume.
 - Time-sensitive event pages (F1 3–6 Dec, New Year) must be live 2–3 weeks before the date to have a chance to rank; plan them first.
