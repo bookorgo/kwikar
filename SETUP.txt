@@ -104,3 +104,15 @@ Switch on:
    and switches the Terms, Refund, Privacy, Booking information and home wording to online payment.
 6. Test with a small real payment and refund it in Nomod.
 Switch off quickly: add 'PAYMENTS_ENABLED' => false to kwikar-config.php (button disappears at once).
+
+Payment security (what stops "Inspect"/script tricks):
+- The browser never sends a price that is used: the server recalculates it from the TravelDesk feed.
+- An order is "paid" only when the Nomod API itself reports our checkout id as paid, in AED, with our
+  reference and at least our amount. Success-page links and webhook bodies alone change nothing.
+- Webhooks need a valid Nomod signature, a fresh timestamp (5 min) and a new message id (no replays).
+- Mismatches (wrong amount/currency/reference) are not booked: info@kwikar.com gets a "CHECK PAYMENT" email.
+- Only kwikar.com pages may start a payment (Origin check), hidden honeypot field for bots,
+  limits: 10 checkouts per hour and 25 per day per visitor, 300 per day for the whole site
+  ('PAYMENTS_DAILY_CAP'), max AED 20,000 per online booking ('PAYMENTS_MAX_AED'); status lookups 60/hour.
+- The payment result page shows no phone, email or address. Orders live outside public_html.
+- In Nomod: keep 3-D Secure on and check its fraud settings; never share API keys.

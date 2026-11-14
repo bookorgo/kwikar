@@ -17,6 +17,8 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: same-origin');
 
 require __DIR__ . '/pay-lib.php';
 
@@ -27,6 +29,7 @@ if ($action === 'ready') {
 }
 
 if ($action === 'status') {
+    if (!kw_rate_ok('status', 60, 3600)) out(['ok' => false, 'error' => 'Too many requests'], 429);
     $ref = (string)($_GET['ref'] ?? '');
     $order = kw_order_load($ref);
     if (!$order) out(['ok' => false, 'error' => 'Order not found'], 404);
@@ -36,11 +39,15 @@ if ($action === 'status') {
 
 if ($action !== 'create' || ($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') out(['ok' => false, 'error' => 'Bad request'], 400);
 if (!kw_pay_enabled()) out(['ok' => false, 'error' => 'Online payment is not available. Please book on WhatsApp.'], 503);
-if (!kw_rate_ok('create', 20, 3600)) out(['ok' => false, 'error' => 'Too many attempts. Please try again later or book on WhatsApp.'], 429);
+if (!kw_same_origin()) out(['ok' => false, 'error' => 'Bad request'], 403);
+if (!kw_rate_ok('create', 10, 3600) || !kw_rate_ok('create-day', 25, 86400)) out(['ok' => false, 'error' => 'Too many attempts. Please try again later or book on WhatsApp.'], 429);
+if (!kw_global_cap_ok((int)cfg('PAYMENTS_DAILY_CAP', 300))) { kw_log('daily checkout cap reached'); out(['ok' => false, 'error' => 'Online payment is busy. Please book on WhatsApp.'], 429); }
+kw_housekeeping();
 
 $raw = file_get_contents('php://input', false, null, 0, 20000);
 $in = json_decode((string)$raw, true);
 if (!is_array($in)) out(['ok' => false, 'error' => 'Bad request'], 400);
+if (!empty($in['website'])) { kw_log('honeypot hit'); out(['ok' => false, 'error' => 'Bad request'], 400); }   // hidden field only bots fill in
 
 /* ---------- input ---------- */
 $tourId   = (string)($in['tour_id'] ?? '');
@@ -78,6 +85,7 @@ $check = kw_check_offer($offer, $date, $adults, $children, $infants);
 if ($check !== null) fail($check);
 $total = kw_total($offer, $date, $adults, $children);
 if ($total === null || $total <= 0) fail('This option has no online price. Please book on WhatsApp.');
+if ($total > (float)cfg('PAYMENTS_MAX_AED', 20000)) fail('For bookings of this size please send your request on WhatsApp.');
 
 /* ---------- order + Nomod checkout ---------- */
 $ref = kw_new_ref();
@@ -88,6 +96,7 @@ $order = [
     'date' => $date, 'adults' => $adults, 'children' => $children, 'infants' => $infants, 'ages' => $ages,
     'total' => $total, 'currency' => 'AED',
     'customer' => ['name' => $name, 'phone' => $phone, 'email' => $email, 'residence' => $res, 'pickup' => $pickup, 'special' => $special],
+    'ip_hash' => substr(hash('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? '') . date('Y-m')), 0, 16),
     'cancellation' => array_slice(array_map('strval', $tour['cancellation'] ?? []), 0, 6),
 ];
 if (!preg_match('#^/activities/[a-z0-9/-]{3,200}$#', (string)($in['path'] ?? ''))) $order['tour']['url'] = 'https://kwikar.com/activities';

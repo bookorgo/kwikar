@@ -155,21 +155,74 @@ function kw_nomod(string $method, string $path, ?array $body = null): ?array {
     return is_array($d) ? $d : null;
 }
 
-/** Ask Nomod for the checkout status; on first "paid" send the emails. */
+/**
+ * Ask Nomod for the checkout status; on first "paid" send the emails.
+ * An order only becomes "paid" when the Nomod API itself says so for OUR checkout id, with the same
+ * reference, currency AED and at least the amount we calculated. Nothing from the browser or the
+ * webhook body can mark an order paid. A file lock stops two requests from sending the emails twice.
+ */
 function kw_order_refresh(array $o): array {
-    if (empty($o['checkout_id']) || in_array($o['status'], ['refunded'], true)) return $o;
+    if (empty($o['checkout_id']) || in_array($o['status'], ['refunded', 'partially_refunded'], true)) return $o;
     if ($o['status'] === 'paid' && !empty($o['notified'])) return $o;
-    $s = kw_nomod('GET', '/checkout/' . rawurlencode($o['checkout_id']));
-    if (!$s) return $o;
-    $st = (string)($s['status'] ?? '');
-    if ($st === 'paid' && (float)($s['amount'] ?? 0) + 0.01 >= (float)$o['total']) {
-        if ($o['status'] !== 'paid') { $o['status'] = 'paid'; $o['paid_at'] = gmdate('c'); }
-        if (empty($o['notified'])) { kw_notify($o); $o['notified'] = gmdate('c'); }
+    if (!empty($o['checked_at']) && time() - strtotime($o['checked_at']) < 3 && $o['status'] !== 'paid') return $o;   // no API hammering
+    $lock = @fopen(kw_order_file($o['ref']) . '.lock', 'c');
+    if ($lock) flock($lock, LOCK_EX);
+    try {
+        $o = kw_order_load($o['ref']) ?? $o;   // re-read under the lock
+        if ($o['status'] === 'paid' && !empty($o['notified'])) return $o;
+        $s = kw_nomod('GET', '/checkout/' . rawurlencode($o['checkout_id']));
+        $o['checked_at'] = gmdate('c');
+        if (!$s) { kw_order_save($o); return $o; }
+        $st = (string)($s['status'] ?? '');
+        $same = (string)($s['id'] ?? '') === (string)$o['checkout_id'] && (string)($s['reference_id'] ?? $o['ref']) === $o['ref']
+             && strtoupper((string)($s['currency'] ?? 'AED')) === 'AED';
+        $enough = (float)($s['amount'] ?? 0) + 0.01 >= (float)$o['total'];
+        if ($st === 'paid' && $same && $enough) {
+            if ($o['status'] !== 'paid') { $o['status'] = 'paid'; $o['paid_at'] = gmdate('c'); $o['paid_amount'] = (float)$s['amount']; }
+            if (empty($o['notified'])) { $o['notified'] = gmdate('c'); kw_order_save($o); kw_notify($o); }
+        } elseif ($st === 'paid') {
+            if (empty($o['mismatch'])) {
+                $o['mismatch'] = gmdate('c');
+                kw_log('MISMATCH ' . $o['ref'] . ' nomod=' . json_encode(['id' => $s['id'] ?? null, 'ref' => $s['reference_id'] ?? null, 'cur' => $s['currency'] ?? null, 'amt' => $s['amount'] ?? null]));
+                kw_mail(KW_NOTIFY_TO, 'CHECK PAYMENT ' . $o['ref'], 'Nomod reports a payment for ' . $o['ref'] . ' that does not match the order (amount, currency or reference). Do not book it until you have checked it in the Nomod dashboard.');
+            }
+        } elseif (in_array($st, ['cancelled', 'expired'], true) && $o['status'] === 'created') {
+            $o['status'] = $st;
+        }
         kw_order_save($o);
-    } elseif (in_array($st, ['cancelled', 'expired'], true) && $o['status'] === 'created') {
-        $o['status'] = $st; kw_order_save($o);
+        return $o;
+    } finally {
+        if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
     }
-    return $o;
+}
+
+/** Remove unpaid orders older than 14 days and old rate-limit files, so spam cannot fill the disk. */
+function kw_housekeeping(): void {
+    if (random_int(1, 50) !== 1) return;
+    foreach (glob(kw_data_dir() . '/rate-*.json') ?: [] as $f) { if (filemtime($f) < time() - 86400) @unlink($f); }
+    foreach (glob(kw_data_dir() . '/order-*.json') ?: [] as $f) {
+        if (filemtime($f) > time() - 14 * 86400) continue;
+        $d = @json_decode((string)@file_get_contents($f), true);
+        if (is_array($d) && !in_array($d['status'] ?? '', ['paid', 'refunded', 'partially_refunded'], true)) { @unlink($f); @unlink($f . '.lock'); }
+    }
+}
+
+/** Requests must come from our own pages (blocks other sites posting to the API). */
+function kw_same_origin(): bool {
+    $o = (string)($_SERVER['HTTP_ORIGIN'] ?? '');
+    $r = (string)($_SERVER['HTTP_REFERER'] ?? '');
+    $ok = '#^https://(www\.)?kwikar\.com(/|$)#';
+    if ($o !== '') return (bool)preg_match($ok, $o . '/') || (bool)preg_match('#^http://(127\.0\.0\.1|localhost)(:\d+)?$#', $o) && cfg('NOMOD_API_BASE', '') !== '';
+    return $r !== '' && (preg_match($ok, $r) || (preg_match('#^http://(127\.0\.0\.1|localhost)#', $r) && cfg('NOMOD_API_BASE', '') !== ''));
+}
+
+/** Site-wide cap so a bot cannot open thousands of checkouts (card testing). */
+function kw_global_cap_ok(int $max): bool {
+    $f = kw_data_dir() . '/rate-global-' . date('Ymd') . '.json';
+    $n = (int)@file_get_contents($f);
+    if ($n >= $max) return false;
+    @file_put_contents($f, (string)($n + 1), LOCK_EX);
+    return true;
 }
 
 function kw_guests(array $o): string {
@@ -182,8 +235,7 @@ function kw_guests(array $o): string {
 function kw_order_public(array $o): array {
     return ['ref' => $o['ref'], 'status' => $o['status'], 'tour' => $o['tour']['name'], 'url' => $o['tour']['url'], 'option' => $o['offer']['name'],
             'date' => $o['date'], 'date_text' => date('D j M Y', strtotime($o['date'])), 'guests' => kw_guests($o), 'total' => $o['total'], 'currency' => 'AED',
-            'first_name' => preg_split('/\s+/', $o['customer']['name'])[0] ?? '', 'pickup' => $o['customer']['pickup'] !== '' ? $o['customer']['pickup'] : null,
-            'cancellation' => $o['cancellation'] ?? []];
+            'first_name' => preg_split('/\s+/', $o['customer']['name'])[0] ?? '', 'cancellation' => $o['cancellation'] ?? []];   // no phone, email or address here
 }
 
 function kw_mail(string $to, string $subject, string $text): void {
