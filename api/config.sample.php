@@ -10,4 +10,10 @@ return [
     'NOMOD_API_KEY' => '',          // Nomod > Settings > Apps & APIs > Nomod Hosted Checkout > API key
     'NOMOD_WEBHOOK_SECRET' => '',   // Nomod > Webhooks > your webhook > signing secret (starts with whsec_)
     // 'PAYMENTS_ENABLED' => false,  // uncomment to switch "Pay now" off without removing the key
+
+    // WhatsApp alert for every paid order (CallMeBot, free). On each phone that should get alerts:
+    // save +34 644 26 33 77 in contacts, send it "I allow callmebot to send me messages", copy the apikey it replies with.
+    'WHATSAPP_ALERTS' => [
+        // '+971505599243' => 'apikey-from-callmebot',
+    ],
 ];

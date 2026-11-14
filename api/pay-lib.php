@@ -209,7 +209,35 @@ function kw_notify(array $o): void {
             'KWIKAR · Kwikar L.L.C-FZ · info@kwikar.com · +971 50 559 9243'];
         kw_mail($c['email'], 'Your KWIKAR booking ' . $o['ref'] . ' is confirmed', implode("\n", $cust));
     }
+    kw_whatsapp_alert(implode("\n", [
+        '*PAID ' . $o['ref'] . '* · AED ' . number_format((float)$o['total'], 2),
+        $o['tour']['name'] . ' – ' . $o['offer']['name'],
+        date('D j M Y', strtotime($o['date'])) . ' · ' . kw_guests($o),
+        $c['name'] . ' · ' . $c['phone'],
+        'Pickup: ' . ($c['pickup'] ?: '-'),
+        'Requests: ' . ($c['special'] ?: '-'),
+        'Source: ' . $o['src'] . ' · Book with TravelDesk now (tour ' . $o['tour']['id'] . ', offer ' . $o['offer']['id'] . ')',
+    ]));
     kw_log('paid ' . $o['ref'] . ' AED ' . $o['total']);
+}
+
+/**
+ * WhatsApp alert to the team (CallMeBot: free, sends to numbers that activated it).
+ * kwikar-config.php: 'WHATSAPP_ALERTS' => ['+971XXXXXXXXX' => 'callmebot-apikey', ...]
+ * Off when not set. A failed alert never stops the order (the email is already sent).
+ */
+function kw_whatsapp_alert(string $text): void {
+    $list = cfg('WHATSAPP_ALERTS', []);
+    if (!is_array($list)) return;
+    foreach ($list as $phone => $key) {
+        $phone = preg_replace('/[^0-9+]/', '', (string)$phone); $key = trim((string)$key);
+        if ($phone === '' || $key === '') continue;
+        $url = (string)cfg('WHATSAPP_ALERT_URL', 'https://api.callmebot.com/whatsapp.php') . '?' . http_build_query(['phone' => $phone, 'apikey' => $key, 'text' => mb_substr($text, 0, 1500)]);
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 12]);
+        $res = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+        if ($res === false || $code >= 400) kw_log('whatsapp alert failed for ' . substr($phone, 0, 6) . '… HTTP ' . $code);
+    }
 }
 
 /** Svix-style signature check used by Nomod webhooks. */

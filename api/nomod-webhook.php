@@ -27,6 +27,7 @@ if ($type === 'charge.refunded' || $type === 'charge.partially_refunded') {
     $order['refunded_at'] = gmdate('c');
     kw_order_save($order);
     kw_mail(KW_NOTIFY_TO, 'REFUND ' . $order['ref'] . ' – ' . $order['tour']['name'], 'Nomod reports a ' . str_replace('charge.', '', $type) . ' for ' . $order['ref'] . ' (AED ' . $order['total'] . ').');
+    kw_whatsapp_alert('*' . strtoupper(str_replace('charge.', '', $type)) . ' ' . $order['ref'] . '* · AED ' . $order['total'] . "\n" . $order['tour']['name'] . ' · ' . $order['date']);
     kw_log('webhook refund ' . $order['ref']);
 } elseif ($type === 'charge.failed') {
     kw_log('webhook failed charge for ' . $order['ref']);
